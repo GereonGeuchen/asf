@@ -1,50 +1,103 @@
 from asf.aslib_scenario import ASlibScenario
 import numpy as np
+import pandas as pd
+from asf.selectors.abstract_selector import AbstractSelector
+from asf.selectors.feature_generator import (
+    AbstractFeatureGenerator,
+    DummyFeatureGenerator,
+)
 
 
-class PerformancePredictor:
-    def __init__(self, model_class, algorithms, use_multi_target=False, normalize="log"):
+class PerformancePredictor(AbstractSelector, AbstractFeatureGenerator):
+    """
+    PerformancePredictor is a class that predicts the performance of algorithms
+    based on given features. It can handle both single-target and multi-target
+    regression models.
+
+    Attributes:
+        model_class: The class of the regression model to be used.
+        metadata: Metadata containing information about the algorithms.
+        use_multi_target: Boolean indicating whether to use multi-target regression.
+        normalize: Method to normalize the performance data.
+        regressors: List of trained regression models.
+    """
+
+    def __init__(self, model_class, metadata, use_multi_target=False, normalize="log", hierarchical_generator=DummyFeatureGenerator()):
+        """
+        Initializes the PerformancePredictor with the given parameters.
+
+        Args:
+            model_class: The class of the regression model to be used.
+            metadata: Metadata containing information about the algorithms.
+            use_multi_target: Boolean indicating whether to use multi-target regression.
+            normalize: Method to normalize the performance data.
+            hierarchical_generator: Feature generator to be used.
+        """
+        AbstractSelector.__init__(self, metadata, hierarchical_generator)
+        AbstractFeatureGenerator.__init__(self, metadata)
         self.model = model_class
         self.regressors = []
-        self.algorithms = algorithms
         self.use_multi_target = use_multi_target
         self.normalize = normalize
 
-    def fit(self, scenario: ASlibScenario):
-        feats = scenario.feature_data.values
-        performance_data = scenario.performance_data.values
+    def _fit(self, features: pd.DataFrame, performance: pd.DataFrame):
+        """
+        Fits the regression models to the given features and performance data.
 
+        Args:
+            features: DataFrame containing the feature data.
+            performance: DataFrame containing the performance data.
+        """
         if self.normalize == "log":
-            performance_data = np.log(performance_data + 1e-8)
+            performance = np.log(performance + 1e-8)
 
         if self.use_multi_target:
             self.regressors = self.model()
-            self.regressors.fit(feats, performance_data)
+            self.regressors.fit(features, performance)
         else:
-            for i, algorithm in enumerate(self.algorithms):
-                algo_times = performance_data[:, i]
+            for i, algorithm in enumerate(self.metadata.algorithms):
+                algo_times = performance.iloc[:, i]
 
                 cur_model = self.model()
-                cur_model.fit(feats, algo_times)
+                cur_model.fit(features, algo_times)
                 self.regressors.append(cur_model)
 
-    def predict(self, scenario: ASlibScenario):
-        feats = scenario.feature_data.values
-        
+    def _predict(self, features: pd.DataFrame):
+        """
+        Predicts the performance of algorithms for the given features.
+
+        Args:
+            features: DataFrame containing the feature data.
+
+        Returns:
+            A dictionary mapping instance names to the predicted best algorithm.
+        """
+        predictions = self.generate_features(features)
+
+        return {
+            instance_name: self.metadata.algorithms[np.argmin(predictions[i])]
+            for i, instance_name in enumerate(features.index)
+        }
+
+    def generate_features(self, features: pd.DataFrame) -> pd.DataFrame:
+        """
+        Generates predictions for the given features using the trained models.
+
+        Args:
+            features: DataFrame containing the feature data.
+
+        Returns:
+            DataFrame containing the predictions for each algorithm.
+        """
         if self.use_multi_target:
-            predictions = self.regressors.predict(feats)
+            predictions = self.regressors.predict(features)
         else:
-            predictions_sum = np.zeros((feats.shape[0], len(self.algorithms)))
-            for i, algorithm in enumerate(self.algorithms):
-                prediction = self.regressors[i].predict(feats)
-                
-                predictions_sum[:, i] = prediction
-
-            predictions = np.argmin(predictions_sum, axis=1)
-
-        return {instance_name: self.algorithms[np.argmin(predictions[i])] 
-                for i, instance_name in enumerate(scenario.feature_data.index)}
-
+            predictions = np.zeros((features.shape[0], len(self.metadata.algorithms)))
+            for i, algorithm in enumerate(self.metadata.algorithms):
+                prediction = self.regressors[i].predict(features)
+                predictions[:, i] = prediction
+            
+        return predictions
 
 
 

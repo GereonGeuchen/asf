@@ -1,25 +1,58 @@
-from asf.aslib_scenario import ASlibScenario
+import pandas as pd
 import numpy as np
+from asf.selectors.feature_generator import DummyFeatureGenerator
+from asf.selectors.abstract_selector import AbstractSelector
 
 
-class MultiClassClassifier:
-    def __init__(self, model_class, algorithms):
+class MultiClassClassifier(AbstractSelector):
+    """
+    MultiClassClassifier is a class that predicts the best algorithm for a given instance
+    using a multi-class classification model.
+
+    Attributes:
+        model_class: The class of the classification model to be used.
+        metadata: Metadata containing information about the algorithms.
+        classifier: The trained classification model.
+    """
+
+    def __init__(self, model_class, metadata, hierarchical_generator=DummyFeatureGenerator()):
+        """
+        Initializes the MultiClassClassifier with the given parameters.
+
+        Args:
+            model_class: The class of the classification model to be used.
+            metadata: Metadata containing information about the algorithms.
+            hierarchical_generator: Feature generator to be used.
+        """
+        super().__init__(metadata, hierarchical_generator)
         self.model = model_class
-        self.classifier
-        self.algorithms = algorithms
+        self.classifier = None
 
-    def fit(self, scenario: ASlibScenario):
-        feats = scenario.feature_data.values
+    def _fit(self, features: pd.DataFrame, performance: pd.DataFrame):
+        """
+        Fits the classification model to the given feature and performance data.
+
+        Args:
+            features: DataFrame containing the feature data.
+            performance: DataFrame containing the performance data.
+        """
         self.classifier = self.model()
-        self.classifier.fit(feats, np.argmin(scenario.performance_data.values, axis=1))
+        self.classifier.fit(features, np.argmin(performance.values, axis=1))
 
-    def predict(self, scenario: ASlibScenario):
-        feats = scenario.feature_data.values
-        
-        predictions = self.classifier.predict(feats)
+    def _predict(self, features: pd.DataFrame):
+        """
+        Predicts the best algorithm for each instance in the given feature data.
 
-        return {instance_name: self.algorithms[predictions[i]] 
-                for i, instance_name in enumerate(scenario.feature_data.index)}
+        Args:
+            features: DataFrame containing the feature data.
+
+        Returns:
+            A dictionary mapping instance names to the predicted best algorithm.
+        """
+        predictions = self.classifier.predict(features)
+
+        return {instance_name: self.metadata.algorithms[predictions[i]] 
+                for i, instance_name in enumerate(features.index)}
 
 
 
