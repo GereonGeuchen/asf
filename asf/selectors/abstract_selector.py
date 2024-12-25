@@ -21,7 +21,7 @@ class AbstractSelector:
         self._fit(features, performance)
 
     def predict(self, features: pd.DataFrame) -> dict[str, list[tuple[str, float]]]:
-        features = pd.concat(self.hierarchical_generator.generate_features(features), axis=1)
+        features = pd.concat([self.hierarchical_generator.generate_features(features)], axis=1)
         return self._predict(features)
 
 
