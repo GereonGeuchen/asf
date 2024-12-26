@@ -18,7 +18,7 @@ class PairwiseClassifier(AbstractSelector, AbstractFeatureGenerator):
         classifiers (list[ClassifierMixin]): List of trained classifiers for pairwise comparisons.
     """
 
-    def __init__(self, model_class, hierarchical_generator=DummyFeatureGenerator()):
+    def __init__(self, model_class, metadata, hierarchical_generator=DummyFeatureGenerator()):
         """
         Initializes the PairwiseClassifier with a given model class and hierarchical feature generator.
 
@@ -26,7 +26,7 @@ class PairwiseClassifier(AbstractSelector, AbstractFeatureGenerator):
             model_class (ClassifierMixin): The classifier model to be used for pairwise comparisons.
             hierarchical_generator (AbstractFeatureGenerator, optional): The feature generator to be used. Defaults to DummyFeatureGenerator.
         """
-        super().__init__(hierarchical_generator)
+        super().__init__(metadata, hierarchical_generator)
         self.model_class: ClassifierMixin = model_class
         self.classifiers: list[ClassifierMixin] = []
 
@@ -60,7 +60,7 @@ class PairwiseClassifier(AbstractSelector, AbstractFeatureGenerator):
         """
         predictions_sum = self.generate_features(features)
         return {
-            instance_name: self.metadata.algorithms[np.argmax(predictions_sum[i])]
+            instance_name: [(self.metadata.algorithms[np.argmax(predictions_sum[i])], self.metadata.budget)]
             for i, instance_name in enumerate(features)
         }
 
@@ -74,12 +74,12 @@ class PairwiseClassifier(AbstractSelector, AbstractFeatureGenerator):
         Returns:
             np.ndarray: An array of predictions for each instance and algorithm pair.
         """
-        predictions_sum = np.zeros((features, len(self.metadata.algorithms)))
+        predictions_sum = np.zeros((features.shape[1], len(self.metadata.algorithms)))
         for i, algorithm in enumerate(self.metadata.algorithms):
-            for other_algorithm in self.metadata.algorithms[i + 1 :]:
+            for j, other_algorithm in enumerate(self.metadata.algorithms[i + 1 :]):
                 prediction = self.classifiers[i].predict(features)
 
-                predictions_sum[prediction == 1, algorithm] += 1
-                predictions_sum[prediction == 0, other_algorithm] -= 1
+                predictions_sum[prediction, i] += 1
+                predictions_sum[~prediction, j] -= 1
 
         return predictions_sum

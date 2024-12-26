@@ -1,0 +1,3 @@
+from asf.selectors.pairwise_classifier import PairwiseClassifier
+from asf.selectors.pairwise_regressor import PairwiseRegressor
+from asf.selectors.mutli_class import MultiClassClassifier
