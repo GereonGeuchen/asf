@@ -1,5 +1,4 @@
 import pandas as pd
-from typing import Callable
 from asf.scenario.scenario_metadata import ScenarioMetadata
 from asf.selectors.feature_generator import (
     AbstractFeatureGenerator,
