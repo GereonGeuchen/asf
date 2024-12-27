@@ -80,5 +80,5 @@ def test_performance_model(dummy_performance, dummy_features, dummy_metadata):
     model.fit(dummy_features, dummy_performance)
     predictions = model.predict(dummy_features)
     assert len(predictions) == 3
-    assert all([isinstance(v, float) for v in predictions.values()])
+    assert all([isinstance(v, list) for v in predictions.values()]), predictions
     assert all([len(v) == 1 for v in predictions.values()])

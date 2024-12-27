@@ -67,7 +67,7 @@ class PairwiseRegressor(AbstractSelector, AbstractFeatureGenerator):
                     self.metadata.budget,
                 )
             ]
-            for i, instance_name in enumerate(features)
+            for i, instance_name in enumerate(features.index)
         }
 
     def generate_features(self, features: pd.DataFrame):

@@ -41,7 +41,7 @@ class PerformanceModel(AbstractSelector, AbstractFeatureGenerator):
             hierarchical_generator: Feature generator to be used.
         """
         AbstractSelector.__init__(self, metadata, hierarchical_generator)
-        AbstractFeatureGenerator.__init__(self, metadata)
+        AbstractFeatureGenerator.__init__(self)
         self.model = model_class
         self.regressors = []
         self.use_multi_target = use_multi_target
