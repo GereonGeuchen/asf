@@ -1,6 +1,6 @@
-from asf.aslib_scenario import ASlibScenario
 import numpy as np
 import pandas as pd
+
 from asf.selectors.abstract_selector import AbstractSelector
 from asf.selectors.feature_generator import (
     AbstractFeatureGenerator,
@@ -8,7 +8,7 @@ from asf.selectors.feature_generator import (
 )
 
 
-class PerformancePredictor(AbstractSelector, AbstractFeatureGenerator):
+class PerformanceModel(AbstractSelector, AbstractFeatureGenerator):
     """
     PerformancePredictor is a class that predicts the performance of algorithms
     based on given features. It can handle both single-target and multi-target
@@ -22,7 +22,14 @@ class PerformancePredictor(AbstractSelector, AbstractFeatureGenerator):
         regressors: List of trained regression models.
     """
 
-    def __init__(self, model_class, metadata, use_multi_target=False, normalize="log", hierarchical_generator=DummyFeatureGenerator()):
+    def __init__(
+        self,
+        model_class,
+        metadata,
+        use_multi_target=False,
+        normalize="log",
+        hierarchical_generator=DummyFeatureGenerator(),
+    ):
         """
         Initializes the PerformancePredictor with the given parameters.
 
@@ -75,7 +82,12 @@ class PerformancePredictor(AbstractSelector, AbstractFeatureGenerator):
         predictions = self.generate_features(features)
 
         return {
-            instance_name: self.metadata.algorithms[np.argmin(predictions[i])]
+            instance_name: [
+                (
+                    self.metadata.algorithms[np.argmin(predictions[i])],
+                    self.metadata.budget,
+                )
+            ]
             for i, instance_name in enumerate(features.index)
         }
 
@@ -96,8 +108,5 @@ class PerformancePredictor(AbstractSelector, AbstractFeatureGenerator):
             for i, algorithm in enumerate(self.metadata.algorithms):
                 prediction = self.regressors[i].predict(features)
                 predictions[:, i] = prediction
-            
+
         return predictions
-
-
-

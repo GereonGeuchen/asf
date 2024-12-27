@@ -8,4 +8,3 @@ class ScenarioMetadata:
     performance_metric: str | list[str]
     maximize: bool
     budget: int | None
-    

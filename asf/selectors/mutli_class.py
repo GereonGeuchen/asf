@@ -15,7 +15,9 @@ class MultiClassClassifier(AbstractSelector):
         classifier: The trained classification model.
     """
 
-    def __init__(self, model_class, metadata, hierarchical_generator=DummyFeatureGenerator()):
+    def __init__(
+        self, model_class, metadata, hierarchical_generator=DummyFeatureGenerator()
+    ):
         """
         Initializes the MultiClassClassifier with the given parameters.
 
@@ -51,9 +53,7 @@ class MultiClassClassifier(AbstractSelector):
         """
         predictions = self.classifier.predict(features)
 
-        return {instance_name: self.metadata.algorithms[predictions[i]] 
-                for i, instance_name in enumerate(features.index)}
-
-
-
-
+        return {
+            instance_name: self.metadata.algorithms[predictions[i]]
+            for i, instance_name in enumerate(features.index)
+        }

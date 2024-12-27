@@ -17,7 +17,9 @@ class PairwiseRegressor(AbstractSelector, AbstractFeatureGenerator):
         regressors: List of trained regressors for pairwise comparisons.
     """
 
-    def __init__(self, model_class, metadata, hierarchical_generator=DummyFeatureGenerator()):
+    def __init__(
+        self, model_class, metadata, hierarchical_generator=DummyFeatureGenerator()
+    ):
         """
         Initializes the PairwiseRegressor with a given model class and hierarchical feature generator.
 
@@ -59,7 +61,12 @@ class PairwiseRegressor(AbstractSelector, AbstractFeatureGenerator):
         """
         predictions_sum = self.generate_features(features)
         return {
-            instance_name: [(self.metadata.algorithms[np.argmin(predictions_sum[i])], self.metadata.budget)]
+            instance_name: [
+                (
+                    self.metadata.algorithms[np.argmin(predictions_sum[i])],
+                    self.metadata.budget,
+                )
+            ]
             for i, instance_name in enumerate(features)
         }
 

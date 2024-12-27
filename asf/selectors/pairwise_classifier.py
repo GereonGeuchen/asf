@@ -18,7 +18,9 @@ class PairwiseClassifier(AbstractSelector, AbstractFeatureGenerator):
         classifiers (list[ClassifierMixin]): List of trained classifiers for pairwise comparisons.
     """
 
-    def __init__(self, model_class, metadata, hierarchical_generator=DummyFeatureGenerator()):
+    def __init__(
+        self, model_class, metadata, hierarchical_generator=DummyFeatureGenerator()
+    ):
         """
         Initializes the PairwiseClassifier with a given model class and hierarchical feature generator.
 
@@ -60,7 +62,12 @@ class PairwiseClassifier(AbstractSelector, AbstractFeatureGenerator):
         """
         predictions_sum = self.generate_features(features)
         return {
-            instance_name: [(self.metadata.algorithms[np.argmax(predictions_sum[i])], self.metadata.budget)]
+            instance_name: [
+                (
+                    self.metadata.algorithms[np.argmax(predictions_sum[i])],
+                    self.metadata.budget,
+                )
+            ]
             for i, instance_name in enumerate(features)
         }
 
