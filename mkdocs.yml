@@ -1,0 +1,19 @@
+site_name: Algorithm Selection Framework (ASF)
+theme:
+  name: material
+
+plugins:
+  - search
+  - mkdocstrings
+
+nav:
+  - Home: index.md
+  - Features: features.md
+  - Quick Start: quick_start.md
+  - Future Features: future_features.md
+  - API Reference:
+      - Selectors: api/selectors.md
+      - Predictors: api/predictors.md
+  - Installation: installation.md
+  - Contributing: contributing.md
+  - License: license.md
