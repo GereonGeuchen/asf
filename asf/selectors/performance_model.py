@@ -57,7 +57,7 @@ class PerformanceModel(AbstractModelBasedSelector, AbstractFeatureGenerator):
             performance: DataFrame containing the performance data.
         """
         if self.normalize == "log":
-            performance = np.log(performance + 1e-8)
+            performance = np.log10(performance + 1e-6)
 
         if self.use_multi_target:
             self.regressors = self.model_class()
