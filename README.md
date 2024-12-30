@@ -1,3 +1,5 @@
+[![Python application](https://github.com/hadarshavit/asf/actions/workflows/python-app.yml/badge.svg)](https://github.com/hadarshavit/asf/actions/workflows/python-app.yml)
+
 # Algorithm Selection Framework (ASF)
 
 ASF is a powerful library for algorithm selection and performance prediction. It allows users to easily create and use algorithm selectors with minimal code.
