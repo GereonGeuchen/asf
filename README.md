@@ -40,6 +40,9 @@ In the future, ASF will include more features such as:
 ## Installation
 
 To install ASF, use pip:
+```python
+pip install asf-lib
+```
 
 ## Documentation
 
