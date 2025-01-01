@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-from asf.selectors.feature_generator import DummyFeatureGenerator
 from asf.selectors.abstract_model_based_selector import AbstractModelBasedSelector
 
 
@@ -15,9 +14,7 @@ class MultiClassClassifier(AbstractModelBasedSelector):
         classifier: The trained classification model.
     """
 
-    def __init__(
-        self, model_class, metadata, hierarchical_generator=DummyFeatureGenerator()
-    ):
+    def __init__(self, model_class, metadata, hierarchical_generator=None):
         """
         Initializes the MultiClassClassifier with the given parameters.
 

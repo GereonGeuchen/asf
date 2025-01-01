@@ -4,7 +4,6 @@ import pandas as pd
 from asf.selectors.abstract_model_based_selector import AbstractModelBasedSelector
 from asf.selectors.feature_generator import (
     AbstractFeatureGenerator,
-    DummyFeatureGenerator,
 )
 
 
@@ -28,7 +27,7 @@ class PerformanceModel(AbstractModelBasedSelector, AbstractFeatureGenerator):
         metadata,
         use_multi_target=False,
         normalize="log",
-        hierarchical_generator=DummyFeatureGenerator(),
+        hierarchical_generator=None,
     ):
         """
         Initializes the PerformancePredictor with the given parameters.

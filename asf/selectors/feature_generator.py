@@ -7,8 +7,3 @@ class AbstractFeatureGenerator:
 
     def generate_features(self, base_features) -> pd.DataFrame:
         pass
-
-
-class DummyFeatureGenerator(AbstractFeatureGenerator):
-    def generate_features(self, base_features) -> pd.DataFrame:
-        return None

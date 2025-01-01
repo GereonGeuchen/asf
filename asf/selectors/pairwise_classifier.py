@@ -4,7 +4,6 @@ from asf.predictors import AbstractPredictor
 from asf.selectors.abstract_model_based_selector import AbstractModelBasedSelector
 from asf.selectors.feature_generator import (
     AbstractFeatureGenerator,
-    DummyFeatureGenerator,
 )
 
 
@@ -18,9 +17,7 @@ class PairwiseClassifier(AbstractModelBasedSelector, AbstractFeatureGenerator):
         classifiers (list[ClassifierMixin]): List of trained classifiers for pairwise comparisons.
     """
 
-    def __init__(
-        self, model_class, metadata, hierarchical_generator=DummyFeatureGenerator()
-    ):
+    def __init__(self, model_class, metadata, hierarchical_generator=None):
         """
         Initializes the PairwiseClassifier with a given model class and hierarchical feature generator.
 

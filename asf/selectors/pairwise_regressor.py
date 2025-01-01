@@ -3,7 +3,6 @@ import pandas as pd
 from asf.selectors.abstract_model_based_selector import AbstractModelBasedSelector
 from asf.selectors.feature_generator import (
     AbstractFeatureGenerator,
-    DummyFeatureGenerator,
 )
 
 
@@ -17,9 +16,7 @@ class PairwiseRegressor(AbstractModelBasedSelector, AbstractFeatureGenerator):
         regressors: List of trained regressors for pairwise comparisons.
     """
 
-    def __init__(
-        self, model_class, metadata, hierarchical_generator=DummyFeatureGenerator()
-    ):
+    def __init__(self, model_class, metadata, hierarchical_generator=None):
         """
         Initializes the PairwiseRegressor with a given model class and hierarchical feature generator.
 
