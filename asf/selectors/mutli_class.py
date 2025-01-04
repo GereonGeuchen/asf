@@ -52,6 +52,6 @@ class MultiClassClassifier(AbstractModelBasedSelector):
         predictions = self.classifier.predict(features)
 
         return {
-            instance_name: self.metadata.algorithms[predictions[i]]
+            instance_name: [(self.metadata.algorithms[predictions[i]], self.metadata.budget)]
             for i, instance_name in enumerate(features.index)
         }
