@@ -31,7 +31,7 @@ class SklearnWrapper(AbstractSelector):
         """
         self.model_class = model_class()
 
-    def fit(self, X, Y):
+    def fit(self, X, Y, sample_weight=None):
         """
         Fit the model to the data.
 
@@ -42,7 +42,7 @@ class SklearnWrapper(AbstractSelector):
         Y : array-like
             Target values.
         """
-        self.model_class.fit(X, Y)
+        self.model_class.fit(X, Y, sample_weight=sample_weight)
 
     def predict(self, X):
         """
