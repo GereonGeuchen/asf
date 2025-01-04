@@ -17,7 +17,9 @@ class PairwiseClassifier(AbstractModelBasedSelector, AbstractFeatureGenerator):
         classifiers (list[ClassifierMixin]): List of trained classifiers for pairwise comparisons.
     """
 
-    def __init__(self, model_class, metadata, hierarchical_generator=None):
+    def __init__(
+        self, model_class, metadata, hierarchical_generator=None, use_weights=True
+    ):
         """
         Initializes the PairwiseClassifier with a given model class and hierarchical feature generator.
 
@@ -30,6 +32,7 @@ class PairwiseClassifier(AbstractModelBasedSelector, AbstractFeatureGenerator):
         )
         AbstractFeatureGenerator.__init__(self)
         self.classifiers: list[AbstractPredictor] = []
+        self.use_weights = use_weights
 
     def _fit(self, features: pd.DataFrame, performance: pd.DataFrame):
         """
@@ -46,7 +49,13 @@ class PairwiseClassifier(AbstractModelBasedSelector, AbstractFeatureGenerator):
 
                 diffs = algo1_times < algo2_times
                 cur_model = self.model_class()
-                cur_model.fit(features, diffs)
+                cur_model.fit(
+                    features,
+                    diffs,
+                    sample_weight=None
+                    if not self.use_weights
+                    else np.abs(algo1_times - algo2_times),
+                )
                 self.classifiers.append(cur_model)
 
     def _predict(self, features: pd.DataFrame):
