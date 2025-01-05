@@ -35,4 +35,4 @@ class AbstractSelector:
                 [features, self.hierarchical_generator.generate_features(features)],
                 axis=1,
             )
-        return self._predict(features, self.algorithm_features)
+        return self._predict(features)
