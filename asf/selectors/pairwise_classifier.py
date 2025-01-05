@@ -92,7 +92,7 @@ class PairwiseClassifier(AbstractModelBasedSelector, AbstractFeatureGenerator):
         Returns:
             np.ndarray: An array of predictions for each instance and algorithm pair.
         """
-        predictions_sum = np.zeros((features.shape[1], len(self.metadata.algorithms)))
+        predictions_sum = np.zeros((features.shape[0], len(self.metadata.algorithms)))
         for i, algorithm in enumerate(self.metadata.algorithms):
             for j, other_algorithm in enumerate(self.metadata.algorithms[i + 1 :]):
                 prediction = self.classifiers[i].predict(features)
