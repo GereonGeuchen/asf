@@ -1,8 +1,8 @@
 from sklearn.base import ClassifierMixin
-from asf.selectors.abstract_selector import AbstractSelector
+from asf.predictors.abstract_predictor import AbstractPredictor
 
 
-class SklearnWrapper(AbstractSelector):
+class SklearnWrapper(AbstractPredictor):
     """
     A generic wrapper for scikit-learn models.
 
