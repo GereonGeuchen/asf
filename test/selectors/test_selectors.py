@@ -14,9 +14,9 @@ from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 def dummy_performance():
     return pd.DataFrame(
         {
-            "algo1": [1, 2, 3],
-            "algo2": [2, 3, 4],
-            "algo3": [3, 4, 5],
+            "algo1": [1, 2, 3, 6],
+            "algo2": [2, 3, 4, 8],
+            "algo3": [3, 4, 5, 10],
         }
     )
 
@@ -25,9 +25,9 @@ def dummy_performance():
 def dummy_features():
     return pd.DataFrame(
         {
-            "feature1": [1, 2, 3],
-            "feature2": [2, 3, 4],
-            "feature3": [3, 4, 5],
+            "feature1": [1, 2, 3, 8],
+            "feature2": [2, 3, 4, 9],
+            "feature3": [3, 4, 5, 10],
         }
     )
 
