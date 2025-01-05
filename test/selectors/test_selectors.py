@@ -49,7 +49,7 @@ def test_pairwise_classifier(dummy_performance, dummy_features, dummy_metadata):
     )
     classifier.fit(dummy_features, dummy_performance)
     predictions = classifier.predict(dummy_features)
-    assert len(predictions) == 3
+    assert len(predictions) == 4
     assert all([isinstance(v, list) for v in predictions.values()])
     assert all([len(v) == 1 for v in predictions.values()])
 
@@ -60,7 +60,7 @@ def test_multi_class_classifier(dummy_performance, dummy_features, dummy_metadat
     )
     classifier.fit(dummy_features, dummy_performance)
     predictions = classifier.predict(dummy_features)
-    assert len(predictions) == 3
+    assert len(predictions) == 4
     assert all([isinstance(v, list) for v in predictions.values()])
     assert all([len(v) == 1 for v in predictions.values()])
 
@@ -71,7 +71,7 @@ def test_pairwise_regressor(dummy_performance, dummy_features, dummy_metadata):
     )
     regressor.fit(dummy_features, dummy_performance)
     predictions = regressor.predict(dummy_features)
-    assert len(predictions) == 3
+    assert len(predictions) == 4
     assert all([isinstance(v, list) for v in predictions.values()])
     assert all([len(v) == 1 for v in predictions.values()])
 
@@ -80,6 +80,6 @@ def test_performance_model(dummy_performance, dummy_features, dummy_metadata):
     model = PerformanceModel(model_class=RandomForestRegressor, metadata=dummy_metadata)
     model.fit(dummy_features, dummy_performance)
     predictions = model.predict(dummy_features)
-    assert len(predictions) == 3
+    assert len(predictions) == 4
     assert all([isinstance(v, list) for v in predictions.values()]), predictions
     assert all([len(v) == 1 for v in predictions.values()])
