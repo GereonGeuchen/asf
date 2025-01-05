@@ -61,7 +61,8 @@ def test_multi_class_classifier(dummy_performance, dummy_features, dummy_metadat
     classifier.fit(dummy_features, dummy_performance)
     predictions = classifier.predict(dummy_features)
     assert len(predictions) == 3
-    assert all([isinstance(v, str) for v in predictions.values()])
+    assert all([isinstance(v, list) for v in predictions.values()])
+    assert all([len(v) == 1 for v in predictions.values()])
 
 
 def test_pairwise_regressor(dummy_performance, dummy_features, dummy_metadata):

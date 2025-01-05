@@ -44,7 +44,7 @@ class MultiClassClassifier(AbstractModelBasedSelector):
 
     def _predict(self, features: pd.DataFrame):
         """
-        Predicts the best algorithm for each instance in the given feature data.
+        Predicts the best algorithm for each instance in the given feature data using simple multi class classification.
 
         Args:
             features: DataFrame containing the feature data.
@@ -55,6 +55,8 @@ class MultiClassClassifier(AbstractModelBasedSelector):
         predictions = self.classifier.predict(features)
 
         return {
-            instance_name: [(self.metadata.algorithms[predictions[i]], self.metadata.budget)]
+            instance_name: [
+                (self.metadata.algorithms[predictions[i]], self.metadata.budget)
+            ]
             for i, instance_name in enumerate(features.index)
         }
