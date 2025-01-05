@@ -42,6 +42,9 @@ class PairwiseClassifier(AbstractModelBasedSelector, AbstractFeatureGenerator):
             features (pd.DataFrame): The feature data for the instances.
             performance (pd.DataFrame): The performance data for the algorithms.
         """
+        assert (
+            self.algorithm_features is None
+        ), "PairwiseClassifier does not use algorithm features."
         for i, algorithm in enumerate(self.metadata.algorithms):
             for other_algorithm in self.metadata.algorithms[i + 1 :]:
                 algo1_times = performance[algorithm]

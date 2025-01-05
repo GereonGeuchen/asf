@@ -13,14 +13,21 @@ class AbstractSelector:
     ):
         self.metadata = metadata
         self.hierarchical_generator = hierarchical_generator
+        self.algorithm_features = None
 
-    def fit(self, features: pd.DataFrame, performance: pd.DataFrame):
+    def fit(
+        self,
+        features: pd.DataFrame,
+        performance: pd.DataFrame,
+        algorithm_features: pd.DataFrame = None,
+    ):
         if self.hierarchical_generator is not None:
             features = pd.concat(
                 [features, self.hierarchical_generator.generate_features(features)],
                 axis=1,
             )
-        self._fit(features, performance)
+        self.algorithm_features = algorithm_features
+        self._fit(features, performance, algorithm_features)
 
     def predict(self, features: pd.DataFrame) -> dict[str, list[tuple[str, float]]]:
         if self.hierarchical_generator is not None:
@@ -28,4 +35,4 @@ class AbstractSelector:
                 [features, self.hierarchical_generator.generate_features(features)],
                 axis=1,
             )
-        return self._predict(features)
+        return self._predict(features, self.algorithm_features)
