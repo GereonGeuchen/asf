@@ -27,7 +27,7 @@ class AbstractSelector:
                 axis=1,
             )
         self.algorithm_features = algorithm_features
-        self._fit(features, performance, algorithm_features)
+        self._fit(features, performance)
 
     def predict(self, features: pd.DataFrame) -> dict[str, list[tuple[str, float]]]:
         if self.hierarchical_generator is not None:
