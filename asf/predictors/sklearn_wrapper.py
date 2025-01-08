@@ -20,7 +20,7 @@ class SklearnWrapper(AbstractPredictor):
         Load the model from a file.
     """
 
-    def __init__(self, model_class: ClassifierMixin):
+    def __init__(self, model_class: ClassifierMixin, init_params: dict = {}):
         """
         Initialize the wrapper with a scikit-learn model.
 
@@ -29,9 +29,9 @@ class SklearnWrapper(AbstractPredictor):
         model_class : ClassifierMixin
             An instance of a scikit-learn model.
         """
-        self.model_class = model_class()
+        self.model_class = model_class(**init_params)
 
-    def fit(self, X, Y, sample_weight=None):
+    def fit(self, X, Y, sample_weight=None, **kwargs):
         """
         Fit the model to the data.
 
@@ -42,9 +42,9 @@ class SklearnWrapper(AbstractPredictor):
         Y : array-like
             Target values.
         """
-        self.model_class.fit(X, Y, sample_weight=sample_weight)
+        self.model_class.fit(X, Y, sample_weight=sample_weight, **kwargs)
 
-    def predict(self, X):
+    def predict(self, X, **kwargs):
         """
         Predict using the model.
 
@@ -58,7 +58,7 @@ class SklearnWrapper(AbstractPredictor):
         array-like
             Predicted values.
         """
-        return self.model_class.predict(X)
+        return self.model_class.predict(X, **kwargs)
 
     def save(self, file_path: str):
         """
