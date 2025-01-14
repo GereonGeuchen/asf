@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 from sklearn.preprocessing import OneHotEncoder
 from asf.selectors.abstract_model_based_selector import AbstractModelBasedSelector
 
@@ -31,7 +30,6 @@ class SimpleRanking(AbstractModelBasedSelector):
         self,
         features: pd.DataFrame,
         performance: pd.DataFrame,
-        algorithm_features: pd.DataFrame = None,
     ):
         """
         Fits the classification model to the given feature and performance data.
@@ -40,16 +38,38 @@ class SimpleRanking(AbstractModelBasedSelector):
             features: DataFrame containing the feature data.
             performance: DataFrame containing the performance data.
         """
-        if algorithm_features is None:
+        if self.algorithm_features is None:
             encoder = OneHotEncoder()
             self.algorithm_features = pd.DataFrame(
                 encoder.fit_transform(self.metadata.algorithms),
                 index=self.metadata.algorithms,
             )
 
-        total_features = pd.merge(features, self.algorithm_features, how="cross")
+        total_features = pd.merge(
+            features.reset_index(), self.algorithm_features.reset_index(), how="cross"
+        )
+        qid = total_features["index_x"]
+        qid = pd.get_dummies(qid)
+        total_features = pd.merge(
+            features.reset_index(), self.algorithm_features.reset_index(), how="cross"
+        )
+        merged = total_features.merge(
+            performance.stack().reset_index(),
+            right_on=["level_0", "level_1"],
+            left_on=["index_x", "index_y"],
+            how="left",
+        )
+        merged["rank"] = merged.groupby("index_x").rank(ascending=True, method="min")[0]
+        total_features = merged.drop(
+            columns=["level_0", "level_1", 0, "index_x", "index_y"]
+        )
+        print(total_features)
         self.classifier = self.model_class()
-        self.classifier.fit(total_features, np.argmin(performance.values, axis=1))
+        self.classifier.fit(
+            total_features,
+            merged["rank"],
+            qid=qid,
+        )
 
     def _predict(self, features: pd.DataFrame):
         """

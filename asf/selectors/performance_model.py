@@ -62,15 +62,35 @@ class PerformanceModel(AbstractModelBasedSelector, AbstractFeatureGenerator):
             performance = np.log10(performance + 1e-6)
 
         if self.use_multi_target:
+            assert (
+                self.algorithm_features is None
+            ), "Multi-target regression does not use algorithm features."
             self.regressors = self.model_class()
             self.regressors.fit(features, performance)
         else:
-            for i, algorithm in enumerate(self.metadata.algorithms):
-                algo_times = performance.iloc[:, i]
+            if self.algorithm_features is None:
+                for i, algorithm in enumerate(self.metadata.algorithms):
+                    algo_times = performance.iloc[:, i]
 
-                cur_model = self.model_class()
-                cur_model.fit(features, algo_times)
-                self.regressors.append(cur_model)
+                    cur_model = self.model_class()
+                    cur_model.fit(features, algo_times)
+                    self.regressors.append(cur_model)
+            else:
+                train_data = []
+                for i, algorithm in enumerate(self.metadata.algorithms):
+                    data = pd.merge(
+                        features,
+                        self.algorithm_features.loc[algorithm],
+                        left_index=True,
+                        right_index=True,
+                    )
+                    data = pd.merge(
+                        data, performance.iloc[:, i], left_index=True, right_index=True
+                    )
+                    train_data.append(data)
+                train_data = pd.concat(train_data)
+                self.regressors = self.model_class()
+                self.regressors.fit(train_data.iloc[:, :-1], train_data.iloc[:, -1])
 
     def _predict(self, features: pd.DataFrame):
         """
@@ -107,9 +127,25 @@ class PerformanceModel(AbstractModelBasedSelector, AbstractFeatureGenerator):
         if self.use_multi_target:
             predictions = self.regressors.predict(features)
         else:
-            predictions = np.zeros((features.shape[0], len(self.metadata.algorithms)))
-            for i, algorithm in enumerate(self.metadata.algorithms):
-                prediction = self.regressors[i].predict(features)
-                predictions[:, i] = prediction
+            if self.algorithm_features is None:
+                predictions = np.zeros(
+                    (features.shape[0], len(self.metadata.algorithms))
+                )
+                for i, algorithm in enumerate(self.metadata.algorithms):
+                    prediction = self.regressors[i].predict(features)
+                    predictions[:, i] = prediction
+            else:
+                prediction = np.zeros(
+                    (features.shape[0], len(self.metadata.algorithms))
+                )
+                for i, algorithm in enumerate(self.metadata.algorithms):
+                    data = pd.merge(
+                        features,
+                        self.algorithm_features.loc[algorithm],
+                        left_index=True,
+                        right_index=True,
+                    )
+                    prediction = self.regressors.predict(data)
+                    predictions[:, i] = prediction
 
         return predictions
