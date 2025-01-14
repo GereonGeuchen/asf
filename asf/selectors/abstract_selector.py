@@ -36,3 +36,9 @@ class AbstractSelector:
                 axis=1,
             )
         return self._predict(features)
+
+    def save(self, path):
+        pass
+
+    def load(self, path):
+        pass

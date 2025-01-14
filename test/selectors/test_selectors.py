@@ -83,3 +83,14 @@ def test_performance_model(dummy_performance, dummy_features, dummy_metadata):
     assert len(predictions) == 4
     assert all([isinstance(v, list) for v in predictions.values()]), predictions
     assert all([len(v) == 1 for v in predictions.values()])
+
+
+def save_load(dummy_performance, dummy_features, dummy_metadata):
+    model = PerformanceModel(model_class=RandomForestRegressor, metadata=dummy_metadata)
+    model.fit(dummy_features, dummy_performance)
+    model.save("model.pkl")
+    loaded_model = PerformanceModel.load("model.pkl")
+    predictions = loaded_model.predict(dummy_features)
+    assert len(predictions) == 4
+    assert all([isinstance(v, list) for v in predictions.values()]), predictions
+    assert all([len(v) == 1 for v in predictions.values()])
