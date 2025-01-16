@@ -70,7 +70,11 @@ def build_cli_command(
         performance_data: Path to performance data DataFrame
         destination: Path to save model
     """
-    model_class = selector.model_class.args[0] if isinstance(selector.model_class, partial) else selector.model_class
+    model_class = (
+        selector.model_class.args[0]
+        if isinstance(selector.model_class, partial)
+        else selector.model_class
+    )
     return [
         "python",
         Path(__file__).absolute(),
