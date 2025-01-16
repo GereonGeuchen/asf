@@ -39,22 +39,42 @@ def parser_function() -> argparse.ArgumentParser:
         "Make sure to specify as a an attribute of sklearn.ensemble.",
     )
     parser.add_argument(
-        "--budget", type=int, default=None, required=False, help="Budget for the solvers"
+        "--budget",
+        type=int,
+        default=None,
+        required=False,
+        help="Budget for the solvers"
     )
     parser.add_argument(
-        "--maximize", type=bool, default=False, required=False, help="Maximize the objective"
+        "--maximize",
+        type=bool,
+        default=False,
+        required=False,
+        help="Maximize the objective"
     )
     parser.add_argument(
-        "--performance-metric", type=str, default="", required=False
+        "--performance-metric",
+        type=str,
+        default="",
+        required=False
     )
     parser.add_argument(
-        "--feature-data", type=Path, required=True, help="Path to feature data"
+        "--feature-data",
+        type=Path,
+        required=True,
+        help="Path to feature data"
     )
     parser.add_argument(
-        "--performance-data", type=Path, required=True, help="Path to performance data"
+        "--performance-data",
+        type=Path,
+        required=True,
+        help="Path to performance data"
     )
     parser.add_argument(
-        "--model-path", type=Path, required=True, help="Path to save model"
+        "--model-path",
+        type=Path,
+        required=True,
+        help="Path to save model"
     )
     return parser
 
