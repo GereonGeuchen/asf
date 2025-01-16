@@ -43,38 +43,33 @@ def parser_function() -> argparse.ArgumentParser:
         type=int,
         default=None,
         required=False,
-        help="Budget for the solvers"
+        help="Budget for the solvers",
     )
     parser.add_argument(
         "--maximize",
         type=bool,
         default=False,
         required=False,
-        help="Maximize the objective"
+        help="Maximize the objective",
     )
-    parser.add_argument(
-        "--performance-metric",
-        type=str,
-        default="",
-        required=False
-    )
+    parser.add_argument("--performance-metric", type=str, default="",required=False)
     parser.add_argument(
         "--feature-data",
         type=Path,
         required=True,
-        help="Path to feature data"
+        help="Path to feature data",
     )
     parser.add_argument(
         "--performance-data",
         type=Path,
         required=True,
-        help="Path to performance data"
+        help="Path to performance data",
     )
     parser.add_argument(
         "--model-path",
         type=Path,
         required=True,
-        help="Path to save model"
+        help="Path to save model",
     )
     return parser
 
