@@ -34,9 +34,9 @@ def parser_function() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--model",
-        default="sklearn.ensemble.RandomForestClassifier",
+        default="RandomForestClassifier",
         help="Model to use for the selector. "
-        "Make sure to specify as a full module path.",
+             "Make sure to specify as a an attribute of sklearn.ensemble.",
     )
     parser.add_argument(
         "--metadata",
@@ -78,7 +78,7 @@ def build_cli_command(
         "--selector",
         type(selector).__name__,
         "--model",
-        f"{model_class.__module__}.{model_class.__name__}",
+        f"{model_class.__name__}",
         "--metadata",
         f'"{selector.metadata.to_dict()}"',
         "--feature-data",
@@ -99,7 +99,7 @@ if __name__ == "__main__":
         metadata = ScenarioMetadata(**ast.literal_eval(metadata))
     # Parse selector in to variable
     selector_class = getattr(selectors, args.selector)
-    model_class = eval(args.model)
+    model_class = getattr(sklearn.ensemble, args.model)
     selector = selector_class(model_class, metadata)
 
     # Parse training data into variables
