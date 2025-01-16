@@ -36,9 +36,9 @@ class MultiClassClassifier(AbstractModelBasedSelector):
             features: DataFrame containing the feature data.
             performance: DataFrame containing the performance data.
         """
-        assert self.algorithm_features is None, (
-            "MultiClassClassifier does not use algorithm features."
-        )
+        assert (
+            self.algorithm_features is None
+        ), "MultiClassClassifier does not use algorithm features."
         self.classifier = self.model_class()
         self.classifier.fit(features, np.argmin(performance.values, axis=1))
 
