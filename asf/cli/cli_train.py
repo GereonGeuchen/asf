@@ -52,7 +52,7 @@ def parser_function() -> argparse.ArgumentParser:
         required=False,
         help="Maximize the objective",
     )
-    parser.add_argument("--performance-metric", type=str, default="",required=False)
+    parser.add_argument("--performance-metric", type=str, default="", required=False)
     parser.add_argument(
         "--feature-data",
         type=Path,
@@ -125,16 +125,18 @@ if __name__ == "__main__":
 
     # Parse training data into variables
     features: pd.DataFrame = pandas_read_map[args.feature_data.suffix](
-        args.feature_data, index_col=0)
+        args.feature_data, index_col=0
+    )
     performance_data: pd.DataFrame = pandas_read_map[args.performance_data.suffix](
-        args.performance_data, index_col=0)
+        args.performance_data, index_col=0
+    )
     # Parse metadata
     metadata = ScenarioMetadata(
         performance_data.columns.to_list(),
         features.columns.to_list(),
         performance_metric=args.performance_metric,
         maximize=args.maximize,
-        budget=args.budget
+        budget=args.budget,
     )
     selector = selector_class(model_class, metadata)
     selector.fit(features, performance_data)
