@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """CLI entry point for training selectors."""
+
 import ast
 import argparse
 from pathlib import Path
