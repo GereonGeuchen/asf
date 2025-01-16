@@ -10,3 +10,4 @@ repos:
     # Run the formatter.
     - id: ruff-format
       types_or: [ python, pyi ]
+      args: [ --target-version=py311 ]
