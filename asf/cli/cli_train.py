@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """CLI entry point for training selectors."""
 
-import ast
 import argparse
 from pathlib import Path
 from functools import partial
@@ -40,20 +39,37 @@ def parser_function() -> argparse.ArgumentParser:
         "Make sure to specify as a an attribute of sklearn.ensemble.",
     )
     parser.add_argument(
-        "--metadata",
-        required=True,
-        type=str,
+        "--budget",
+        type=int,
         default=None,
-        help="Metadata for the selector, represented as dictionary.",
+        required=False,
+        help="Budget for the solvers",
     )
     parser.add_argument(
-        "--feature-data", type=Path, required=True, help="Path to feature data"
+        "--maximize",
+        type=bool,
+        default=False,
+        required=False,
+        help="Maximize the objective",
+    )
+    parser.add_argument("--performance-metric", type=str, default="", required=False)
+    parser.add_argument(
+        "--feature-data",
+        type=Path,
+        required=True,
+        help="Path to feature data",
     )
     parser.add_argument(
-        "--performance-data", type=Path, required=True, help="Path to performance data"
+        "--performance-data",
+        type=Path,
+        required=True,
+        help="Path to performance data",
     )
     parser.add_argument(
-        "--model-path", type=Path, required=True, help="Path to save model"
+        "--model-path",
+        type=Path,
+        required=True,
+        help="Path to save model",
     )
     return parser
 
@@ -84,8 +100,12 @@ def build_cli_command(
         type(selector).__name__,
         "--model",
         f"{model_class.__name__}",
-        "--metadata",
-        f'"{selector.metadata.to_dict()}"',
+        "--budget",
+        str(selector.metadata.budget),
+        "--maximize",
+        str(selector.metadata.maximize),
+        "--performance-metric",
+        str(selector.metadata.performance_metric),
         "--feature-data",
         str(feature_data),
         "--performance-data",
@@ -98,20 +118,27 @@ def build_cli_command(
 if __name__ == "__main__":
     parser = parser_function()
     args = parser.parse_args()
-    metadata = args.metadata
 
-    if metadata:
-        metadata = ScenarioMetadata(**ast.literal_eval(metadata))
     # Parse selector in to variable
     selector_class = getattr(selectors, args.selector)
     model_class = getattr(sklearn.ensemble, args.model)
-    selector = selector_class(model_class, metadata)
 
     # Parse training data into variables
-    features = pandas_read_map[args.feature_data.suffix](args.feature_data, index_col=0)
-    performance_data = pandas_read_map[args.performance_data.suffix](
+    features: pd.DataFrame = pandas_read_map[args.feature_data.suffix](
+        args.feature_data, index_col=0
+    )
+    performance_data: pd.DataFrame = pandas_read_map[args.performance_data.suffix](
         args.performance_data, index_col=0
     )
+    # Parse metadata
+    metadata = ScenarioMetadata(
+        performance_data.columns.to_list(),
+        features.columns.to_list(),
+        performance_metric=args.performance_metric,
+        maximize=args.maximize,
+        budget=args.budget,
+    )
+    selector = selector_class(model_class, metadata)
     selector.fit(features, performance_data)
 
     # Save the model to the specified path
