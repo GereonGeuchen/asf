@@ -42,9 +42,9 @@ class PairwiseClassifier(AbstractModelBasedSelector, AbstractFeatureGenerator):
             features (pd.DataFrame): The feature data for the instances.
             performance (pd.DataFrame): The performance data for the algorithms.
         """
-        assert self.algorithm_features is None, (
-            "PairwiseClassifier does not use algorithm features."
-        )
+        assert (
+            self.algorithm_features is None
+        ), "PairwiseClassifier does not use algorithm features."
         for i, algorithm in enumerate(self.metadata.algorithms):
             for other_algorithm in self.metadata.algorithms[i + 1 :]:
                 algo1_times = performance[algorithm]
@@ -72,10 +72,11 @@ class PairwiseClassifier(AbstractModelBasedSelector, AbstractFeatureGenerator):
             dict: A dictionary mapping instance names to the predicted best algorithm.
         """
         predictions_sum = self.generate_features(features)
+        print(predictions_sum)
         return {
             instance_name: [
                 (
-                    self.metadata.algorithms[np.argmax(predictions_sum[i])],
+                    predictions_sum.loc[instance_name].idxmax(),
                     self.metadata.budget,
                 )
             ]
@@ -92,12 +93,15 @@ class PairwiseClassifier(AbstractModelBasedSelector, AbstractFeatureGenerator):
         Returns:
             np.ndarray: An array of predictions for each instance and algorithm pair.
         """
-        predictions_sum = np.zeros((features.shape[0], len(self.metadata.algorithms)))
+        cnt = 0
+        predictions_sum = pd.DataFrame(
+            0, index=features.index, columns=self.metadata.algorithms
+        )
         for i, algorithm in enumerate(self.metadata.algorithms):
             for j, other_algorithm in enumerate(self.metadata.algorithms[i + 1 :]):
-                prediction = self.classifiers[i].predict(features)
-
-                predictions_sum[prediction, i] += 1
-                predictions_sum[~prediction, j] -= 1
+                prediction = self.classifiers[cnt].predict(features)
+                predictions_sum.loc[prediction, algorithm] += 1
+                predictions_sum.loc[~prediction, other_algorithm] += 1
+                cnt += 1
 
         return predictions_sum
