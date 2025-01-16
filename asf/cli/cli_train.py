@@ -36,7 +36,7 @@ def parser_function() -> argparse.ArgumentParser:
         "--model",
         default="RandomForestClassifier",
         help="Model to use for the selector. "
-             "Make sure to specify as a an attribute of sklearn.ensemble.",
+        "Make sure to specify as a an attribute of sklearn.ensemble.",
     )
     parser.add_argument(
         "--metadata",
@@ -71,7 +71,11 @@ def build_cli_command(
         performance_data: Path to performance data DataFrame
         destination: Path to save model
     """
-    model_class = selector.model_class.args[0] if isinstance(selector.model_class, partial) else selector.model_class
+    model_class = (
+        selector.model_class.args[0]
+        if isinstance(selector.model_class, partial)
+        else selector.model_class
+    )
     return [
         "python",
         Path(__file__).absolute(),
