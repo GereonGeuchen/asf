@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """CLI entry point for training selectors."""
-
 import ast
 import argparse
 from pathlib import Path
+from functools import partial
 
 import pandas as pd
 
@@ -58,7 +58,7 @@ def parser_function() -> argparse.ArgumentParser:
 
 def build_cli_command(
     selector: selectors.AbstractModelBasedSelector,
-    features: Path,
+    feature_data: Path,
     performance_data: Path,
     destination: Path,
 ) -> list[str]:
@@ -66,19 +66,20 @@ def build_cli_command(
 
     Args:
         selector: Selector to train
-        features: Path to feature data DataFrame
+        feature_data: Path to feature data DataFrame
         performance_data: Path to performance data DataFrame
         destination: Path to save model
     """
+    model_class = selector.model_class.args[0] if isinstance(selector.model_class, partial) else selector.model_class
     return [
         "python",
         Path(__file__).absolute(),
         "--selector",
-        selector,
+        type(selector).__name__,
         "--model",
-        str(type(selector.model_class)),
+        f"{model_class.__module__}.{model_class.__name__}",
         "--feature-data",
-        str(features),
+        str(feature_data),
         "--performance-data",
         str(performance_data),
         "--model-path",
