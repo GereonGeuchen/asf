@@ -10,15 +10,16 @@ import pandas as pd
 from asf import selectors
 from asf.scenario.scenario_metadata import ScenarioMetadata
 
+import sklearn
 
 pandas_read_map = {
-    "csv": pd.read_csv,
-    "parquet": pd.read_parquet,
-    "json": pd.read_json,
-    "feather": pd.read_feather,
-    "hdf": pd.read_hdf,
-    "html": pd.read_html,
-    "xml": pd.read_xml,
+    ".csv": pd.read_csv,
+    ".parquet": pd.read_parquet,
+    ".json": pd.read_json,
+    ".feather": pd.read_feather,
+    ".hdf": pd.read_hdf,
+    ".html": pd.read_html,
+    ".xml": pd.read_xml,
 }
 
 
@@ -39,7 +40,7 @@ def parser_function() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--metadata",
-        required=False,
+        required=True,
         type=str,
         default=None,
         help="Metadata for the selector, represented as dictionary.",
@@ -70,11 +71,7 @@ def build_cli_command(
         performance_data: Path to performance data DataFrame
         destination: Path to save model
     """
-    model_class = (
-        selector.model_class.args[0]
-        if isinstance(selector.model_class, partial)
-        else selector.model_class
-    )
+    model_class = selector.model_class.args[0] if isinstance(selector.model_class, partial) else selector.model_class
     return [
         "python",
         Path(__file__).absolute(),
@@ -82,6 +79,8 @@ def build_cli_command(
         type(selector).__name__,
         "--model",
         f"{model_class.__module__}.{model_class.__name__}",
+        "--metadata",
+        f'"{selector.metadata.to_dict()}"',
         "--feature-data",
         str(feature_data),
         "--performance-data",
@@ -94,21 +93,19 @@ def build_cli_command(
 if __name__ == "__main__":
     parser = parser_function()
     args = parser.parse_args()
-    selector_name = (
-        args.selector if "selectors." in args.selector else f"selectors.{args.selector}"
-    )
     metadata = args.metadata
+
     if metadata:
         metadata = ScenarioMetadata(**ast.literal_eval(metadata))
     # Parse selector in to variable
-    selector: selectors.AbstractModelBasedSelector = eval(selector_name)(
-        type(args.model), metadata
-    )
+    selector_class = getattr(selectors, args.selector)
+    model_class = eval(args.model)
+    selector = selector_class(model_class, metadata)
 
     # Parse training data into variables
-    features = pandas_read_map[args.feature_data.suffix](args.feature_data)
+    features = pandas_read_map[args.feature_data.suffix](args.feature_data, index_col=0)
     performance_data = pandas_read_map[args.performance_data.suffix](
-        args.performance_data
+        args.performance_data, index_col=0
     )
     selector.fit(features, performance_data)
 
