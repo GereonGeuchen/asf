@@ -8,3 +8,12 @@ repos:
       types_or: [python, pyi]
       require_serial: true
       additional_dependencies: []
+- repo: local
+  hooks:
+    - id: ruff
+      name: ruff
+      entry: ruff check --target-version=py311 --force-exclude
+      language: python
+      types_or: [python, pyi]
+      require_serial: true
+      additional_dependencies: []
