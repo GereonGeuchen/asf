@@ -55,16 +55,16 @@ class PerformanceModel(AbstractModelBasedSelector, AbstractFeatureGenerator):
             features: DataFrame containing the feature data.
             performance: DataFrame containing the performance data.
         """
-        assert (
-            self.algorithm_features is None
-        ), "PerformanceModel does not use algorithm features."
+        assert self.algorithm_features is None, (
+            "PerformanceModel does not use algorithm features."
+        )
         if self.normalize == "log":
             performance = np.log10(performance + 1e-6)
 
         if self.use_multi_target:
-            assert (
-                self.algorithm_features is None
-            ), "Multi-target regression does not use algorithm features."
+            assert self.algorithm_features is None, (
+                "Multi-target regression does not use algorithm features."
+            )
             self.regressors = self.model_class()
             self.regressors.fit(features, performance)
         else:
