@@ -23,7 +23,11 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
+dependencies = [
+  'scikit-learn',
+  'pandas',
+  'xgboost',
+]
 
-[tool.setuptools.dynamic]
-dependencies = {file = ["requirements.txt"]}
-
+[project.optional-dependencies]
+aspeed = ['clingo']
