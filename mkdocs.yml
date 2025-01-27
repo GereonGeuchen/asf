@@ -17,3 +17,7 @@ nav:
   - Installation: installation.md
   - Contributing: contributing.md
   - License: license.md
+
+extra:
+  version:
+    provider: mike
