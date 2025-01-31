@@ -23,6 +23,7 @@ def test_scenario_metadata(dummy_metadata):
         "algorithms": ["algo1", "algo2", "algo3"],
         "budget": None,
         "features": ["feature1", "feature2", "feature3"],
+        "feature_groups": {"group1": ["feature1", "feature2"], "group2": ["feature3"]},
         "maximize": False,
         "performance_metric": "time",
     }
