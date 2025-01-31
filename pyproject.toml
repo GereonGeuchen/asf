@@ -30,4 +30,5 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-aspeed = ['clingo']
+aspeed = [ 'clingo' ]
+aslib = [ 'pyyaml' ]
