@@ -16,6 +16,7 @@ class ScenarioMetadata:
             "algorithms": self.algorithms,
             "features": self.features,
             "performance_metric": self.performance_metric,
+            "feature_groups": self.feature_groups,
             "maximize": self.maximize,
             "budget": self.budget,
         }
