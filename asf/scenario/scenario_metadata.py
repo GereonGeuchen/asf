@@ -6,6 +6,7 @@ class ScenarioMetadata:
     algorithms: list[str]
     features: list[str]
     performance_metric: str | list[str]
+    feature_groups: dict[str, list[str]]
     maximize: bool
     budget: int | None
 
