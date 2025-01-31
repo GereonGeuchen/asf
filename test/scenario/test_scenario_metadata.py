@@ -9,6 +9,7 @@ def dummy_metadata():
         algorithms=["algo1", "algo2", "algo3"],
         features=["feature1", "feature2", "feature3"],
         performance_metric="time",
+        feature_groups={"group1": ["feature1", "feature2"], "group2": ["feature3"]},
         maximize=False,
         budget=None,
     )
