@@ -37,6 +37,7 @@ def dummy_metadata():
     return ScenarioMetadata(
         algorithms=["algo1", "algo2", "algo3"],
         features=["feature1", "feature2", "feature3"],
+        feature_groups={"group1": ["feature1", "feature2"], "group2": ["feature3"]},
         performance_metric="time",
         maximize=False,
         budget=None,
