@@ -72,7 +72,7 @@ class PairwiseClassifier(AbstractModelBasedSelector, AbstractFeatureGenerator):
             dict: A dictionary mapping instance names to the predicted best algorithm.
         """
         predictions_sum = self.generate_features(features)
-        print(predictions_sum)
+
         return {
             instance_name: [
                 (

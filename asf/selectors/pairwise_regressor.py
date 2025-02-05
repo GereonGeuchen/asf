@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 from asf.selectors.abstract_model_based_selector import AbstractModelBasedSelector
 from asf.selectors.feature_generator import (
@@ -69,7 +68,7 @@ class PairwiseRegressor(AbstractModelBasedSelector, AbstractFeatureGenerator):
         return {
             instance_name: [
                 (
-                    self.metadata.algorithms[np.argmin(predictions_sum[i])],
+                    predictions_sum.loc[instance_name].idxmin(),
                     self.metadata.budget,
                 )
             ]
@@ -86,12 +85,16 @@ class PairwiseRegressor(AbstractModelBasedSelector, AbstractFeatureGenerator):
         Returns:
             np.ndarray: An array of predictions for each instance and algorithm pair.
         """
-        predictions_sum = np.zeros((features.shape[0], len(self.metadata.algorithms)))
+
+        cnt = 0
+        predictions_sum = pd.DataFrame(
+            0, index=features.index, columns=self.metadata.algorithms
+        )
         for i, algorithm in enumerate(self.metadata.algorithms):
             for j, other_algorithm in enumerate(self.metadata.algorithms[i + 1 :]):
-                prediction = self.regressors[i].predict(features)
-
-                predictions_sum[:, i] += prediction
-                predictions_sum[:, j] -= prediction
+                prediction = self.regressors[cnt].predict(features)
+                predictions_sum[algorithm] += prediction
+                predictions_sum[other_algorithm] -= prediction
+                cnt += 1
 
         return predictions_sum
