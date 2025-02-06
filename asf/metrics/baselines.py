@@ -20,9 +20,9 @@ class SingleBestSolver(AbstractMetric):
         """
         perf_sum = performance.sum(axis=0)
         if metadata.maximize:
-            return perf_sum.min() / len(schedules)
+            return perf_sum.min()
         else:
-            return perf_sum.min() / len(schedules)
+            return perf_sum.min()
 
 
 class VirtualBestSolver(AbstractMetric):
@@ -43,9 +43,9 @@ class VirtualBestSolver(AbstractMetric):
             pd.Series: The selected solvers.
         """
         if metadata.maximize:
-            return performance.max(axis=1).sum() / len(schedules)
+            return performance.max(axis=1).sum()
         else:
-            return performance.min(axis=1).sum() / len(schedules)
+            return performance.min(axis=1).sum()
 
 
 class RunningTimeSelectorPerformance(AbstractMetric):
@@ -80,7 +80,7 @@ class RunningTimeSelectorPerformance(AbstractMetric):
                 total_time += sum(allocated_times.values())
             else:
                 total_time += metadata.budget * self.par
-        return total_time / len(schedules)
+        return total_time
 
 
 class RunningTimeClosedGap(AbstractMetric):

@@ -2,7 +2,9 @@ import asf.scenario.aslib_reader as aslib_reader
 from asf.selectors.abstract_selector import AbstractSelector
 from asf.selectors import PairwiseClassifier, PairwiseRegressor
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from asf.predictors.sklearn_wrapper import SklearnWrapper
 from asf.metrics import RunningTimeClosedGap
+from functools import partial
 
 
 def train_selector(scenario_name: str, selector_class: AbstractSelector, model) -> None:
@@ -27,6 +29,9 @@ def train_selector(scenario_name: str, selector_class: AbstractSelector, model) 
     selector = selector_class(model, metadata)
 
     total_score = 0
+
+    all_schedules = {}
+    cg = RunningTimeClosedGap(10)
     # Perform 10-fold cross-validation
     for i in range(10):
         X_train, X_test = features[cv["fold"] != i + 1], features[cv["fold"] == i + 1]
@@ -38,13 +43,14 @@ def train_selector(scenario_name: str, selector_class: AbstractSelector, model) 
         # Train the selector
         selector.fit(X_train, y_train)
         schedules = selector.predict(X_test)
+        all_schedules.update(schedules)
         # Evaluate the selector
-        cg = RunningTimeClosedGap(10)
+
         score = cg(schedules, y_test, metadata)
         total_score += score
         print(f"Fold score: {score}")
 
-    return total_score / 10
+    return cg(all_schedules, performance, metadata)
 
 
 if __name__ == "__main__":
@@ -55,6 +61,12 @@ if __name__ == "__main__":
     )
     print(
         train_selector(
-            "bench/aslib_data/SAT12-ALL", PairwiseRegressor, RandomForestRegressor
+            "bench/aslib_data/SAT12-INDU",
+            PairwiseRegressor,
+            partial(
+                SklearnWrapper,
+                RandomForestRegressor,
+                init_params={"n_estimators": 100, "max_features": "sqrt"},
+            ),
         )
     )
