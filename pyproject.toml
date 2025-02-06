@@ -37,5 +37,7 @@ aslib = [ 'pyyaml' ]
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools]
-packages = ["asf"]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["asf*"]
+
