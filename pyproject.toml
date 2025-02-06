@@ -32,3 +32,6 @@ dependencies = [
 [project.optional-dependencies]
 aspeed = [ 'clingo' ]
 aslib = [ 'pyyaml' ]
+
+[tool.setuptools]
+py-modules = [ 'asf' ]
