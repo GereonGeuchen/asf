@@ -34,4 +34,4 @@ aspeed = [ 'clingo' ]
 aslib = [ 'pyyaml' ]
 
 [tool.setuptools]
-py-modules = [ 'asf' ]
+py-modules = [ ]
