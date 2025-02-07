@@ -1,9 +1,10 @@
 import asf.scenario.aslib_reader as aslib_reader
 from asf.selectors.abstract_selector import AbstractSelector
-from asf.selectors import PairwiseClassifier, PairwiseRegressor
+from asf.selectors import PairwiseClassifier, PairwiseRegressor, SimpleRanking
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from asf.predictors.sklearn_wrapper import SklearnWrapper
 from asf.metrics import RunningTimeClosedGap
+from xgboost import XGBRanker
 from functools import partial
 
 
@@ -56,7 +57,22 @@ def train_selector(scenario_name: str, selector_class: AbstractSelector, model) 
 if __name__ == "__main__":
     print(
         train_selector(
-            "bench/aslib_data/SAT12-ALL", PairwiseClassifier, RandomForestClassifier
+            "bench/aslib_data/SAT12-INDU",
+            SimpleRanking,
+            partial(
+                SklearnWrapper,
+                XGBRanker,
+                init_params={
+                    "objective": "rank:ndcg",
+                    "lambdarank_pair_method": "topk",
+                    "lambdarank_num_pair_per_sample": 10,
+                },
+            ),
+        )
+    )
+    print(
+        train_selector(
+            "bench/aslib_data/SAT12-INDU", PairwiseClassifier, RandomForestClassifier
         )
     )
     print(

@@ -1,5 +1,7 @@
+import numpy as np
 import pandas as pd
-from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder
+
 from asf.selectors.abstract_model_based_selector import AbstractModelBasedSelector
 
 
@@ -39,31 +41,54 @@ class SimpleRanking(AbstractModelBasedSelector):
             performance: DataFrame containing the performance data.
         """
         if self.algorithm_features is None:
-            encoder = OneHotEncoder()
+            encoder = OneHotEncoder(sparse_output=False)
             self.algorithm_features = pd.DataFrame(
-                encoder.fit_transform(self.metadata.algorithms),
+                encoder.fit_transform(
+                    np.array(self.metadata.algorithms).reshape(-1, 1)
+                ),
                 index=self.metadata.algorithms,
+                columns=[f"algo_{i}" for i in range(len(self.metadata.algorithms))],
             )
+
+        performance = performance[self.metadata.algorithms]
+        features = features[self.metadata.features]
 
         total_features = pd.merge(
             features.reset_index(), self.algorithm_features.reset_index(), how="cross"
         )
-        qid = total_features["index_x"]
-        qid = pd.get_dummies(qid)
-        total_features = pd.merge(
-            features.reset_index(), self.algorithm_features.reset_index(), how="cross"
-        )
+
+        stacked_performance = performance.stack().reset_index()
+        stacked_performance.columns = [
+            performance.index.name,
+            performance.columns.name,
+            "performance",
+        ]
         merged = total_features.merge(
-            performance.stack().reset_index(),
-            right_on=["level_0", "level_1"],
-            left_on=["index_x", "index_y"],
+            stacked_performance,
+            right_on=[performance.index.name, performance.columns.name],
+            left_on=[features.index.name, self.algorithm_features.index.name],
             how="left",
         )
-        merged["rank"] = merged.groupby("index_x").rank(ascending=True, method="min")[0]
+
+        gdfs = []
+        for group, gdf in merged.groupby(features.index.name):
+            gdf["rank"] = gdf["performance"].rank(ascending=True, method="min")
+            gdfs.append(gdf)
+        merged = pd.concat(gdfs)
+
         total_features = merged.drop(
-            columns=["level_0", "level_1", 0, "index_x", "index_y"]
+            columns=[
+                performance.index.name,
+                performance.columns.name,
+                "performance",
+                "rank",
+                self.algorithm_features.index.name,
+            ]
         )
-        print(total_features)
+        qid = merged[features.index.name].values
+        encoder = OrdinalEncoder()
+        qid = encoder.fit_transform(qid.reshape(-1, 1)).flatten()
+
         self.classifier = self.model_class()
         self.classifier.fit(
             total_features,
@@ -81,9 +106,28 @@ class SimpleRanking(AbstractModelBasedSelector):
         Returns:
             A dictionary mapping instance names to the predicted best algorithm.
         """
-        predictions = self.classifier.predict(features)
 
-        return {
-            instance_name: self.metadata.algorithms[predictions[i]]
-            for i, instance_name in enumerate(features.index)
-        }
+        features = features[self.metadata.features]
+
+        total_features = pd.merge(
+            features.reset_index(), self.algorithm_features.reset_index(), how="cross"
+        )
+
+        predictions = self.classifier.predict(
+            total_features[
+                list(self.metadata.features) + list(self.algorithm_features.columns)
+            ]
+        )
+
+        scheds = {}
+        for instance_name in features.index.unique():
+            ids = total_features[features.index.name] == instance_name
+            chosen = predictions[ids].argmin()
+            scheds[instance_name] = [
+                (
+                    total_features.loc[ids].iloc[chosen]["algorithm"],
+                    self.metadata.budget,
+                )
+            ]
+
+        return scheds
