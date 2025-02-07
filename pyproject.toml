@@ -32,6 +32,7 @@ dependencies = [
 [project.optional-dependencies]
 aspeed = [ 'clingo' ]
 aslib = [ 'pyyaml' ]
+nn = [ 'torch' ]
 
 [build-system]
 requires = ["setuptools", "wheel"]
