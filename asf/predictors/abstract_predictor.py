@@ -1,7 +1,8 @@
 from typing import Any
+from abc import ABC, abstractmethod
 
 
-class AbstractPredictor:
+class AbstractPredictor(ABC):
     """
     Abstract base class for all predictors.
 
@@ -23,6 +24,7 @@ class AbstractPredictor:
         """
         pass
 
+    @abstractmethod
     def fit(self, X: Any, Y: Any):
         """
         Fit the model to the data.
@@ -36,6 +38,7 @@ class AbstractPredictor:
         """
         pass
 
+    @abstractmethod
     def predict(self, X: Any) -> Any:
         """
         Predict using the model.
@@ -52,6 +55,7 @@ class AbstractPredictor:
         """
         pass
 
+    @abstractmethod
     def save(self, file_path: str):
         """
         Save the model to a file.
@@ -63,6 +67,7 @@ class AbstractPredictor:
         """
         pass
 
+    @abstractmethod
     def load(self, file_path: str):
         """
         Load the model from a file.

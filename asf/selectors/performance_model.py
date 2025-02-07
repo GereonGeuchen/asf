@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import inspect
 
 from asf.selectors.abstract_model_based_selector import AbstractModelBasedSelector
 from asf.selectors.feature_generator import (
@@ -61,18 +62,19 @@ class PerformanceModel(AbstractModelBasedSelector, AbstractFeatureGenerator):
         if self.normalize == "log":
             performance = np.log10(performance + 1e-6)
 
+        regressor_init_args = {}
+        if "input_size" in inspect.signature(self.model_class).parameters.keys():
+            regressor_init_args["input_size"] = features.shape[1]
+
         if self.use_multi_target:
-            assert self.algorithm_features is None, (
-                "Multi-target regression does not use algorithm features."
-            )
-            self.regressors = self.model_class()
+            self.regressors = self.model_class(**regressor_init_args)
             self.regressors.fit(features, performance)
         else:
             if self.algorithm_features is None:
                 for i, algorithm in enumerate(self.metadata.algorithms):
                     algo_times = performance.iloc[:, i]
 
-                    cur_model = self.model_class()
+                    cur_model = self.model_class(**regressor_init_args)
                     cur_model.fit(features, algo_times)
                     self.regressors.append(cur_model)
             else:
@@ -89,7 +91,7 @@ class PerformanceModel(AbstractModelBasedSelector, AbstractFeatureGenerator):
                     )
                     train_data.append(data)
                 train_data = pd.concat(train_data)
-                self.regressors = self.model_class()
+                self.regressors = self.model_class(**regressor_init_args)
                 self.regressors.fit(train_data.iloc[:, :-1], train_data.iloc[:, -1])
 
     def _predict(self, features: pd.DataFrame):
