@@ -3,9 +3,9 @@ from asf.selectors.abstract_selector import AbstractSelector
 from asf.selectors import PairwiseClassifier, PairwiseRegressor, SimpleRanking
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from asf.predictors.sklearn_wrapper import SklearnWrapper
-from asf.metrics import RunningTimeClosedGap
 from xgboost import XGBRanker
 from functools import partial
+from asf.metrics.baselines import running_time_closed_gap
 
 
 def train_selector(scenario_name: str, selector_class: AbstractSelector, model) -> None:
@@ -32,7 +32,7 @@ def train_selector(scenario_name: str, selector_class: AbstractSelector, model) 
     total_score = 0
 
     all_schedules = {}
-    cg = RunningTimeClosedGap(10)
+    par = 10
     # Perform 10-fold cross-validation
     for i in range(10):
         X_train, X_test = features[cv["fold"] != i + 1], features[cv["fold"] == i + 1]
@@ -47,11 +47,11 @@ def train_selector(scenario_name: str, selector_class: AbstractSelector, model) 
         all_schedules.update(schedules)
         # Evaluate the selector
 
-        score = cg(schedules, y_test, metadata)
+        score = running_time_closed_gap(schedules, y_test, metadata, par)
         total_score += score
         print(f"Fold score: {score}")
 
-    return cg(all_schedules, performance, metadata)
+    return running_time_closed_gap(all_schedules, performance, metadata, par)
 
 
 if __name__ == "__main__":
@@ -63,9 +63,9 @@ if __name__ == "__main__":
                 SklearnWrapper,
                 XGBRanker,
                 init_params={
-                    "objective": "rank:ndcg",
-                    "lambdarank_pair_method": "topk",
-                    "lambdarank_num_pair_per_sample": 10,
+                    "objective": "rank:pairwise",
+                    # "lambdarank_pair_method": "topk",
+                    # "lambdarank_num_pair_per_sample": 10,
                 },
             ),
         )
