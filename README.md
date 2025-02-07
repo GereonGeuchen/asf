@@ -1,3 +1,6 @@
+[![PyPI - Version](https://img.shields.io/pypi/v/asf-lib)](https://pypi.org/project/asf-lib/)
+[![Python versions](https://img.shields.io/pypi/pyversions/asf-lib)](https://pypi.org/project/asf-lib/)
+[![License](https://img.shields.io/pypi/l/asf-lib?color=informational)](LICENSE)
 [![Python application](https://github.com/hadarshavit/asf/actions/workflows/python-app.yml/badge.svg)](https://github.com/hadarshavit/asf/actions/workflows/python-app.yml)
 
 # Algorithm Selection Framework (ASF)
