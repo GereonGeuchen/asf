@@ -50,6 +50,7 @@ def read_scenario(
 
     metadata = ScenarioMetadata(
         algorithms=algorithms,
+        algorith_features=None,
         features=features,
         performance_metric=performance_metric,
         feature_groups=feature_groups,

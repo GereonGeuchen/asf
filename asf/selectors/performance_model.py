@@ -67,6 +67,9 @@ class PerformanceModel(AbstractModelBasedSelector, AbstractFeatureGenerator):
             regressor_init_args["input_size"] = features.shape[1]
 
         if self.use_multi_target:
+            assert self.algorithm_features is None, (
+                "PerformanceModel does not use algorithm features for multi-target regression."
+            )
             self.regressors = self.model_class(**regressor_init_args)
             self.regressors.fit(features, performance)
         else:
@@ -137,7 +140,7 @@ class PerformanceModel(AbstractModelBasedSelector, AbstractFeatureGenerator):
                     prediction = self.regressors[i].predict(features)
                     predictions[:, i] = prediction
             else:
-                prediction = np.zeros(
+                predictions = np.zeros(
                     (features.shape[0], len(self.metadata.algorithms))
                 )
                 for i, algorithm in enumerate(self.metadata.algorithms):

@@ -7,11 +7,25 @@ def wmse(input, target, weights):
     )
 
 
-def bpr_loss(y_pred, y_pred_s, y_pred_l, yc, ys, yl):
+def mse(y_pred, y_pred_s, y_pred_l, yc, ys, yl):
     return (
-        -torch.log(torch.sigmoid(y_pred - y_pred_s))
-        - torch.log(torch.sigmoid(y_pred_l - y_pred))
-        - torch.log(torch.sigmoid(y_pred_l - y_pred_s))
+        torch.nn.functional.mse_loss(y_pred, yc)
+        + torch.nn.functional.mse_loss(y_pred_s, ys)
+        + torch.nn.functional.mse_loss(y_pred_l, yl)
+    )
+
+
+def bpr_loss(y_pred, y_pred_s, y_pred_l, yc, ys, yl):
+    return torch.nn.functional.binary_cross_entropy(
+        torch.cat(
+            [
+                torch.sigmoid(y_pred - y_pred_s),
+                torch.sigmoid(y_pred_l - y_pred),
+                torch.sigmoid(y_pred_l - y_pred_s),
+            ],
+            0,
+        ),
+        torch.ones(3 * yc.shape[0], 1).to(yc.device),
     )
 
 

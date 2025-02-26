@@ -25,7 +25,7 @@ class AbstractPredictor(ABC):
         pass
 
     @abstractmethod
-    def fit(self, X: Any, Y: Any):
+    def fit(self, X: Any, Y: Any, **kwargs):
         """
         Fit the model to the data.
 
@@ -39,7 +39,7 @@ class AbstractPredictor(ABC):
         pass
 
     @abstractmethod
-    def predict(self, X: Any) -> Any:
+    def predict(self, X: Any, **kwargs) -> Any:
         """
         Predict using the model.
 

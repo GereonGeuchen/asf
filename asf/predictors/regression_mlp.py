@@ -99,18 +99,11 @@ class RegressionMLP(AbstractPredictor):
             DataFrame containing the predicted performance data.
         """
         self.model.eval()
-        dataset = RegressionDataset(features)
-        dataloader = torch.utils.data.DataLoader(
-            dataset, batch_size=self.batch_size, shuffle=False
-        )
 
-        predictions = []
-        for i, X in enumerate(dataloader):
-            X = X.to(self.device)
-            y_pred = self.model(X)
-            predictions.append(y_pred)
+        features = torch.from_numpy(features.values).to(self.device)
+        predictions = self.model(features).detach().numpy()
 
-        return pd.concat(predictions)
+        return predictions
 
     def save(self, file_path):
         torch.save(self.model, file_path)

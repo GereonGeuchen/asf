@@ -1,5 +1,6 @@
 import torch
 import pandas as pd
+import numpy as np
 
 
 class RegressionDataset(torch.utils.data.Dataset):
@@ -18,26 +19,67 @@ class RegressionDataset(torch.utils.data.Dataset):
 
 class RankingDataset(torch.utils.data.Dataset):
     def __init__(
-        self, features: pd.DataFrame, performance: pd.DataFrame, dtype=torch.float32
+        self,
+        features: pd.DataFrame,
+        performance: pd.DataFrame,
+        algorithm_features: pd.DataFrame,
+        dtype=torch.float32,
     ):
-        self.features = torch.from_numpy(features.sort_index().to_numpy()).to(dtype)
-        self.performance = torch.from_numpy(performance.sort_index().to_numpy()).to(
-            dtype
+        performance = performance.melt(
+            ignore_index=False, var_name="algo", value_name="performance"
         )
+        all = features.merge(performance, left_index=True, right_index=True)
+        all = all.merge(algorithm_features, left_on="algo", right_index=True)
+        all = all.sort_index()
+        self.all = all
+
+        print(self.all)
+        self.features_cols = features.columns.to_list()
+        self.algorithm_features_cols = algorithm_features.columns.to_list()
 
     def __len__(self):
-        return len(self.features)
+        return len(self.all.index.unique())
 
     def __getitem__(self, idx):
-        idx_perf = self.performance[idx]
+        iid = self.all.index.unique()[idx]
+        data = self.all.loc[iid]
 
-        smaller = torch.argwhere(idx_perf > self.performance)
-        smaller = smaller[torch.randint(0, len(smaller), 1)]
-        larger = torch.argwhere(idx_perf < self.performance)
-        larger = larger[torch.randint(0, len(larger), 1)]
+        main = np.random.randint(0, len(data))
 
-        return (self.features[idx], self.features[smaller], self.features[larger]), (
-            self.performance[idx],
-            self.performance[smaller],
-            self.performance[larger],
+        main_point = data.iloc[main]
+        smaller = data[data["performance"] < main_point["performance"]]
+        if len(smaller) == 0:
+            smaller = main_point
+        else:
+            smaller = smaller.sample(1).iloc[0]
+        larger = data[data["performance"] > main_point["performance"]]
+        if len(larger) == 0:
+            larger = main_point
+        else:
+            larger = larger.sample(1).iloc[0]
+
+        main_feats = (
+            main_point[self.algorithm_features_cols + self.features_cols]
+            .to_numpy()
+            .astype(np.float32)
+        )
+        smaller_feats = (
+            smaller[self.algorithm_features_cols + self.features_cols]
+            .to_numpy()
+            .astype(np.float32)
+        )
+        larger_feats = (
+            larger[self.algorithm_features_cols + self.features_cols]
+            .to_numpy()
+            .astype(np.float32)
+        )
+
+        main_feats = torch.tensor(main_feats).to(torch.float32)
+        smaller_feats = torch.tensor(smaller_feats).to(torch.float32)
+        larger_feats = torch.tensor(larger_feats).to(torch.float32)
+
+        return (main_feats, smaller_feats, larger_feats), (
+            main_point["performance"],
+            smaller["performance"],
+            larger["performance"],
         )

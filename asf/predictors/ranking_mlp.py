@@ -1,5 +1,5 @@
 import torch
-from asf.predictors.utils.datasets import RankingDataset, RegressionDataset
+from asf.predictors.utils.datasets import RankingDataset
 from asf.predictors.utils.mlp import get_mlp
 from asf.predictors.utils.losses import bpr_loss
 from asf.predictors.abstract_predictor import AbstractPredictor
@@ -15,7 +15,7 @@ class RankingMLP(AbstractPredictor):
         loss: Callable | None = bpr_loss,
         optimizer: torch.optim.Optimizer | None = torch.optim.Adam,
         batch_size: int = 128,
-        epochs: int = 10,
+        epochs: int = 500,
         seed: int = 42,
         device: str = "cpu",
         compile=True,
@@ -51,13 +51,23 @@ class RankingMLP(AbstractPredictor):
         if compile:
             self.model = torch.compile(self.model)
 
-    def _get_dataloader(self, features: pd.DataFrame, performance: pd.DataFrame):
-        dataset = RankingDataset(features, performance)
+    def _get_dataloader(
+        self,
+        features: pd.DataFrame,
+        performance: pd.DataFrame,
+        algorithm_features: pd.DataFrame,
+    ):
+        dataset = RankingDataset(features, performance, algorithm_features)
         return torch.utils.data.DataLoader(
-            dataset, batch_size=self.batch_size, shuffle=True
+            dataset, batch_size=self.batch_size, shuffle=True, num_workers=4
         )
 
-    def fit(self, features: pd.DataFrame, performance: pd.DataFrame):
+    def fit(
+        self,
+        features: pd.DataFrame,
+        performance: pd.DataFrame,
+        algorithm_features: pd.DataFrame,
+    ):
         """
         Fits the model to the given feature and performance data.
 
@@ -66,15 +76,31 @@ class RankingMLP(AbstractPredictor):
             performance: DataFrame containing the performance data.
         """
 
-        dataloader = self._get_dataloader(features, performance)
+        print(self.model)
+        dataloader = self._get_dataloader(features, performance, algorithm_features)
 
         optimizer = self.optimizer(self.model.parameters())
-
-        for epoch in range(self.epochs):
+        self.model.train()
+        for epoch in range(1000):  # self.epochs):
+            total_loss = 0
             for i, ((Xc, Xs, Xl), (yc, ys, yl)) in enumerate(dataloader):
                 Xc, Xs, Xl = Xc.to(self.device), Xs.to(self.device), Xl.to(self.device)
                 yc, ys, yl = yc.to(self.device), ys.to(self.device), yl.to(self.device)
 
+                yc = yc.float().unsqueeze(1)
+                ys = ys.float().unsqueeze(1)
+                yl = yl.float().unsqueeze(1)
+
+                # yc = torch.log10(yc)
+                # ys = torch.log10(ys)
+                # yl = torch.log10(yl)
+                # print(Xc)
+                # print(Xs)
+                # print(Xl)
+
+                # print(yc)
+                # print(ys)
+                # print(yl)
                 optimizer.zero_grad()
 
                 y_pred = self.model(Xc)
@@ -82,9 +108,12 @@ class RankingMLP(AbstractPredictor):
                 y_pred_l = self.model(Xl)
 
                 loss = self.loss(y_pred, y_pred_s, y_pred_l, yc, ys, yl)
+                # loss = torch.nn.functional.mse_loss(y_pred, yc)
+                total_loss += loss.item()
 
                 loss.backward()
                 optimizer.step()
+            print(f"Epoch {epoch}, Loss: {total_loss / len(dataloader)}")
 
         return self
 
@@ -98,18 +127,12 @@ class RankingMLP(AbstractPredictor):
         Returns:
             DataFrame containing the predicted performance data.
         """
-        dataset = RegressionDataset(features)
-        dataloader = torch.utils.data.DataLoader(
-            dataset, batch_size=self.batch_size, shuffle=False
-        )
+        self.model.eval()
 
-        predictions = []
-        for i, X in enumerate(dataloader):
-            X = X.to(self.device)
-            y_pred = self.model(X)
-            predictions.append(y_pred)
+        features = torch.from_numpy(features.values).to(self.device).float()
+        predictions = self.model(features).detach().numpy()
 
-        return pd.concat(predictions)
+        return predictions
 
     def save(self, file_path):
         torch.save(self.model, file_path)
