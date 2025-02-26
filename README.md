@@ -7,6 +7,8 @@
 
 ASF is a powerful library for algorithm selection and performance prediction. It allows users to easily create and use algorithm selectors with minimal code.
 
+> NOTE: ASF is still under construction (early alpha). Therefore, not only the API can change, but there might be some bugs in the implementations of the selectors. For the common methods (multi class classification, pairwise regression / classification as well as simple ranking) we checked the performance and the implementation and they can be safely used. We will release in the near future a benchmark of all methods on ASlib scenarios which will validate the performance.
+
 ## Features
 
 - Easy-to-use API for creating algorithm selectors
