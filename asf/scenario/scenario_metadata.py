@@ -5,11 +5,11 @@ from dataclasses import dataclass
 class ScenarioMetadata:
     algorithms: list[str]
     features: list[str]
-    algorith_features: list[str] | None = None
     performance_metric: str | list[str]
     feature_groups: dict[str, dict[str, list[str]]]
     maximize: bool
     budget: int | None
+    algorithm_features: list[str] | None = None
 
     def to_dict(self):
         """Converts the metadata into a dictionary format."""
