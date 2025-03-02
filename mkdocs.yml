@@ -1,4 +1,8 @@
 site_name: Algorithm Selection Framework (ASF)
+site_description: ASF is a powerful library for algorithm selection and performance prediction.
+site_author: Your Name
+site_url: https://hadarshavit.github.io/asf/
+site_keywords: ASF, algorithm selection, performance prediction, machine learning
 theme:
   name: material
 
@@ -21,3 +25,7 @@ nav:
 extra:
   version:
     provider: mike
+
+google_analytics:
+  - G-E4SDS0XQE5 #
+  - auto
