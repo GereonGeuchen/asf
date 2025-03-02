@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for git-based deployments with Mike
       - name: Configure Git Credentials
         run: |
           git config user.name github-actions[bot]
@@ -26,5 +28,15 @@ jobs:
           path: .cache
           restore-keys: |
             mkdocs-material-
-      - run: pip install mkdocs mkdocs-material mkdocstrings mkdocstrings-python
-      - run: mkdocs gh-deploy --force
+      - name: Install dependencies
+        run: pip install mkdocs mkdocs-material mkdocstrings mkdocstrings-python mike toml
+      - name: Extract version from pyproject.toml
+        run: |
+          python -c "
+          import toml
+          import os
+          with open(os.environ['GITHUB_ENV'], 'a') as env:
+            env.write(f\"VERSION={toml.load('pyproject.toml')['project']['version']}\n\")
+          "
+      - name: Deploy docs with Mike
+        run: mike deploy --push --update-aliases ${{ env.VERSION }} latest
