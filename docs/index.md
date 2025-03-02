@@ -6,18 +6,9 @@
   "description": "A powerful library for algorithm selection and performance prediction",
   "applicationCategory": "DeveloperApplication",
   "operatingSystem": "Any",
-  "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "USD"
-  }
 }
 </script>
 
----
-title: Algorithm Selection Framework (ASF)
-description: ASF is a powerful library for algorithm selection and performance prediction. Learn how to create and use algorithm selectors with minimal code.
----
 
 # Algorithm Selection Framework (ASF)
 
