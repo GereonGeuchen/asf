@@ -25,7 +25,6 @@ nav:
 extra:
   version:
     provider: mike
-
-google_analytics:
-  - G-E4SDS0XQE5 #
-  - auto
+  analytics:
+    provider: google
+    property: G-E4SDS0XQE5
