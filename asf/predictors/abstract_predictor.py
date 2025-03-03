@@ -78,3 +78,27 @@ class AbstractPredictor(ABC):
             Path to the file from which the model will be loaded.
         """
         pass
+
+    @abstractmethod
+    def get_configuration_space(self):
+        """
+        Get the configuration space for the predictor.
+
+        Returns
+        -------
+        ConfigurationSpace
+            The configuration space for the predictor.
+        """
+        raise NotImplementedError("get_configuration_space() not implemented")
+
+    @staticmethod
+    def get_from_configuration(configuration):
+        """
+        Get the configuration space for the predictor.
+
+        Returns
+        -------
+        AbstractPredictor
+            The predictor.
+        """
+        raise NotImplementedError("get_from_configuration() not implemented")

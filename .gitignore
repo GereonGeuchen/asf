@@ -174,3 +174,5 @@ cython_debug/
 .pypirc
 
 aslib_data/** 
+test*.ipynb
+test*.py
