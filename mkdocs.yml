@@ -19,6 +19,9 @@ theme:
 plugins:
   - search
   - mkdocstrings
+  - redirects:
+      redirect_maps:
+        '': 'latest/'
 
 nav:
   - Home: index.md

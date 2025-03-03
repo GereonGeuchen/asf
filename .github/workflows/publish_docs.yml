@@ -29,7 +29,7 @@ jobs:
           restore-keys: |
             mkdocs-material-
       - name: Install dependencies
-        run: pip install mkdocs mkdocs-material mkdocstrings mkdocstrings-python mike toml
+        run: pip install mkdocs mkdocs-material mkdocstrings mkdocstrings-python mike toml mkdocs-redirects
       - name: Extract version from pyproject.toml
         run: |
           python -c "
