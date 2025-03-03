@@ -79,7 +79,6 @@ class AbstractPredictor(ABC):
         """
         pass
 
-    @abstractmethod
     def get_configuration_space(self):
         """
         Get the configuration space for the predictor.
@@ -89,7 +88,9 @@ class AbstractPredictor(ABC):
         ConfigurationSpace
             The configuration space for the predictor.
         """
-        raise NotImplementedError("get_configuration_space() not implemented")
+        raise NotImplementedError(
+            "get_configuration_space() is not implemented for this predictor"
+        )
 
     @staticmethod
     def get_from_configuration(configuration):
@@ -101,4 +102,6 @@ class AbstractPredictor(ABC):
         AbstractPredictor
             The predictor.
         """
-        raise NotImplementedError("get_from_configuration() not implemented")
+        raise NotImplementedError(
+            "get_from_configuration() is not implemented for this predictor"
+        )
