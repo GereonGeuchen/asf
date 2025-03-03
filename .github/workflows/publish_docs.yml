@@ -40,3 +40,5 @@ jobs:
           "
       - name: Deploy docs with Mike
         run: mike deploy --push --update-aliases ${{ env.VERSION }} latest
+      - name: "Set default"
+        run: mike set-default latest
