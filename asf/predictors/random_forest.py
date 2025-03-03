@@ -38,12 +38,14 @@ class RandomForestWrapper(SklearnWrapper):
         return cs
 
     @staticmethod
-    def get_from_configuration(configuration):
+    def get_from_configuration(configuration, additional_params={}):
         rf_params = {
             "n_estimators": configuration["rf:n_estimators"],
             "min_samples_split": configuration["rf:min_samples_split"],
             "min_samples_leaf": configuration["rf:min_samples_leaf"],
             "max_features": configuration["rf:max_features"],
             "bootstrap": configuration["rf:bootstrap"],
+            **additional_params,
         }
+
         return RandomForestWrapper(init_params=rf_params)
