@@ -2,6 +2,8 @@ site_name: Algorithm Selection Framework (ASF)
 site_description: ASF is a powerful library for algorithm selection and performance prediction.
 site_author: Hadar Shavit
 site_url: https://hadarshavit.github.io/asf/
+repo_url: https://github.com/hadarshavit/asf
+repo_name: hadarshavit/asf
 theme:
   name: material
   features:
@@ -13,6 +15,7 @@ theme:
   # Add these SEO enhancements
   icon:
     logo: material/library
+    repo: fontawesome/brands/github
   favicon: assets/favicon.png
   language: en
 
@@ -40,3 +43,12 @@ extra:
   meta:
     - name: google-site-verification
       content: 7Gc5ioVEHE-L4FjTRDl3YjN_kRJ73w5wUE_bI_Yt6xg
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
