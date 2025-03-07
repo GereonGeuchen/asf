@@ -1,5 +1,5 @@
 import pandas as pd
-from asf.scenario.scenario_metadata import ScenarioMetadata
+from asf.scenario.scenario_metadata import SelectionScenarioMetadata
 from asf.selectors.feature_generator import (
     AbstractFeatureGenerator,
 )
@@ -8,7 +8,7 @@ from asf.selectors.feature_generator import (
 class AbstractSelector:
     def __init__(
         self,
-        metadata: ScenarioMetadata,
+        metadata: SelectionScenarioMetadata,
         hierarchical_generator: AbstractFeatureGenerator = None,
     ):
         self.metadata = metadata

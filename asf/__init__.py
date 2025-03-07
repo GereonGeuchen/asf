@@ -1,3 +1,3 @@
-from asf.scenario.scenario_metadata import ScenarioMetadata
+from asf.scenario.scenario_metadata import SelectionScenarioMetadata
 
-__all__ = ["ScenarioMetadata"]
+__all__ = ["SelectionScenarioMetadata"]

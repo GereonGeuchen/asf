@@ -5,7 +5,7 @@ def single_best_solver(schedules, performance, metadata):
     Args:
         schedules (pd.DataFrame): The schedules to evaluate.
         performance (pd.DataFrame): The performance data for the algorithms.
-        metadata (ScenarioMetadata): The metadata for the scenario.
+        metadata (SelectionScenarioMetadata): The metadata for the scenario.
 
     Returns:
         pd.Series: The selected solvers.
@@ -24,7 +24,7 @@ def virtual_best_solver(schedules, performance, metadata):
     Args:
         schedules (pd.DataFrame): The schedules to evaluate.
         performance (pd.DataFrame): The performance data for the algorithms.
-        metadata (ScenarioMetadata): The metadata for the scenario.
+        metadata (SelectionScenarioMetadata): The metadata for the scenario.
 
     Returns:
         pd.Series: The selected solvers.
@@ -42,7 +42,7 @@ def running_time_selector_performance(schedules, performance, metadata, par):
     Args:
         schedules (dict): The schedules to evaluate.
         performance (pd.DataFrame): The performance data for the algorithms.
-        metadata (ScenarioMetadata): The metadata for the scenario.
+        metadata (SelectionScenarioMetadata): The metadata for the scenario.
         par (float): The penalization factor.
 
     Returns:
@@ -80,7 +80,7 @@ def running_time_closed_gap(schedules, performance, metadata, par):
     Args:
         schedules (pd.DataFrame): The schedules to evaluate.
         performance (pd.DataFrame): The performance data for the algorithms.
-        metadata (ScenarioMetadata): The metadata for the scenario.
+        metadata (SelectionScenarioMetadata): The metadata for the scenario.
         par (float): The penalization factor.
 
     Returns:

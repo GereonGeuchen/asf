@@ -1,10 +1,18 @@
-import torch
-from asf.predictors.utils.datasets import RankingDataset
-from asf.predictors.utils.mlp import get_mlp
-from asf.predictors.utils.losses import bpr_loss
-from asf.predictors.abstract_predictor import AbstractPredictor
-import pandas as pd
 from typing import Callable
+
+import pandas as pd
+
+try:
+    import torch
+
+    TORCH_AVAILABLE = True
+except ImportError:
+    TORCH_AVAILABLE = False
+
+from asf.predictors.abstract_predictor import AbstractPredictor
+from asf.predictors.utils.datasets import RankingDataset
+from asf.predictors.utils.losses import bpr_loss
+from asf.predictors.utils.mlp import get_mlp
 
 
 class RankingMLP(AbstractPredictor):
@@ -28,7 +36,8 @@ class RankingMLP(AbstractPredictor):
             model: The model to be used.
         """
         super().__init__(**kwargs)
-
+        assert TORCH_AVAILABLE, "PyTorch is not available. Please install it."
+        
         assert model is not None or input_size is not None, (
             "Either model or input_size must be provided."
         )

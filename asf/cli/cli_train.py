@@ -8,7 +8,7 @@ from functools import partial
 import pandas as pd
 
 from asf import selectors
-from asf.scenario.scenario_metadata import ScenarioMetadata
+from asf.scenario.scenario_metadata import SelectionScenarioMetadata
 
 import sklearn
 
@@ -131,7 +131,7 @@ if __name__ == "__main__":
         args.performance_data, index_col=0
     )
     # Parse metadata
-    metadata = ScenarioMetadata(
+    metadata = SelectionScenarioMetadata(
         performance_data.columns.to_list(),
         features.columns.to_list(),
         performance_metric=args.performance_metric,

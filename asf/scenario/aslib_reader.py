@@ -2,7 +2,7 @@ import os
 
 import pandas as pd
 
-from asf import ScenarioMetadata
+from asf import SelectionScenarioMetadata
 
 try:
     import yaml
@@ -17,7 +17,7 @@ except ImportError:
 
 def read_scenario(
     path: str, add_running_time_features: bool = True
-) -> tuple[ScenarioMetadata, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+) -> tuple[SelectionScenarioMetadata, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """Read an ASlib scenario from a file.
 
     Args:
@@ -25,7 +25,7 @@ def read_scenario(
         add_running_time_features (bool, optional): Whether to add running time features. Defaults to True.
 
     Returns:
-        tuple[ScenarioMetadata, pd.DataFrame, pd.DataFrame, pd.DataFrame]: The metadata, features, performance, and cross-validation data.
+        tuple[SelectionScenarioMetadata, pd.DataFrame, pd.DataFrame, pd.DataFrame]: The metadata, features, performance, and cross-validation data.
     """
     if not ASLIB_AVAILABLE:
         raise ImportError(
@@ -48,7 +48,7 @@ def read_scenario(
     maximize = description["maximize"][0]
     budget = description["algorithm_cutoff_time"]
 
-    metadata = ScenarioMetadata(
+    metadata = SelectionScenarioMetadata(
         algorithms=algorithms,
         algorith_features=None,
         features=features,

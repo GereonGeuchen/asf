@@ -1,4 +1,10 @@
-import torch
+try:
+    import torch
+
+    TORCH_AVAILABLE = True
+except ImportError:
+    TORCH_AVAILABLE = False
+    
 from asf.predictors.utils.datasets import RegressionDataset
 from asf.predictors.utils.mlp import get_mlp
 from asf.predictors.abstract_predictor import AbstractPredictor
@@ -28,6 +34,7 @@ class RegressionMLP(AbstractPredictor):
         """
         super().__init__(**kwargs)
 
+        assert TORCH_AVAILABLE, "PyTorch is not available. Please install it."
         assert model is not None or input_size is not None, (
             "Either model or input_size must be provided."
         )
