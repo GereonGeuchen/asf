@@ -6,7 +6,7 @@ from asf.selectors import (
     PairwiseRegressor,
     PerformanceModel,
 )
-from asf.scenario.scenario_metadata import ScenarioMetadata
+from asf.scenario.scenario_metadata import SelectionScenarioMetadata
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 
 
@@ -34,7 +34,7 @@ def dummy_features():
 
 @pytest.fixture
 def dummy_metadata():
-    return ScenarioMetadata(
+    return SelectionScenarioMetadata(
         algorithms=["algo1", "algo2", "algo3"],
         features=["feature1", "feature2", "feature3"],
         feature_groups={"group1": ["feature1", "feature2"], "group2": ["feature3"]},
