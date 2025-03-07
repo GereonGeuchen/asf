@@ -37,7 +37,7 @@ class RankingMLP(AbstractPredictor):
         """
         super().__init__(**kwargs)
         assert TORCH_AVAILABLE, "PyTorch is not available. Please install it."
-        
+
         assert model is not None or input_size is not None, (
             "Either model or input_size must be provided."
         )

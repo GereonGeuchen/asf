@@ -4,12 +4,13 @@ try:
     TORCH_AVAILABLE = True
 except ImportError:
     TORCH_AVAILABLE = False
-    
+
+import pandas as pd
+from sklearn.impute import SimpleImputer
+
+from asf.predictors.abstract_predictor import AbstractPredictor
 from asf.predictors.utils.datasets import RegressionDataset
 from asf.predictors.utils.mlp import get_mlp
-from asf.predictors.abstract_predictor import AbstractPredictor
-from sklearn.impute import SimpleImputer
-import pandas as pd
 
 
 class RegressionMLP(AbstractPredictor):
