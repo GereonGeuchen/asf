@@ -13,7 +13,7 @@ class SelectionScenarioMetadata:
 
     def to_dict(self):
         """Converts the metadata into a dictionary format."""
-        ret_dict =  {
+        ret_dict = {
             "algorithms": self.algorithms,
             "features": self.features,
             "performance_metric": self.performance_metric,
@@ -24,7 +24,7 @@ class SelectionScenarioMetadata:
 
         if self.algorithm_features is not None:
             ret_dict["algorithm_features"] = self.algorithm_features
-        
+
         return ret_dict
 
 
