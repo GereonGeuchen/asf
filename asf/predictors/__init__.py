@@ -1,8 +1,14 @@
 from asf.predictors.abstract_predictor import AbstractPredictor
 from asf.predictors.epm_random_forest import EPMRandomForest
-from asf.predictors.sklearn_wrapper import SklearnWrapper
+from asf.predictors.random_forest import (
+    RandomForestClassifierWrapper,
+    RandomForestRegressorWrapper,
+)
 from asf.predictors.ranking_mlp import RankingMLP
 from asf.predictors.regression_mlp import RegressionMLP
+from asf.predictors.sklearn_wrapper import SklearnWrapper
+from asf.predictors.svm import SVMClassifierWrapper, SVMRegressorWrapper
+from asf.predictors.xgboost import XGBoostClassifierWrapper, XGBoostRegressorWrapper
 
 __all__ = [
     "AbstractPredictor",
@@ -10,4 +16,10 @@ __all__ = [
     "SklearnWrapper",
     "RankingMLP",
     "RegressionMLP",
+    "SVMClassifierWrapper",
+    "SVMRegressorWrapper",
+    "XGBoostClassifierWrapper",
+    "XGBoostRegressorWrapper",
+    "RandomForestClassifierWrapper",
+    "RandomForestRegressorWrapper",
 ]

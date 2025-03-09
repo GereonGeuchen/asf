@@ -28,6 +28,7 @@ dependencies = [
   'scikit-learn',
   'pandas',
   'xgboost',
+  "ConfigSpace",
 ]
 
 [project.optional-dependencies]
