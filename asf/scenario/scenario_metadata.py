@@ -26,16 +26,3 @@ class SelectionScenarioMetadata:
             ret_dict["algorithm_features"] = self.algorithm_features
 
         return ret_dict
-
-
-@dataclass
-class PerformancePredictionScenarioMetadata:
-    targets: list[str]
-    features: list[str]
-
-    def to_dict(self):
-        """Converts the metadata into a dictionary format."""
-        return {
-            "targets": self.targets,
-            "features": self.features,
-        }
