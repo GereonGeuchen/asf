@@ -1,8 +1,5 @@
 from typing import Type
 
-from sklearn.model_selection import cross_val_score
-from smac import HyperparameterOptimizationFacade, Scenario
-
 from asf.normalization.normalizations import AbstractNormalization, LogNormalization
 from asf.predictors.abstract_predictor import AbstractPredictor
 
