@@ -1,18 +1,29 @@
+from functools import partial
 from typing import Type
 
+from sklearn.base import RegressorMixin
+
 from asf.normalization.normalizations import AbstractNormalization, LogNormalization
+from asf.predictors import SklearnWrapper
 from asf.predictors.abstract_predictor import AbstractPredictor
 
 
 class EPM:
     def __init__(
         self,
-        predictor_class: Type[AbstractPredictor],
+        predictor_class: Type[AbstractPredictor] | Type[RegressorMixin],
         normalization_class: Type[AbstractNormalization] = LogNormalization,
         transform_back: bool = True,
         predictor_config=None,
         predictor_kwargs=None,
     ):
+        if isinstance(predictor_class, type) and issubclass(
+            predictor_class, (RegressorMixin)
+        ):
+            self.model_class = partial(SklearnWrapper, predictor_class)
+        else:
+            self.model_class = predictor_class
+
         self.predictor_class = predictor_class
         self.normalization_class = normalization_class
         self.transform_back = transform_back

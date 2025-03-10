@@ -8,7 +8,13 @@ from asf.predictors.ranking_mlp import RankingMLP
 from asf.predictors.regression_mlp import RegressionMLP
 from asf.predictors.sklearn_wrapper import SklearnWrapper
 from asf.predictors.svm import SVMClassifierWrapper, SVMRegressorWrapper
-from asf.predictors.xgboost import XGBoostClassifierWrapper, XGBoostRegressorWrapper
+
+try:
+    from asf.predictors.xgboost import XGBoostClassifierWrapper, XGBoostRegressorWrapper
+
+    XGB_AVAILABLE = True
+except ImportError:
+    XGB_AVAILABLE = False
 
 __all__ = [
     "AbstractPredictor",
