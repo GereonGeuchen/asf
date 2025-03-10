@@ -1,11 +1,10 @@
 from typing import Type
 
 import numpy as np
+from sklearn.metrics import root_mean_squared_error
 from sklearn.model_selection import KFold
 from sklearn.model_selection._split import _BaseKFold
-from sklearn.metrics import root_mean_squared_error
 from smac import HyperparameterOptimizationFacade, Scenario
-
 
 from asf.epm.epm import EPM
 from asf.normalization.normalizations import AbstractNormalization, LogNormalization
@@ -39,7 +38,7 @@ class GroupKFoldShuffle(_BaseKFold):
             yield train_idx, test_idx
 
 
-def tune(
+def tune_epm(
     X,
     y,
     model_class: Type[AbstractPredictor],
@@ -101,4 +100,9 @@ def tune(
     smac = HyperparameterOptimizationFacade(scenario, target_function, **smac_kwargs)
     best_config = smac.optimize()
 
-    return best_config
+    return EPM(
+        predictor_class=model_class,
+        normalization=normalization,
+        transform_back=True,
+        predictor_config=best_config,
+    )
