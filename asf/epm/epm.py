@@ -55,5 +55,3 @@ class EPM:
             y_pred = self.normalization.inverse_transform(y_pred)
 
         return y_pred
-
-    

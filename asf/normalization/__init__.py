@@ -1,15 +1,14 @@
 from asf.normalization.normalizations import (
     AbstractNormalization,
-    MinMaxNormalization,
-    LogNormalization,
-    ZScoreNormalization,
-    SqrtNormalization,
-    InvSigmoidNormalization,
-    NegExpNormalization,
+    BoxCoxNormalization,
     DummyNormalization,
-    BoxCoxNormalization
+    InvSigmoidNormalization,
+    LogNormalization,
+    MinMaxNormalization,
+    NegExpNormalization,
+    SqrtNormalization,
+    ZScoreNormalization,
 )
-
 
 __all__ = [
     "AbstractNormalization",
@@ -20,5 +19,5 @@ __all__ = [
     "InvSigmoidNormalization",
     "NegExpNormalization",
     "DummyNormalization",
-    "BoxCoxNormalization"
+    "BoxCoxNormalization",
 ]
