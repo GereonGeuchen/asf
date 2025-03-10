@@ -1,11 +1,11 @@
 import numpy as np
-from sklearn.base import OneToOneFeatureMixin, TransformerMixin, BaseEstimator
-from sklearn.preprocessing import MinMaxScaler, PowerTransformer, StandardScaler
+from sklearn.base import OneToOneFeatureMixin, NormalizationerMixin, BaseEstimator
+from sklearn.preprocessing import MinMaxScaler, PowerNormalizationer, StandardScaler
 import scipy.stats
 import scipy.special
 
 
-class AbstractTransform(OneToOneFeatureMixin, TransformerMixin, BaseEstimator):
+class AbstractNormalization(OneToOneFeatureMixin, NormalizationerMixin, BaseEstimator):
     def __init__(self):
         super().__init__()
 
@@ -19,7 +19,7 @@ class AbstractTransform(OneToOneFeatureMixin, TransformerMixin, BaseEstimator):
         raise NotImplementedError
 
 
-class MinMaxTransform(AbstractTransform):
+class MinMaxNormalization(AbstractNormalization):
     def __init__(self, feature_range=(0, 1)):
         super().__init__()
         self.feature_range = feature_range
@@ -36,7 +36,7 @@ class MinMaxTransform(AbstractTransform):
         return self.min_max_scale.inverse_transform(X)
 
 
-class ZScoreTransform(AbstractTransform):
+class ZScoreNormalization(AbstractNormalization):
     def __init__(self):
         super().__init__()
 
@@ -52,7 +52,7 @@ class ZScoreTransform(AbstractTransform):
         return self.scaler.inverse_transform(X)
 
 
-class LogTransform(AbstractTransform):
+class LogNormalization(AbstractNormalization):
     def __init__(self, base=10, normalize=True, eps=1e-6):
         super().__init__()
         self.base = base
@@ -80,7 +80,7 @@ class LogTransform(AbstractTransform):
         return X
 
 
-class SqrtTransform(AbstractTransform):
+class SqrtNormalization(AbstractNormalization):
     def __init__(self, normalize=True, eps=1e-6):
         super().__init__()
         self.normalize = normalize
@@ -104,7 +104,7 @@ class SqrtTransform(AbstractTransform):
         return X
 
 
-class InvSigmoidTransform(AbstractTransform):
+class InvSigmoidNormalization(AbstractNormalization):
     def __init__(self):
         super().__init__()
 
@@ -122,7 +122,7 @@ class InvSigmoidTransform(AbstractTransform):
         return self.min_max_scale.inverse_transform(X)
 
 
-class NegExpTransform(AbstractTransform):
+class NegExpNormalization(AbstractNormalization):
     def __init__(self):
         super().__init__()
 
@@ -136,7 +136,7 @@ class NegExpTransform(AbstractTransform):
         return -np.log(X)
 
 
-class DummyTransform(AbstractTransform):
+class DummyNormalization(AbstractNormalization):
     def __init__(self):
         super().__init__()
 
@@ -150,12 +150,12 @@ class DummyTransform(AbstractTransform):
         return X
 
 
-class BoxCoxTransform(AbstractTransform):
+class BoxCoxNormalization(AbstractNormalization):
     def __init__(self):
         super().__init__()
 
     def fit(self, X, y=None, sample_weight=None):
-        self.box_cox = PowerTransformer(method="yeo-johnson")
+        self.box_cox = PowerNormalizationer(method="yeo-johnson")
         self.box_cox.fit(X)
         return self
 

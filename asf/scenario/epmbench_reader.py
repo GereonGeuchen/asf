@@ -20,8 +20,13 @@ def read_epmbench_scenario(path):
         metadata = json.load(f)
 
     data = pd.read_parquet(os.path.join(path, "data.parquet"))
+    if "instance_column" in metadata:
+        instances = data[metadata["instance_column"]]
+        data.drop(columns=[metadata["instance_column"]], inplace=True)
+    else:
+        instances = None
 
-    return data, metadata["features"], metadata["targets"]
+    return data, metadata["features"], metadata["targets"], instances
 
 
 def get_cv_fold(data, fold, features, targets):

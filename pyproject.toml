@@ -35,6 +35,7 @@ dependencies = [
 aspeed = [ 'clingo' ]
 aslib = [ 'pyyaml' ]
 nn = [ 'torch' ]
+tune = [ 'smac' ]
 
 [build-system]
 requires = ["setuptools", "wheel"]
