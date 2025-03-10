@@ -1,6 +1,5 @@
 from asf.selectors.abstract_selector import AbstractSelector
 from asf.predictors import SklearnWrapper
-from xgboost import XGBModel
 from sklearn.base import ClassifierMixin, RegressorMixin
 from functools import partial
 
@@ -10,7 +9,7 @@ class AbstractModelBasedSelector(AbstractSelector):
         super().__init__(metadata, hierarchical_generator)
 
         if isinstance(model_class, type) and issubclass(
-            model_class, (ClassifierMixin, RegressorMixin, XGBModel)
+            model_class, (ClassifierMixin, RegressorMixin)
         ):
             self.model_class = partial(SklearnWrapper, model_class)
         else:

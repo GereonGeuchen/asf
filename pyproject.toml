@@ -1,6 +1,6 @@
 [project]
 name = "asf-lib"
-version = "0.0.1.18"
+version = "0.0.1.19"
 requires-python = ">= 3.10"
 authors = [
   {name = "Hadar Shavit", email = "shavit@aim.rwth-aachen.de"},
@@ -27,7 +27,6 @@ classifiers = [
 dependencies = [
   'scikit-learn',
   'pandas',
-  'xgboost',
   "ConfigSpace",
 ]
 
@@ -36,6 +35,7 @@ aspeed = [ 'clingo' ]
 aslib = [ 'pyyaml' ]
 nn = [ 'torch' ]
 tune = [ 'smac' ]
+xgb = [ 'xgb' ]
 
 [build-system]
 requires = ["setuptools", "wheel"]
