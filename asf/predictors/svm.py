@@ -9,41 +9,50 @@ class SVMClassifierWrapper(SklearnWrapper):
     def __init__(self, init_params: dict = {}):
         super().__init__(SVC, init_params)
 
-    def get_configuration_space(self):
+    def get_configuration_space():
         cs = ConfigurationSpace(name="SVM")
 
         kernel = Categorical(
-            f"{self.PREFIX}:kernel",
+            f"{SVMClassifierWrapper.PREFIX}:kernel",
             choices=["linear", "rbf", "poly", "sigmoid"],
             default_value="rbf",
         )
-        degree = Integer(f"{self.PREFIX}:degree", (1, 128), log=True, default_value=1)
+        degree = Integer(
+            f"{SVMClassifierWrapper.PREFIX}:degree", (1, 128), log=True, default_value=1
+        )
         coef0 = Float(
-            f"{self.PREFIX}:coef0",
+            f"{SVMClassifierWrapper.PREFIX}:coef0",
             (-0.5, 0.5),
             log=False,
             default_value=0.49070634552851977,
         )
         tol = Float(
-            f"{self.PREFIX}:tol",
+            f"{SVMClassifierWrapper.PREFIX}:tol",
             (1e-4, 1e-2),
             log=True,
             default_value=0.0002154969698207585,
         )
         gamma = Categorical(
-            f"{self.PREFIX}:gamma", choices=["scale", "auto"], default_value="scale"
+            f"{SVMClassifierWrapper.PREFIX}:gamma",
+            choices=["scale", "auto"],
+            default_value="scale",
         )
         C = Float(
-            f"{self.PREFIX}:C", (1.0, 20), log=True, default_value=3.2333262862494365
+            f"{SVMClassifierWrapper.PREFIX}:C",
+            (1.0, 20),
+            log=True,
+            default_value=3.2333262862494365,
         )
         epsilon = Float(
-            f"{self.PREFIX}:epsilon",
+            f"{SVMClassifierWrapper.PREFIX}:epsilon",
             (0.01, 0.99),
             log=True,
             default_value=0.14834562300010581,
         )
         shrinking = Categorical(
-            f"{self.PREFIX}:shrinking", choices=[True, False], default_value=True
+            f"{SVMClassifierWrapper.PREFIX}:shrinking",
+            choices=[True, False],
+            default_value=True,
         )
 
         cs.add([kernel, degree, coef0, tol, gamma, C, epsilon, shrinking])
@@ -73,26 +82,48 @@ class SVMRegressorWrapper(SklearnWrapper):
     def __init__(self, init_params: dict = {}):
         super().__init__(SVR, init_params)
 
-    def get_configuration_space(self):
+    @staticmethod
+    def get_configuration_space():
         cs = ConfigurationSpace(name="SVM Regressor")
 
         kernel = Categorical(
-            f"{self.PREFIX}:kernel",
+            f"{SVMRegressorWrapper.PREFIX}:kernel",
             choices=["linear", "rbf", "poly", "sigmoid"],
             default_value="rbf",
         )
-        degree = Integer(f"{self.PREFIX}:degree", (1, 128), log=True, default_value=1)
-        coef0 = Float(f"{self.PREFIX}:coef0", (-0.5, 0.5), log=False, default_value=0.0)
-        tol = Float(f"{self.PREFIX}:tol", (1e-4, 1e-2), log=True, default_value=0.001)
-        gamma = Categorical(
-            f"{self.PREFIX}:gamma", choices=["scale", "auto"], default_value="scale"
+        degree = Integer(
+            f"{SVMRegressorWrapper.PREFIX}:degree", (1, 128), log=True, default_value=1
         )
-        C = Float(f"{self.PREFIX}:C", (1.0, 20), log=True, default_value=1.0)
+        coef0 = Float(
+            f"{SVMRegressorWrapper.PREFIX}:coef0",
+            (-0.5, 0.5),
+            log=False,
+            default_value=0.0,
+        )
+        tol = Float(
+            f"{SVMRegressorWrapper.PREFIX}:tol",
+            (1e-4, 1e-2),
+            log=True,
+            default_value=0.001,
+        )
+        gamma = Categorical(
+            f"{SVMRegressorWrapper.PREFIX}:gamma",
+            choices=["scale", "auto"],
+            default_value="scale",
+        )
+        C = Float(
+            f"{SVMRegressorWrapper.PREFIX}:C", (1.0, 20), log=True, default_value=1.0
+        )
         epsilon = Float(
-            f"{self.PREFIX}:epsilon", (0.01, 0.99), log=True, default_value=0.1
+            f"{SVMRegressorWrapper.PREFIX}:epsilon",
+            (0.01, 0.99),
+            log=True,
+            default_value=0.1,
         )
         shrinking = Categorical(
-            f"{self.PREFIX}:shrinking", choices=[True, False], default_value=True
+            f"{SVMRegressorWrapper.PREFIX}:shrinking",
+            choices=[True, False],
+            default_value=True,
         )
 
         cs.add([kernel, degree, coef0, tol, gamma, C, epsilon, shrinking])

@@ -9,26 +9,38 @@ class RandomForestClassifierWrapper(SklearnWrapper):
     def __init__(self, init_params: dict = {}):
         super().__init__(RandomForestClassifier, init_params)
 
-    def get_configuration_space(self):
+    @staticmethod
+    def get_configuration_space():
         cs = ConfigurationSpace(name="RandomForest")
 
         n_estimators = Integer(
-            f"{self.PREFIX}:n_estimators", (16, 128), log=True, default_value=116
+            f"{RandomForestClassifierWrapper.PREFIX}:n_estimators",
+            (16, 128),
+            log=True,
+            default_value=116,
         )
         min_samples_split = Integer(
-            f"{self.PREFIX}:min_samples_split", (2, 20), log=False, default_value=2
+            f"{RandomForestClassifierWrapper.PREFIX}:min_samples_split",
+            (2, 20),
+            log=False,
+            default_value=2,
         )
         min_samples_leaf = Integer(
-            f"{self.PREFIX}:min_samples_leaf", (1, 20), log=False, default_value=2
+            f"{RandomForestClassifierWrapper.PREFIX}:min_samples_leaf",
+            (1, 20),
+            log=False,
+            default_value=2,
         )
         max_features = Float(
-            f"{self.PREFIX}:max_features",
+            f"{RandomForestClassifierWrapper.PREFIX}:max_features",
             (0.1, 1.0),
             log=False,
             default_value=0.17055852159745608,
         )
         bootstrap = Categorical(
-            f"{self.PREFIX}:bootstrap", choices=[True, False], default_value=False
+            f"{RandomForestClassifierWrapper.PREFIX}:bootstrap",
+            choices=[True, False],
+            default_value=False,
         )
 
         cs.add(
@@ -57,26 +69,37 @@ class RandomForestRegressorWrapper(SklearnWrapper):
     def __init__(self, init_params: dict = {}):
         super().__init__(RandomForestRegressor, init_params)
 
-    def get_configuration_space(self):
+    def get_configuration_space():
         cs = ConfigurationSpace(name="RandomForestRegressor")
 
         n_estimators = Integer(
-            f"{self.PREFIX}:n_estimators", (16, 128), log=True, default_value=116
+            f"{RandomForestRegressorWrapper.PREFIX}:n_estimators",
+            (16, 128),
+            log=True,
+            default_value=116,
         )
         min_samples_split = Integer(
-            f"{self.PREFIX}:min_samples_split", (2, 20), log=False, default_value=2
+            f"{RandomForestRegressorWrapper.PREFIX}:min_samples_split",
+            (2, 20),
+            log=False,
+            default_value=2,
         )
         min_samples_leaf = Integer(
-            f"{self.PREFIX}:min_samples_leaf", (1, 20), log=False, default_value=2
+            f"{RandomForestRegressorWrapper.PREFIX}:min_samples_leaf",
+            (1, 20),
+            log=False,
+            default_value=2,
         )
         max_features = Float(
-            f"{self.PREFIX}:max_features",
+            f"{RandomForestRegressorWrapper.PREFIX}:max_features",
             (0.1, 1.0),
             log=False,
             default_value=0.17055852159745608,
         )
         bootstrap = Categorical(
-            f"{self.PREFIX}:bootstrap", choices=[True, False], default_value=False
+            f"{RandomForestRegressorWrapper.PREFIX}:bootstrap",
+            choices=[True, False],
+            default_value=False,
         )
 
         cs.add(
