@@ -60,16 +60,13 @@ def tune_epm(
     timeout: Time limit for tuning
     """
     scenario = Scenario(
-        {
-            "run_obj": "quality",
-            "n_trials": runcount_limit,
-            "wallclock_limit": timeout,
-            "cs": model_class.get_configuration_space(),
-            "deterministic": True,
-            "output_dir": output_dir,
-            "seed": seed,
-            **smac_scenario_kwargs,
-        }
+        configspace=model_class.get_configuration_space(),
+        n_trials=runcount_limit,
+        walltime_limit=timeout,
+        deterministic=True,
+        output_directory=output_dir,
+        seed=seed,
+        **smac_scenario_kwargs,
     )
 
     def target_function(config, seed):

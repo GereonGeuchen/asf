@@ -1,6 +1,7 @@
+from ConfigSpace import Categorical, ConfigurationSpace, Float, Integer
+from sklearn.svm import SVC, SVR
+
 from asf.predictors.sklearn_wrapper import SklearnWrapper
-from sklearn.svm import SVR, SVC
-from ConfigSpace import ConfigurationSpace, Integer, Float, Categorical
 
 
 class SVMClassifierWrapper(SklearnWrapper):
@@ -111,9 +112,7 @@ class SVMRegressorWrapper(SklearnWrapper):
             items=["scale", "auto"],
             default="scale",
         )
-        C = Float(
-            f"{SVMRegressorWrapper.PREFIX}:C", (1.0, 20), log=True, default=1.0
-        )
+        C = Float(f"{SVMRegressorWrapper.PREFIX}:C", (1.0, 20), log=True, default=1.0)
         epsilon = Float(
             f"{SVMRegressorWrapper.PREFIX}:epsilon",
             (0.01, 0.99),
