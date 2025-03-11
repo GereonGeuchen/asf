@@ -29,7 +29,7 @@ def read_epmbench_scenario(path):
     return data, metadata["features"], metadata["targets"], instances
 
 
-def get_cv_fold(data, fold, features, targets):
+def get_cv_fold(data, fold, features, targets, instances=None):
     """
     Splits the data into training and testing sets based on the specified fold.
 
@@ -42,12 +42,22 @@ def get_cv_fold(data, fold, features, targets):
     Returns:
         tuple: A tuple containing the training and testing sets.
     """
-    train_data = data[data["fold"] != fold]
-    test_data = data[data["fold"] == fold]
+    train_idx = data["fold"] != fold
+    test_idx = data["fold"] == fold
+
+    train_data = data[train_idx]
+    test_data = data[test_idx]
 
     X_train = train_data[features]
     y_train = train_data[targets]
     X_test = test_data[features]
     y_test = test_data[targets]
 
-    return X_train, y_train, X_test, y_test
+    if instances is not None:
+        instances_train = instances[train_idx]
+        instances_test = instances[test_idx]
+    else:
+        instances_train = None
+        instances_test = None
+
+    return X_train, y_train, X_test, y_test, instances_train, instances_test
