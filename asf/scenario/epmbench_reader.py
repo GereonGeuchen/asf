@@ -42,8 +42,8 @@ def get_cv_fold(data, fold, features, targets, instances=None):
     Returns:
         tuple: A tuple containing the training and testing sets.
     """
-    train_idx = data["fold"] != fold
-    test_idx = data["fold"] == fold
+    train_idx = data["cv"] != fold
+    test_idx = data["cv"] == fold
 
     train_data = data[train_idx]
     test_data = data[test_idx]
