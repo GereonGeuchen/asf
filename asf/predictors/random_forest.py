@@ -39,7 +39,7 @@ class RandomForestClassifierWrapper(SklearnWrapper):
         )
         bootstrap = Categorical(
             f"{RandomForestClassifierWrapper.PREFIX}:bootstrap",
-            choices=[True, False],
+            items=[True, False],
             default=False,
         )
 
@@ -98,7 +98,7 @@ class RandomForestRegressorWrapper(SklearnWrapper):
         )
         bootstrap = Categorical(
             f"{RandomForestRegressorWrapper.PREFIX}:bootstrap",
-            choices=[True, False],
+            items=[True, False],
             default=False,
         )
 

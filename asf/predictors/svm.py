@@ -14,7 +14,7 @@ class SVMClassifierWrapper(SklearnWrapper):
 
         kernel = Categorical(
             f"{SVMClassifierWrapper.PREFIX}:kernel",
-            choices=["linear", "rbf", "poly", "sigmoid"],
+            items=["linear", "rbf", "poly", "sigmoid"],
             default="rbf",
         )
         degree = Integer(
@@ -34,7 +34,7 @@ class SVMClassifierWrapper(SklearnWrapper):
         )
         gamma = Categorical(
             f"{SVMClassifierWrapper.PREFIX}:gamma",
-            choices=["scale", "auto"],
+            items=["scale", "auto"],
             default="scale",
         )
         C = Float(
@@ -51,7 +51,7 @@ class SVMClassifierWrapper(SklearnWrapper):
         )
         shrinking = Categorical(
             f"{SVMClassifierWrapper.PREFIX}:shrinking",
-            choices=[True, False],
+            items=[True, False],
             default=True,
         )
 
@@ -88,7 +88,7 @@ class SVMRegressorWrapper(SklearnWrapper):
 
         kernel = Categorical(
             f"{SVMRegressorWrapper.PREFIX}:kernel",
-            choices=["linear", "rbf", "poly", "sigmoid"],
+            items=["linear", "rbf", "poly", "sigmoid"],
             default="rbf",
         )
         degree = Integer(
@@ -108,7 +108,7 @@ class SVMRegressorWrapper(SklearnWrapper):
         )
         gamma = Categorical(
             f"{SVMRegressorWrapper.PREFIX}:gamma",
-            choices=["scale", "auto"],
+            items=["scale", "auto"],
             default="scale",
         )
         C = Float(
@@ -122,7 +122,7 @@ class SVMRegressorWrapper(SklearnWrapper):
         )
         shrinking = Categorical(
             f"{SVMRegressorWrapper.PREFIX}:shrinking",
-            choices=[True, False],
+            items=[True, False],
             default=True,
         )
 
