@@ -52,11 +52,21 @@ class RandomForestClassifierWrapper(SklearnWrapper):
     @staticmethod
     def get_from_configuration(configuration, additional_params={}):
         rf_params = {
-            "n_estimators": configuration[f"{RandomForestClassifierWrapper.PREFIX}:n_estimators"],
-            "min_samples_split": configuration[f"{RandomForestClassifierWrapper.PREFIX}:min_samples_split"],
-            "min_samples_leaf": configuration[f"{RandomForestClassifierWrapper.PREFIX}:min_samples_leaf"],
-            "max_features": configuration[f"{RandomForestClassifierWrapper.PREFIX}:max_features"],
-            "bootstrap": configuration[f"{RandomForestClassifierWrapper.PREFIX}:bootstrap"],
+            "n_estimators": configuration[
+                f"{RandomForestClassifierWrapper.PREFIX}:n_estimators"
+            ],
+            "min_samples_split": configuration[
+                f"{RandomForestClassifierWrapper.PREFIX}:min_samples_split"
+            ],
+            "min_samples_leaf": configuration[
+                f"{RandomForestClassifierWrapper.PREFIX}:min_samples_leaf"
+            ],
+            "max_features": configuration[
+                f"{RandomForestClassifierWrapper.PREFIX}:max_features"
+            ],
+            "bootstrap": configuration[
+                f"{RandomForestClassifierWrapper.PREFIX}:bootstrap"
+            ],
             **additional_params,
         }
 
@@ -111,11 +121,21 @@ class RandomForestRegressorWrapper(SklearnWrapper):
     @staticmethod
     def get_from_configuration(configuration, additional_params={}):
         rf_params = {
-            "n_estimators": configuration[f"{RandomForestRegressorWrapper.PREFIX}:n_estimators"],
-            "min_samples_split": configuration[f"{RandomForestRegressorWrapper.PREFIX}:min_samples_split"],
-            "min_samples_leaf": configuration[f"{RandomForestRegressorWrapper.PREFIX}:min_samples_leaf"],
-            "max_features": configuration[f"{RandomForestRegressorWrapper.PREFIX}:max_features"],
-            "bootstrap": configuration[f"{RandomForestRegressorWrapper.PREFIX}:bootstrap"],
+            "n_estimators": configuration[
+                f"{RandomForestRegressorWrapper.PREFIX}:n_estimators"
+            ],
+            "min_samples_split": configuration[
+                f"{RandomForestRegressorWrapper.PREFIX}:min_samples_split"
+            ],
+            "min_samples_leaf": configuration[
+                f"{RandomForestRegressorWrapper.PREFIX}:min_samples_leaf"
+            ],
+            "max_features": configuration[
+                f"{RandomForestRegressorWrapper.PREFIX}:max_features"
+            ],
+            "bootstrap": configuration[
+                f"{RandomForestRegressorWrapper.PREFIX}:bootstrap"
+            ],
             **additional_params,
         }
 
