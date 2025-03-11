@@ -70,17 +70,16 @@ def tune_epm(
         **smac_scenario_kwargs,
     )
 
+    if isinstance(X, pd.DataFrame):
+        X = X.values
+    if isinstance(y, pd.Series):
+        y = y.values
+
     def target_function(config, seed):
         if groups is not None:
             kfold = GroupKFoldShuffle(n_splits=cv, shuffle=True, random_state=seed)
         else:
             kfold = KFold(n_splits=cv, shuffle=True, random_state=seed)
-
-        if isinstance(X, pd.DataFrame):
-            X = X.values
-        if isinstance(y, pd.Series):
-            y = y.values
-
 
         scores = []
         for train_idx, test_idx in kfold.split(X, y, groups):
