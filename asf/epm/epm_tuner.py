@@ -43,7 +43,7 @@ def tune_epm(
     X,
     y,
     model_class: Type[AbstractPredictor],
-    normalization: Type[AbstractNormalization] = LogNormalization,
+    normalization_class: Type[AbstractNormalization] = LogNormalization,
     groups=None,
     cv: int = 5,
     timeout: int = 3600,
@@ -88,7 +88,7 @@ def tune_epm(
 
             epm = EPM(
                 predictor_class=model_class,
-                normalization=normalization,
+                normalization_class=normalization_class,
                 transform_back=True,
                 predictor_config=config,
             )
@@ -105,7 +105,7 @@ def tune_epm(
 
     return EPM(
         predictor_class=model_class,
-        normalization=normalization,
+        normalization=normalization_class,
         transform_back=True,
         predictor_config=best_config,
     )
