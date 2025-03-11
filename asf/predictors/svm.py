@@ -63,14 +63,14 @@ class SVMClassifierWrapper(SklearnWrapper):
     @staticmethod
     def get_from_configuration(configuration, additional_params={}):
         svm_params = {
-            "kernel": configuration["svm:kernel"],
-            "degree": configuration["svm:degree"],
-            "coef0": configuration["svm:coef0"],
-            "tol": configuration["svm:tol"],
-            "gamma": configuration["svm:gamma"],
-            "C": configuration["svm:C"],
-            "epsilon": configuration["svm:epsilon"],
-            "shrinking": configuration["svm:shrinking"],
+            "kernel": configuration[f"{SVMClassifierWrapper.PREFIX}:kernel"],
+            "degree": configuration[f"{SVMClassifierWrapper.PREFIX}:degree"],
+            "coef0": configuration[f"{SVMClassifierWrapper.PREFIX}:coef0"],
+            "tol": configuration[f"{SVMClassifierWrapper.PREFIX}:tol"],
+            "gamma": configuration[f"{SVMClassifierWrapper.PREFIX}:gamma"],
+            "C": configuration[f"{SVMClassifierWrapper.PREFIX}:C"],
+            "epsilon": configuration[f"{SVMClassifierWrapper.PREFIX}:epsilon"],
+            "shrinking": configuration[f"{SVMClassifierWrapper.PREFIX}:shrinking"],
             **additional_params,
         }
 
@@ -132,14 +132,14 @@ class SVMRegressorWrapper(SklearnWrapper):
     @staticmethod
     def get_from_configuration(configuration, additional_params={}):
         svr_params = {
-            "kernel": configuration["svm_regressor:kernel"],
-            "degree": configuration["svm_regressor:degree"],
-            "coef0": configuration["svm_regressor:coef0"],
-            "tol": configuration["svm_regressor:tol"],
-            "gamma": configuration["svm_regressor:gamma"],
-            "C": configuration["svm_regressor:C"],
-            "epsilon": configuration["svm_regressor:epsilon"],
-            "shrinking": configuration["svm_regressor:shrinking"],
+            "kernel": configuration[f"{SVMRegressorWrapper.PREFIX}:kernel"],
+            "degree": configuration[f"{SVMRegressorWrapper.PREFIX}:degree"],
+            "coef0": configuration[f"{SVMRegressorWrapper.PREFIX}:coef0"],
+            "tol": configuration[f"{SVMRegressorWrapper.PREFIX}:tol"],
+            "gamma": configuration[f"{SVMRegressorWrapper.PREFIX}:gamma"],
+            "C": configuration[f"{SVMRegressorWrapper.PREFIX}:C"],
+            "epsilon": configuration[f"{SVMRegressorWrapper.PREFIX}:epsilon"],
+            "shrinking": configuration[f"{SVMRegressorWrapper.PREFIX}:shrinking"],
             **additional_params,
         }
 

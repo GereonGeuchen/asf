@@ -76,14 +76,14 @@ class XGBoostClassifierWrapper(SklearnWrapper):
     @staticmethod
     def get_from_configuration(configuration, additional_params={}):
         xgb_params = {
-            "booster": configuration["xgb:booster"],
-            "max_depth": configuration["xgb:max_depth"],
-            "min_child_weight": configuration["xgb:min_child_weight"],
-            "colsample_bytree": configuration["xgb:colsample_bytree"],
-            "colsample_bylevel": configuration["xgb:colsample_bylevel"],
-            "lambda": configuration["xgb:lambda"],
-            "alpha": configuration["xgb:alpha"],
-            "learning_rate": configuration["xgb:learning_rate"],
+            "booster": configuration[f"{XGBoostClassifierWrapper.PREFIX}:booster"],
+            "max_depth": configuration[f"{XGBoostClassifierWrapper.PREFIX}:max_depth"],
+            "min_child_weight": configuration[f"{XGBoostClassifierWrapper.PREFIX}:min_child_weight"],
+            "colsample_bytree": configuration[f"{XGBoostClassifierWrapper.PREFIX}:colsample_bytree"],
+            "colsample_bylevel": configuration[f"{XGBoostClassifierWrapper.PREFIX}:colsample_bylevel"],
+            "lambda": configuration[f"{XGBoostClassifierWrapper.PREFIX}:lambda"],
+            "alpha": configuration[f"{XGBoostClassifierWrapper.PREFIX}:alpha"],
+            "learning_rate": configuration[f"{XGBoostClassifierWrapper.PREFIX}:learning_rate"],
             **additional_params,
         }
 
@@ -162,14 +162,14 @@ class XGBoostRegressorWrapper(SklearnWrapper):
     @staticmethod
     def get_from_configuration(configuration, additional_params={}):
         xgb_params = {
-            "booster": configuration["xgb:booster"],
-            "max_depth": configuration["xgb:max_depth"],
-            "min_child_weight": configuration["xgb:min_child_weight"],
-            "colsample_bytree": configuration["xgb:colsample_bytree"],
-            "colsample_bylevel": configuration["xgb:colsample_bylevel"],
-            "lambda": configuration["xgb:lambda"],
-            "alpha": configuration["xgb:alpha"],
-            "learning_rate": configuration["xgb:learning_rate"],
+            "booster": configuration[f"{XGBoostRegressorWrapper.PREFIX}:booster"],
+            "max_depth": configuration[f"{XGBoostRegressorWrapper.PREFIX}:max_depth"],
+            "min_child_weight": configuration[f"{XGBoostRegressorWrapper.PREFIX}:min_child_weight"],
+            "colsample_bytree": configuration[f"{XGBoostRegressorWrapper.PREFIX}:colsample_bytree"],
+            "colsample_bylevel": configuration[f"{XGBoostRegressorWrapper.PREFIX}:colsample_bylevel"],
+            "lambda": configuration[f"{XGBoostRegressorWrapper.PREFIX}:lambda"],
+            "alpha": configuration[f"{XGBoostRegressorWrapper.PREFIX}:alpha"],
+            "learning_rate": configuration[f"{XGBoostRegressorWrapper.PREFIX}:learning_rate"],
             **additional_params,
         }
 
