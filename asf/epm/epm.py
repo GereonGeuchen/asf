@@ -40,7 +40,8 @@ class EPM:
         sample_weight: Sample weights (optional)
         """
         self.normalization = self.normalization_class()
-        y = self.normalization.fit(y)
+        self.normalization.fit(y)
+        y = self.normalization.transform(y)
 
         if self.predictor_config is None:
             self.configuration_space = self.predictor_class()
