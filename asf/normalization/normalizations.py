@@ -1,11 +1,11 @@
 import numpy as np
-from sklearn.base import OneToOneFeatureMixin, NormalizationerMixin, BaseEstimator
-from sklearn.preprocessing import MinMaxScaler, PowerNormalizationer, StandardScaler
+from sklearn.base import OneToOneFeatureMixin, TransformerMixin, BaseEstimator
+from sklearn.preprocessing import MinMaxScaler, PowerTransformer, StandardScaler
 import scipy.stats
 import scipy.special
 
 
-class AbstractNormalization(OneToOneFeatureMixin, NormalizationerMixin, BaseEstimator):
+class AbstractNormalization(OneToOneFeatureMixin, TransformerMixin, BaseEstimator):
     def __init__(self):
         super().__init__()
 
@@ -155,7 +155,7 @@ class BoxCoxNormalization(AbstractNormalization):
         super().__init__()
 
     def fit(self, X, y=None, sample_weight=None):
-        self.box_cox = PowerNormalizationer(method="yeo-johnson")
+        self.box_cox = PowerTransformer(method="yeo-johnson")
         self.box_cox.fit(X)
         return self
 
