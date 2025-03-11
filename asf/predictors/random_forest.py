@@ -17,30 +17,30 @@ class RandomForestClassifierWrapper(SklearnWrapper):
             f"{RandomForestClassifierWrapper.PREFIX}:n_estimators",
             (16, 128),
             log=True,
-            default_value=116,
+            default=116,
         )
         min_samples_split = Integer(
             f"{RandomForestClassifierWrapper.PREFIX}:min_samples_split",
             (2, 20),
             log=False,
-            default_value=2,
+            default=2,
         )
         min_samples_leaf = Integer(
             f"{RandomForestClassifierWrapper.PREFIX}:min_samples_leaf",
             (1, 20),
             log=False,
-            default_value=2,
+            default=2,
         )
         max_features = Float(
             f"{RandomForestClassifierWrapper.PREFIX}:max_features",
             (0.1, 1.0),
             log=False,
-            default_value=0.17055852159745608,
+            default=0.17055852159745608,
         )
         bootstrap = Categorical(
             f"{RandomForestClassifierWrapper.PREFIX}:bootstrap",
             choices=[True, False],
-            default_value=False,
+            default=False,
         )
 
         cs.add(
@@ -76,30 +76,30 @@ class RandomForestRegressorWrapper(SklearnWrapper):
             f"{RandomForestRegressorWrapper.PREFIX}:n_estimators",
             (16, 128),
             log=True,
-            default_value=116,
+            default=116,
         )
         min_samples_split = Integer(
             f"{RandomForestRegressorWrapper.PREFIX}:min_samples_split",
             (2, 20),
             log=False,
-            default_value=2,
+            default=2,
         )
         min_samples_leaf = Integer(
             f"{RandomForestRegressorWrapper.PREFIX}:min_samples_leaf",
             (1, 20),
             log=False,
-            default_value=2,
+            default=2,
         )
         max_features = Float(
             f"{RandomForestRegressorWrapper.PREFIX}:max_features",
             (0.1, 1.0),
             log=False,
-            default_value=0.17055852159745608,
+            default=0.17055852159745608,
         )
         bootstrap = Categorical(
             f"{RandomForestRegressorWrapper.PREFIX}:bootstrap",
             choices=[True, False],
-            default_value=False,
+            default=False,
         )
 
         cs.add(

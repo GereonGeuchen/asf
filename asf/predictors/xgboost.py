@@ -19,43 +19,43 @@ class XGBoostClassifierWrapper(SklearnWrapper):
             f"{XGBoostClassifierWrapper.PREFIX}:max_depth",
             (1, 20),
             log=False,
-            default_value=13,
+            default=13,
         )
         min_child_weight = Integer(
             f"{XGBoostClassifierWrapper.PREFIX}:min_child_weight",
             (1, 100),
             log=True,
-            default_value=39,
+            default=39,
         )
         colsample_bytree = Float(
             f"{XGBoostClassifierWrapper.PREFIX}:colsample_bytree",
             (0.0, 1.0),
             log=False,
-            default_value=0.2545374925231651,
+            default=0.2545374925231651,
         )
         colsample_bylevel = Float(
             f"{XGBoostClassifierWrapper.PREFIX}:colsample_bylevel",
             (0.0, 1.0),
             log=False,
-            default_value=0.6909224923784677,
+            default=0.6909224923784677,
         )
         lambda_param = Float(
             f"{XGBoostClassifierWrapper.PREFIX}:lambda",
             (0.001, 1000),
             log=True,
-            default_value=31.393252465064943,
+            default=31.393252465064943,
         )
         alpha = Float(
             f"{XGBoostClassifierWrapper.PREFIX}:alpha",
             (0.001, 1000),
             log=True,
-            default_value=0.24167936088332426,
+            default=0.24167936088332426,
         )
         learning_rate = Float(
             f"{XGBoostClassifierWrapper.PREFIX}:learning_rate",
             (0.001, 0.1),
             log=True,
-            default_value=0.008237525103357958,
+            default=0.008237525103357958,
         )
 
         cs.add(
@@ -105,43 +105,43 @@ class XGBoostRegressorWrapper(SklearnWrapper):
             f"{XGBoostRegressorWrapper.PREFIX}:max_depth",
             (1, 20),
             log=False,
-            default_value=13,
+            default=13,
         )
         min_child_weight = Integer(
             f"{XGBoostRegressorWrapper.PREFIX}:min_child_weight",
             (1, 100),
             log=True,
-            default_value=39,
+            default=39,
         )
         colsample_bytree = Float(
             f"{XGBoostRegressorWrapper.PREFIX}:colsample_bytree",
             (0.0, 1.0),
             log=False,
-            default_value=0.2545374925231651,
+            default=0.2545374925231651,
         )
         colsample_bylevel = Float(
             f"{XGBoostRegressorWrapper.PREFIX}:colsample_bylevel",
             (0.0, 1.0),
             log=False,
-            default_value=0.6909224923784677,
+            default=0.6909224923784677,
         )
         lambda_param = Float(
             f"{XGBoostRegressorWrapper.PREFIX}:lambda",
             (0.001, 1000),
             log=True,
-            default_value=31.393252465064943,
+            default=31.393252465064943,
         )
         alpha = Float(
             f"{XGBoostRegressorWrapper.PREFIX}:alpha",
             (0.001, 1000),
             log=True,
-            default_value=0.24167936088332426,
+            default=0.24167936088332426,
         )
         learning_rate = Float(
             f"{XGBoostRegressorWrapper.PREFIX}:learning_rate",
             (0.001, 0.1),
             log=True,
-            default_value=0.008237525103357958,
+            default=0.008237525103357958,
         )
 
         cs.add(
