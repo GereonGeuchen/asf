@@ -1,6 +1,7 @@
 from typing import Type
 
 import numpy as np
+import pandas as pd
 from sklearn.metrics import root_mean_squared_error
 from sklearn.model_selection import KFold
 from sklearn.model_selection._split import _BaseKFold
@@ -74,6 +75,12 @@ def tune_epm(
             kfold = GroupKFoldShuffle(n_splits=cv, shuffle=True, random_state=seed)
         else:
             kfold = KFold(n_splits=cv, shuffle=True, random_state=seed)
+
+        if isinstance(X, pd.DataFrame):
+            X = X.values
+        if isinstance(y, pd.Series):
+            y = y.values
+
 
         scores = []
         for train_idx, test_idx in kfold.split(X, y, groups):
