@@ -105,7 +105,7 @@ def tune_epm(
 
     return EPM(
         predictor_class=model_class,
-        normalization=normalization_class,
+        normalization_class=normalization_class,
         transform_back=True,
         predictor_config=best_config,
     )
