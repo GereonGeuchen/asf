@@ -26,7 +26,7 @@ def read_epmbench_scenario(path):
     else:
         instances = None
 
-    return data, metadata["features"], metadata["targets"], instances
+    return data, metadata["features"], metadata["targets"], instances, metadata
 
 
 def get_cv_fold(data, fold, features, target, instances=None):
