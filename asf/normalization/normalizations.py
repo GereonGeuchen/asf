@@ -26,14 +26,14 @@ class MinMaxNormalization(AbstractNormalization):
 
     def fit(self, X, y=None, sample_weight=None):
         self.min_max_scale = MinMaxScaler(feature_range=self.feature_range)
-        self.min_max_scale.fit(X)
+        self.min_max_scale.fit(X.reshape(-1, 1))
         return self
 
     def transform(self, X):
-        return self.min_max_scale.transform(X)
+        return self.min_max_scale.transform(X.reshape(-1, 1)).reshape(-1)
 
     def inverse_transform(self, X):
-        return self.min_max_scale.inverse_transform(X)
+        return self.min_max_scale.inverse_transform(X.reshape(-1, 1)).reshape(-1)
 
 
 class ZScoreNormalization(AbstractNormalization):
@@ -42,14 +42,14 @@ class ZScoreNormalization(AbstractNormalization):
 
     def fit(self, X, y=None, sample_weight=None):
         self.scaler = StandardScaler()
-        self.scaler.fit(X)
+        self.scaler.fit(X.reshape(-1, 1))
         return self
 
     def transform(self, X):
-        return self.scaler.transform(X)
+        return self.scaler.transform(X.reshape(-1, 1)).reshape(-1)
 
     def inverse_transform(self, X):
-        return self.scaler.inverse_transform(X)
+        return self.scaler.inverse_transform(X.reshape(-1, 1)).reshape(-1)
 
 
 class LogNormalization(AbstractNormalization):
@@ -62,20 +62,20 @@ class LogNormalization(AbstractNormalization):
     def fit(self, X, y=None, sample_weight=None):
         if self.normalize:
             self.min_max_scale = MinMaxScaler(feature_range=(self.eps, 1 - self.eps))
-            self.min_max_scale.fit(X)
+            self.min_max_scale.fit(X.reshape(-1, 1))
 
         return self
 
     def transform(self, X):
         if self.normalize:
-            X = self.min_max_scale.transform(X)
+            X = self.min_max_scale.transform(X.reshape(-1, 1)).reshape(-1)
 
         return np.log(X) / np.log(self.base)
 
     def inverse_transform(self, X):
         X = np.power(self.base, X)
         if self.normalize:
-            X = self.min_max_scale.inverse_transform(X)
+            X = self.min_max_scale.inverse_transform(X.reshape(-1, 1)).reshape(-1)
 
         return X
 
@@ -89,18 +89,18 @@ class SqrtNormalization(AbstractNormalization):
     def fit(self, X, y=None, sample_weight=None):
         if self.normalize:
             self.min_max_scale = MinMaxScaler(feature_range=(self.eps, 1 - self.eps))
-            self.min_max_scale.fit(X)
+            self.min_max_scale.fit(X.reshape(-1, 1))
         return self
 
     def transform(self, X):
         if self.normalize:
-            X = self.min_max_scale.transform(X)
+            X = self.min_max_scale.transform(X.reshape(-1, 1)).reshape(-1)
         return np.sqrt(X)
 
     def inverse_transform(self, X):
         X = np.power(X, 2)
         if self.normalize:
-            X = self.min_max_scale.inverse_transform(X)
+            X = self.min_max_scale.inverse_transform(X.reshape(-1, 1)).reshape(-1)
         return X
 
 
@@ -114,12 +114,12 @@ class InvSigmoidNormalization(AbstractNormalization):
         return self
 
     def transform(self, X):
-        X = self.min_max_scale.transform(X)
+        X = self.min_max_scale.transform(X.reshape(-1, 1)).reshape(-1)
         return np.log(X / (1 - X))
 
     def inverse_transform(self, X):
         X = scipy.special.expit(X)
-        return self.min_max_scale.inverse_transform(X)
+        return self.min_max_scale.inverse_transform(X.reshape(-1, 1)).reshape(-1)
 
 
 class NegExpNormalization(AbstractNormalization):
@@ -156,12 +156,12 @@ class BoxCoxNormalization(AbstractNormalization):
 
     def fit(self, X, y=None, sample_weight=None):
         self.box_cox = PowerTransformer(method="yeo-johnson")
-        self.box_cox.fit(X)
+        self.box_cox.fit(X.reshape(-1, 1))
         return self
 
     def transform(self, X):
-        return self.box_cox.transform(X)
+        return self.box_cox.transform(X.reshape(-1, 1)).reshape(-1)
 
     def inverse_transform(self, X):
-        X = self.box_cox.inverse_transform(X)
+        X = self.box_cox.inverse_transform(X.reshape(-1, 1)).reshape(-1)
         return X
