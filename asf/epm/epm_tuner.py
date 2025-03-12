@@ -53,6 +53,7 @@ def tune_epm(
     smac_metric=root_mean_squared_error,
     smac_scenario_kwargs: dict = {},
     smac_kwargs: dict = {},
+    predictor_kwargs: dict = {},
 ):
     """
     Tune the EPM model using SMAC.
@@ -91,6 +92,7 @@ def tune_epm(
                 normalization_class=normalization_class,
                 transform_back=True,
                 predictor_config=config,
+                predictor_kwargs=predictor_kwargs,
             )
             epm.fit(X_train, y_train)
 
