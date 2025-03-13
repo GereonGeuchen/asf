@@ -1,6 +1,7 @@
 from functools import partial
 from typing import Type
 
+import pandas as pd
 from sklearn.base import RegressorMixin
 
 from asf.normalization.normalizations import AbstractNormalization, LogNormalization
@@ -39,6 +40,11 @@ class EPM:
         y: Target variable
         sample_weight: Sample weights (optional)
         """
+        if isinstance(X, pd.DataFrame):
+            X = X.values
+        if isinstance(y, pd.Series):
+            y = y.values
+
         self.normalization = self.normalization_class()
         self.normalization.fit(y)
         y = self.normalization.transform(y)
