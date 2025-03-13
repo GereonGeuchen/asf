@@ -53,54 +53,54 @@ class ZScoreNormalization(AbstractNormalization):
 
 
 class LogNormalization(AbstractNormalization):
-    def __init__(self, base=10, normalize=True, eps=1e-6):
+    def __init__(self, base=10, eps=1e-6):
         super().__init__()
         self.base = base
-        self.normalize = normalize
         self.eps = eps
 
     def fit(self, X, y=None, sample_weight=None):
-        if self.normalize:
-            self.min_max_scale = MinMaxScaler(feature_range=(self.eps, 1 - self.eps))
-            self.min_max_scale.fit(X.reshape(-1, 1))
+        if X.min() < 0:
+            self.min_val = X.min()
+            X = X + self.min_val + self.eps
+        else:
+            self.min_val = 0
 
         return self
 
     def transform(self, X):
-        if self.normalize:
-            X = self.min_max_scale.transform(X.reshape(-1, 1)).reshape(-1)
+        X = X + self.min_val + self.eps
 
         return np.log(X) / np.log(self.base)
 
     def inverse_transform(self, X):
         X = np.power(self.base, X)
-        if self.normalize:
-            X = self.min_max_scale.inverse_transform(X.reshape(-1, 1)).reshape(-1)
+        if self.min_val != 0:
+            X = X - self.min_val - self.eps
 
         return X
 
 
 class SqrtNormalization(AbstractNormalization):
-    def __init__(self, normalize=True, eps=1e-6):
+    def __init__(self, eps=1e-6):
         super().__init__()
-        self.normalize = normalize
         self.eps = eps
 
     def fit(self, X, y=None, sample_weight=None):
-        if self.normalize:
-            self.min_max_scale = MinMaxScaler(feature_range=(self.eps, 1 - self.eps))
-            self.min_max_scale.fit(X.reshape(-1, 1))
+        if X.min() < 0:
+            self.min_val = X.min()
+            X = X + self.min_val + self.eps
+        else:
+            self.min_val = 0
         return self
 
     def transform(self, X):
-        if self.normalize:
-            X = self.min_max_scale.transform(X.reshape(-1, 1)).reshape(-1)
+        X = X + self.min_val + self.eps
         return np.sqrt(X)
 
     def inverse_transform(self, X):
         X = np.power(X, 2)
-        if self.normalize:
-            X = self.min_max_scale.inverse_transform(X.reshape(-1, 1)).reshape(-1)
+        if self.min_val != 0:
+            X = X - self.min_val - self.eps
         return X
 
 
