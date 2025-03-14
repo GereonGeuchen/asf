@@ -100,7 +100,7 @@ def tune_epm(
             score = smac_metric(y_test, y_pred)
             scores.append(score)
 
-        return -np.mean(scores)  # sklearn metrics are maximising but smac is minimising
+        return np.mean(scores)
 
     smac = HyperparameterOptimizationFacade(scenario, target_function, **smac_kwargs)
     best_config = smac.optimize()
