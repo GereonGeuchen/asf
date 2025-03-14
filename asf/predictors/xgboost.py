@@ -13,7 +13,7 @@ class XGBoostClassifierWrapper(SklearnWrapper):
     @staticmethod
     def get_configuration_space():
         cs = ConfigurationSpace(name="XGBoost")
-
+        # NB301
         booster = Constant(f"{XGBoostClassifierWrapper.PREFIX}:booster", "gbtree")
         max_depth = Integer(
             f"{XGBoostClassifierWrapper.PREFIX}:max_depth",

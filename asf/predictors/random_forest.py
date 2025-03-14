@@ -12,7 +12,7 @@ class RandomForestClassifierWrapper(SklearnWrapper):
     @staticmethod
     def get_configuration_space():
         cs = ConfigurationSpace(name="RandomForest")
-
+        # NB 301
         n_estimators = Integer(
             f"{RandomForestClassifierWrapper.PREFIX}:n_estimators",
             (16, 128),

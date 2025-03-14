@@ -12,7 +12,7 @@ class LinearClassifierWrapper(SklearnWrapper):
 
     def get_configuration_space():
         cs = ConfigurationSpace(name="Linear Classifier")
-
+        # HPOBENCH
         alpha = Float(
             f"{LinearClassifierWrapper.PREFIX}:alpha", (1e-5, 1), log=True, default=1e-3
         )

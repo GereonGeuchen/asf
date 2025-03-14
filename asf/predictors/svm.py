@@ -11,6 +11,7 @@ class SVMClassifierWrapper(SklearnWrapper):
         super().__init__(SVC, init_params)
 
     def get_configuration_space():
+        # NB301
         cs = ConfigurationSpace(name="SVM")
 
         kernel = Categorical(

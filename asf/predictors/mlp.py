@@ -22,8 +22,11 @@ class MLPClassifierWrapper(SklearnWrapper):
         )
 
         batch_size = Integer(
-            f"{MLPClassifierWrapper.PREFIX}:batch_size", (4, 256), default=32, log=True
-        )
+            f"{MLPClassifierWrapper.PREFIX}:batch_size",
+            (256, 1024),
+            default=32,
+            log=True,
+        )  # MODIFIED from HPOBENCH
 
         alpha = Float(
             f"{MLPClassifierWrapper.PREFIX}:alpha",
