@@ -1,5 +1,7 @@
 from asf.predictors.abstract_predictor import AbstractPredictor
 from asf.predictors.epm_random_forest import EPMRandomForest
+from asf.predictors.linear_model import LinearClassifierWrapper, LinearRegressorWrapper
+from asf.predictors.mlp import MLPClassifierWrapper, MLPRegressorWrapper
 from asf.predictors.random_forest import (
     RandomForestClassifierWrapper,
     RandomForestRegressorWrapper,
@@ -28,4 +30,8 @@ __all__ = [
     "XGBoostRegressorWrapper",
     "RandomForestClassifierWrapper",
     "RandomForestRegressorWrapper",
+    "MLPClassifierWrapper",
+    "MLPRegressorWrapper",
+    "LinearClassifierWrapper",
+    "LinearRegressorWrapper",
 ]
