@@ -1,4 +1,10 @@
-from typing import override
+try:
+    from typing import override
+except ImportError:
+
+    def override(func):
+        return func
+
 
 from ConfigSpace import ConfigurationSpace, Float, Integer
 from sklearn.neural_network import MLPClassifier, MLPRegressor
