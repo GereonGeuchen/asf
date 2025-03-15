@@ -85,7 +85,10 @@ class MLPRegressorWrapper(SklearnWrapper):
         )
 
         batch_size = Integer(
-            f"{MLPRegressorWrapper.PREFIX}:batch_size", (4, 256), default=32, log=True
+            f"{MLPRegressorWrapper.PREFIX}:batch_size",
+            (256, 1024),
+            default=256,
+            log=True,
         )
 
         alpha = Float(
@@ -112,9 +115,13 @@ class MLPRegressorWrapper(SklearnWrapper):
             configuration[f"{MLPRegressorWrapper.PREFIX}:width"]
         ] * configuration[f"{MLPRegressorWrapper.PREFIX}:depth"]
 
+        if "activation" not in additional_params:
+            additional_params["activation"] = "relu"
+        if "solver" not in additional_params:
+            additional_params["solver"] = "adam"
+
         mlp_params = {
             "hidden_layer_sizes": hidden_layers,
-            "depth": configuration[f"{MLPRegressorWrapper.PREFIX}:depth"],
             "batch_size": configuration[f"{MLPRegressorWrapper.PREFIX}:batch_size"],
             "alpha": configuration[f"{MLPRegressorWrapper.PREFIX}:alpha"],
             "learning_rate_init": configuration[
