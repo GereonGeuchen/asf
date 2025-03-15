@@ -53,7 +53,7 @@ class MLPClassifierWrapper(SklearnWrapper):
         ] * configuration[f"{MLPRegressorWrapper.PREFIX}:depth"]
 
         mlp_params = {
-            "hidden_layers": hidden_layers,
+            "hidden_layer_sizes": hidden_layers,
             "depth": configuration[f"{MLPRegressorWrapper.PREFIX}:depth"],
             "batch_size": configuration[f"{MLPRegressorWrapper.PREFIX}:batch_size"],
             "alpha": configuration[f"{MLPRegressorWrapper.PREFIX}:alpha"],
@@ -113,7 +113,7 @@ class MLPRegressorWrapper(SklearnWrapper):
         ] * configuration[f"{MLPRegressorWrapper.PREFIX}:depth"]
 
         mlp_params = {
-            "hidden_layers": hidden_layers,
+            "hidden_layer_sizes": hidden_layers,
             "depth": configuration[f"{MLPRegressorWrapper.PREFIX}:depth"],
             "batch_size": configuration[f"{MLPRegressorWrapper.PREFIX}:batch_size"],
             "alpha": configuration[f"{MLPRegressorWrapper.PREFIX}:alpha"],
