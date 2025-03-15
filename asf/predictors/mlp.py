@@ -1,3 +1,5 @@
+from typing import override
+
 from ConfigSpace import ConfigurationSpace, Float, Integer
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 
@@ -9,6 +11,23 @@ class MLPClassifierWrapper(SklearnWrapper):
 
     def __init__(self, init_params: dict = {}):
         super().__init__(MLPClassifier, init_params)
+
+    @override
+    def fit(self, X, Y, sample_weight=None, **kwargs):
+        """
+        Fit the model to the data.
+
+        Parameters
+        ----------
+        X : array-like
+            Training data.
+        Y : array-like
+            Target values.
+        """
+        assert sample_weight is None, (
+            "Sample weights are not supported for MLPClassifier"
+        )
+        self.model_class.fit(X, Y, **kwargs)
 
     def get_configuration_space():
         cs = ConfigurationSpace(name="MLP Classifier")
@@ -75,6 +94,23 @@ class MLPRegressorWrapper(SklearnWrapper):
 
     def __init__(self, init_params: dict = {}):
         super().__init__(MLPRegressor, init_params)
+
+    @override
+    def fit(self, X, Y, sample_weight=None, **kwargs):
+        """
+        Fit the model to the data.
+
+        Parameters
+        ----------
+        X : array-like
+            Training data.
+        Y : array-like
+            Target values.
+        """
+        assert sample_weight is None, (
+            "Sample weights are not supported for MLPRegressor"
+        )
+        self.model_class.fit(X, Y, **kwargs)
 
     @staticmethod
     def get_configuration_space():
