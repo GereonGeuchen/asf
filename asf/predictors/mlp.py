@@ -52,9 +52,13 @@ class MLPClassifierWrapper(SklearnWrapper):
             configuration[f"{MLPRegressorWrapper.PREFIX}:width"]
         ] * configuration[f"{MLPRegressorWrapper.PREFIX}:depth"]
 
+        if "activation" not in additional_params:
+            additional_params["activation"] = "relu"
+        if "solver" not in additional_params:
+            additional_params["solver"] = "adam"
+
         mlp_params = {
             "hidden_layer_sizes": hidden_layers,
-            "depth": configuration[f"{MLPRegressorWrapper.PREFIX}:depth"],
             "batch_size": configuration[f"{MLPRegressorWrapper.PREFIX}:batch_size"],
             "alpha": configuration[f"{MLPRegressorWrapper.PREFIX}:alpha"],
             "learning_rate_init": configuration[
@@ -63,7 +67,7 @@ class MLPClassifierWrapper(SklearnWrapper):
             **additional_params,
         }
 
-        return MLPRegressorWrapper(init_params=mlp_params)
+        return MLPClassifierWrapper(init_params=mlp_params)
 
 
 class MLPRegressorWrapper(SklearnWrapper):
