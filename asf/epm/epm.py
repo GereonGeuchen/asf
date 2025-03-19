@@ -6,6 +6,8 @@ from sklearn.base import RegressorMixin
 
 from asf.normalization.normalizations import AbstractNormalization, LogNormalization
 from asf.predictors import SklearnWrapper
+from asf.preprocessing.sklearn_preprocessor import get_default_preprocessor
+from sklearn.base import TransformerMixin
 from asf.predictors.abstract_predictor import AbstractPredictor
 
 
@@ -15,6 +17,9 @@ class EPM:
         predictor_class: Type[AbstractPredictor] | Type[RegressorMixin],
         normalization_class: Type[AbstractNormalization] = LogNormalization,
         transform_back: bool = True,
+        features_preprocessing: str | TransformerMixin = "default",
+        categorical_features: list = None,
+        numerical_features: list = None,
         predictor_config=None,
         predictor_kwargs=None,
     ):
@@ -31,6 +36,14 @@ class EPM:
         self.predictor_config = predictor_config
         self.predictor_kwargs = predictor_kwargs or {}
 
+        if features_preprocessing == "default":
+            self.features_preprocessing = get_default_preprocessor(
+                categorical_features=categorical_features,
+                numerical_features=numerical_features,
+            )
+        else:
+            self.features_preprocessing = features_preprocessing
+
     def fit(self, X, y, sample_weight=None):
         """
         Fit the EPM model to the data.
@@ -40,6 +53,9 @@ class EPM:
         y: Target variable
         sample_weight: Sample weights (optional)
         """
+        if self.features_preprocessing is not None:
+            X = self.features_preprocessing.fit_transform(X)
+
         if isinstance(X, pd.DataFrame):
             X = X.values
         if isinstance(y, pd.Series):
@@ -67,6 +83,9 @@ class EPM:
         X: Features"
         "
         """
+        if self.features_preprocessing is not None:
+            X = self.features_preprocessing.transform(X)
+
         y_pred = self.predictor.predict(X)
 
         if self.transform_back:

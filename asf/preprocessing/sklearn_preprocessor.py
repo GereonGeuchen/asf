@@ -3,6 +3,36 @@ import sklearn.impute
 import sklearn.preprocessing
 import sklearn.decomposition
 import pandas as pd
+from sklearn.compose import ColumnTransformer, make_column_selector
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.impute import SimpleImputer
+
+
+def get_default_preprocessor(categorical_features=None, numerical_features=None):
+    if categorical_features is None:
+        categorical_features = make_column_selector(dtype_include=object)
+
+    if numerical_features is None:
+        numerical_features = make_column_selector(dtype_include="number")
+
+    return ColumnTransformer(
+        [
+            (
+                "cat",
+                make_pipeline(
+                    SimpleImputer(strategy="most_frequent"),
+                    OneHotEncoder(sparse_output=False, handle_unknown="ignore"),
+                ),
+                categorical_features,
+            ),
+            (
+                "cont",
+                make_pipeline(SimpleImputer(strategy="median"), StandardScaler()),
+                numerical_features,
+            ),
+        ]
+    )
 
 
 class SklearnPreprocessor(AbstractPreprocessor):
