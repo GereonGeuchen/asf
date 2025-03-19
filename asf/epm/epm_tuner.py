@@ -2,6 +2,7 @@ from typing import Type
 
 import numpy as np
 import pandas as pd
+from sklearn.base import TransformerMixin
 from sklearn.metrics import root_mean_squared_error
 from sklearn.model_selection import KFold
 from sklearn.model_selection._split import _BaseKFold
@@ -44,6 +45,9 @@ def tune_epm(
     y,
     model_class: Type[AbstractPredictor],
     normalization_class: Type[AbstractNormalization] = LogNormalization,
+    features_preprocessing: str | TransformerMixin = "default",
+    categorical_features: list = None,
+    numerical_features: list = None,
     groups=None,
     cv: int = 5,
     timeout: int = 3600,
@@ -93,6 +97,9 @@ def tune_epm(
                 transform_back=True,
                 predictor_config=config,
                 predictor_kwargs=predictor_kwargs,
+                features_preprocessing=features_preprocessing,
+                categorical_features=categorical_features,
+                numerical_features=numerical_features,
             )
             epm.fit(X_train, y_train)
 
@@ -110,4 +117,7 @@ def tune_epm(
         normalization_class=normalization_class,
         transform_back=True,
         predictor_config=best_config,
+        features_preprocessing=features_preprocessing,
+        categorical_features=categorical_features,
+        numerical_features=numerical_features,
     )
