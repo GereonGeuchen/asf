@@ -11,6 +11,8 @@ from sklearn.neural_network import MLPClassifier, MLPRegressor
 
 from asf.predictors.sklearn_wrapper import SklearnWrapper
 
+from functools import partial
+
 
 class MLPClassifierWrapper(SklearnWrapper):
     PREFIX = "mlp_classifier"
@@ -92,7 +94,7 @@ class MLPClassifierWrapper(SklearnWrapper):
             **additional_params,
         }
 
-        return MLPClassifierWrapper(init_params=mlp_params)
+        return partial(MLPClassifierWrapper, init_params=mlp_params)
 
 
 class MLPRegressorWrapper(SklearnWrapper):
@@ -176,4 +178,4 @@ class MLPRegressorWrapper(SklearnWrapper):
             **additional_params,
         }
 
-        return MLPRegressorWrapper(init_params=mlp_params)
+        return partial(MLPRegressorWrapper, init_params=mlp_params)

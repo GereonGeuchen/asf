@@ -70,7 +70,7 @@ class EPM:
         else:
             self.predictor = self.predictor_class.get_from_configuration(
                 self.predictor_config, self.predictor_kwargs
-            )
+            )()
 
         self.predictor.fit(X, y, sample_weight=sample_weight)
         return self

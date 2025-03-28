@@ -1,6 +1,7 @@
 from asf.predictors.sklearn_wrapper import SklearnWrapper
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from ConfigSpace import ConfigurationSpace, Integer, Float, Categorical
+from functools import partial
 
 
 class RandomForestClassifierWrapper(SklearnWrapper):
@@ -70,7 +71,7 @@ class RandomForestClassifierWrapper(SklearnWrapper):
             **additional_params,
         }
 
-        return RandomForestClassifierWrapper(init_params=rf_params)
+        return partial(RandomForestClassifierWrapper, init_params=rf_params)
 
 
 class RandomForestRegressorWrapper(SklearnWrapper):
@@ -139,4 +140,4 @@ class RandomForestRegressorWrapper(SklearnWrapper):
             **additional_params,
         }
 
-        return RandomForestRegressorWrapper(init_params=rf_params)
+        return partial(RandomForestRegressorWrapper, init_params=rf_params)

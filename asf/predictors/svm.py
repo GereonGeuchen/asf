@@ -1,5 +1,6 @@
 from ConfigSpace import Categorical, ConfigurationSpace, Float, Integer
 from sklearn.svm import SVC, SVR
+from functools import partial
 
 from asf.predictors.sklearn_wrapper import SklearnWrapper
 
@@ -75,7 +76,7 @@ class SVMClassifierWrapper(SklearnWrapper):
             **additional_params,
         }
 
-        return SVMClassifierWrapper(init_params=svm_params)
+        return partial(SVMClassifierWrapper, init_params=svm_params)
 
 
 class SVMRegressorWrapper(SklearnWrapper):
@@ -144,4 +145,4 @@ class SVMRegressorWrapper(SklearnWrapper):
             **additional_params,
         }
 
-        return SVMRegressorWrapper(init_params=svr_params)
+        return partial(SVMRegressorWrapper, init_params=svr_params)

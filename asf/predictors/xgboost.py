@@ -2,6 +2,7 @@ from ConfigSpace import ConfigurationSpace, Constant, Float, Integer
 from xgboost import XGBRegressor, XGBClassifier
 
 from asf.predictors.sklearn_wrapper import SklearnWrapper
+from functools import partial
 
 
 class XGBoostClassifierWrapper(SklearnWrapper):
@@ -95,7 +96,7 @@ class XGBoostClassifierWrapper(SklearnWrapper):
             **additional_params,
         }
 
-        return XGBoostClassifierWrapper(init_params=xgb_params)
+        return partial(XGBoostClassifierWrapper, init_params=xgb_params)
 
 
 class XGBoostRegressorWrapper(SklearnWrapper):
@@ -189,4 +190,4 @@ class XGBoostRegressorWrapper(SklearnWrapper):
             **additional_params,
         }
 
-        return XGBoostRegressorWrapper(init_params=xgb_params)
+        return partial(XGBoostRegressorWrapper, init_params=xgb_params)
