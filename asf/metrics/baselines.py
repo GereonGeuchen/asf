@@ -35,7 +35,9 @@ def virtual_best_solver(schedules, performance, metadata):
         return performance.min(axis=1).sum()
 
 
-def running_time_selector_performance(schedules, performance, metadata, par):
+def running_time_selector_performance(
+    schedules, performance, metadata, par, feature_time
+):
     """
     Calculates the performance of a selector.
 
@@ -53,7 +55,11 @@ def running_time_selector_performance(schedules, performance, metadata, par):
         allocated_times = {algorithm: 0 for algorithm in metadata.algorithms}
         solved = False
         for algorithm, algo_budget in schedule:
-            remaining_budget = metadata.budget - sum(allocated_times.values())
+            remaining_budget = (
+                metadata.budget
+                - sum(allocated_times.values())
+                - feature_time.loc[instance].item()
+            )
             remaining_time_to_solve = performance.loc[instance, algorithm] - (
                 algo_budget + allocated_times[algorithm]
             )
@@ -67,13 +73,15 @@ def running_time_selector_performance(schedules, performance, metadata, par):
                 allocated_times[algorithm] += remaining_budget
                 break
         if solved:
-            total_time += sum(allocated_times.values())
+            total_time += (
+                sum(allocated_times.values()) + feature_time.loc[instance].item()
+            )
         else:
             total_time += metadata.budget * par
     return total_time
 
 
-def running_time_closed_gap(schedules, performance, metadata, par):
+def running_time_closed_gap(schedules, performance, metadata, par, feature_time):
     """
     Selects the best solver for each instance.
 
@@ -88,6 +96,8 @@ def running_time_closed_gap(schedules, performance, metadata, par):
     """
     sbs_val = single_best_solver(schedules, performance, metadata)
     vbs_val = virtual_best_solver(schedules, performance, metadata)
-    s_val = running_time_selector_performance(schedules, performance, metadata, par)
+    s_val = running_time_selector_performance(
+        schedules, performance, metadata, par, feature_time
+    )
 
     return (sbs_val - s_val) / (sbs_val - vbs_val)
