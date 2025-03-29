@@ -50,7 +50,7 @@ def running_time_selector_performance(
     Returns:
         float: The total running time.
     """
-    total_time = 0
+    total_time = {}
     for instance, schedule in schedules.items():
         allocated_times = {algorithm: 0 for algorithm in metadata.algorithms}
         solved = False
@@ -73,11 +73,11 @@ def running_time_selector_performance(
                 allocated_times[algorithm] += remaining_budget
                 break
         if solved:
-            total_time += (
+            total_time[instance] = (
                 sum(allocated_times.values()) + feature_time.loc[instance].item()
             )
         else:
-            total_time += metadata.budget * par
+            total_time[instance] += metadata.budget * par
     return total_time
 
 
@@ -96,8 +96,12 @@ def running_time_closed_gap(schedules, performance, metadata, par, feature_time)
     """
     sbs_val = single_best_solver(schedules, performance, metadata)
     vbs_val = virtual_best_solver(schedules, performance, metadata)
-    s_val = running_time_selector_performance(
-        schedules, performance, metadata, par, feature_time
+    s_val = sum(
+        list(
+            running_time_selector_performance(
+                schedules, performance, metadata, par, feature_time
+            ).values()
+        )
     )
 
     return (sbs_val - s_val) / (sbs_val - vbs_val)
