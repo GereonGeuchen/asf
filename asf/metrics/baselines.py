@@ -77,7 +77,7 @@ def running_time_selector_performance(
                 sum(allocated_times.values()) + feature_time.loc[instance].item()
             )
         else:
-            total_time[instance] += metadata.budget * par
+            total_time[instance] = metadata.budget * par
     return total_time
 
 
