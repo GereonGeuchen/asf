@@ -66,7 +66,7 @@ class EPM:
         y = self.normalization.transform(y)
 
         if self.predictor_config is None:
-            self.configuration_space = self.predictor_class()
+            self.predictor = self.predictor_class()
         else:
             self.predictor = self.predictor_class.get_from_configuration(
                 self.predictor_config, self.predictor_kwargs
