@@ -3,6 +3,8 @@ from sklearn.linear_model import SGDClassifier, SGDRegressor
 
 from asf.predictors.sklearn_wrapper import SklearnWrapper
 
+from functools import partial
+
 
 class LinearClassifierWrapper(SklearnWrapper):
     PREFIX = "linear_classifier"
@@ -32,7 +34,7 @@ class LinearClassifierWrapper(SklearnWrapper):
             **additional_params,
         }
 
-        return LinearClassifierWrapper(init_params=linear_classifier_params)
+        return partial(LinearClassifierWrapper, init_params=linear_classifier_params)
 
 
 class LinearRegressorWrapper(SklearnWrapper):
@@ -65,4 +67,4 @@ class LinearRegressorWrapper(SklearnWrapper):
             **additional_params,
         }
 
-        return LinearRegressorWrapper(init_params=linear_regressor_params)
+        return partial(LinearRegressorWrapper, init_params=linear_regressor_params)
