@@ -20,9 +20,9 @@ def read_epmbench_scenario(path):
         metadata = json.load(f)
 
     data = pd.read_parquet(os.path.join(path, "data.parquet"))
-    if "instance_column" in metadata:
-        instances = data[metadata["instance_column"]]
-        data.drop(columns=[metadata["instance_column"]], inplace=True)
+    if "groups" in metadata:
+        instances = data[metadata["groups"]]
+        data.drop(columns=[metadata["groups"]], inplace=True)
     else:
         instances = None
 
