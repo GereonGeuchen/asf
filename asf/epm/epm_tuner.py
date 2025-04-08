@@ -1,7 +1,6 @@
 from typing import Type
 
 import numpy as np
-import pandas as pd
 from sklearn.base import TransformerMixin
 from sklearn.metrics import root_mean_squared_error
 from sklearn.model_selection import KFold
@@ -74,11 +73,6 @@ def tune_epm(
         seed=seed,
         **smac_scenario_kwargs,
     )
-
-    if isinstance(X, pd.DataFrame):
-        X = X.values
-    if isinstance(y, pd.Series):
-        y = y.values
 
     def target_function(config, seed):
         if groups is not None:
