@@ -75,7 +75,7 @@ class LogNormalization(AbstractNormalization):
     def inverse_transform(self, X):
         X = np.power(self.base, X)
         if self.min_val != 0:
-            X = X - self.min_val - self.eps
+            X = X + self.min_val - self.eps
 
         return X
 
