@@ -82,8 +82,8 @@ def tune_epm(
 
         scores = []
         for train_idx, test_idx in kfold.split(X, y, groups):
-            X_train, X_test = X[train_idx], X[test_idx]
-            y_train, y_test = y[train_idx], y[test_idx]
+            X_train, X_test = X.iloc[train_idx], X.iloc[test_idx]
+            y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
 
             epm = EPM(
                 predictor_class=model_class,
