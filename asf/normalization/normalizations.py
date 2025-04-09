@@ -59,11 +59,12 @@ class LogNormalization(AbstractNormalization):
         self.eps = eps
 
     def fit(self, X, y=None, sample_weight=None):
-        if X.min() < 0:
+        if X.min() <= 0:
             self.min_val = X.min()
-            X = X + self.min_val + self.eps
+            X = X - self.min_val + self.eps
         else:
             self.min_val = 0
+            self.eps = 0
 
         return self
 
