@@ -106,6 +106,7 @@ def tune_epm(
     smac = HyperparameterOptimizationFacade(scenario, target_function, **smac_kwargs)
     best_config = smac.optimize()
 
+    del smac  # clean up SMAC to free memory and delete dask client
     return EPM(
         predictor_class=model_class,
         normalization_class=normalization_class,
