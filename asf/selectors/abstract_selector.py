@@ -23,6 +23,7 @@ class AbstractSelector:
         **kwargs,
     ):
         if self.hierarchical_generator is not None:
+            self.hierarchical_generator.fit(features, performance, algorithm_features)
             features = pd.concat(
                 [features, self.hierarchical_generator.generate_features(features)],
                 axis=1,
