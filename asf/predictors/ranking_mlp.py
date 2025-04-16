@@ -90,7 +90,7 @@ class RankingMLP(AbstractPredictor):
 
         optimizer = self.optimizer(self.model.parameters())
         self.model.train()
-        for epoch in range(1000):  # self.epochs):
+        for epoch in range(self.epochs):
             total_loss = 0
             for i, ((Xc, Xs, Xl), (yc, ys, yl)) in enumerate(dataloader):
                 Xc, Xs, Xl = Xc.to(self.device), Xs.to(self.device), Xl.to(self.device)
@@ -100,16 +100,6 @@ class RankingMLP(AbstractPredictor):
                 ys = ys.float().unsqueeze(1)
                 yl = yl.float().unsqueeze(1)
 
-                # yc = torch.log10(yc)
-                # ys = torch.log10(ys)
-                # yl = torch.log10(yl)
-                # print(Xc)
-                # print(Xs)
-                # print(Xl)
-
-                # print(yc)
-                # print(ys)
-                # print(yl)
                 optimizer.zero_grad()
 
                 y_pred = self.model(Xc)
@@ -117,7 +107,6 @@ class RankingMLP(AbstractPredictor):
                 y_pred_l = self.model(Xl)
 
                 loss = self.loss(y_pred, y_pred_s, y_pred_l, yc, ys, yl)
-                # loss = torch.nn.functional.mse_loss(y_pred, yc)
                 total_loss += loss.item()
 
                 loss.backward()
