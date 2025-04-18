@@ -28,7 +28,7 @@ def read_epmbench_scenario(path, load_subsample=False):
         groups = None
 
     if load_subsample:
-        with open(os.path.join(path, "subsamples.pkl"), "r") as f:
+        with open(os.path.join(path, "subsamples.pkl"), "rb") as f:
             subsample_dict = pickle.load(f)
 
     if not load_subsample:
