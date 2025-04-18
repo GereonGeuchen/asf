@@ -34,7 +34,14 @@ def read_epmbench_scenario(path, load_subsample=False):
     if load_subsample:
         return data, metadata["features"], metadata["targets"], groups, metadata
     else:
-        return data, metadata["features"], metadata["targets"], groups, metadata, subsample_dict
+        return (
+            data,
+            metadata["features"],
+            metadata["targets"],
+            groups,
+            metadata,
+            subsample_dict,
+        )
 
 
 def get_cv_fold(data, fold, features, target, groups=None):
@@ -71,7 +78,9 @@ def get_cv_fold(data, fold, features, target, groups=None):
     return X_train, y_train, X_test, y_test, groups_train, groups_test
 
 
-def get_subsample(data, iter, subsample_size, features, target, subsample_dict, groups=None):
+def get_subsample(
+    data, iter, subsample_size, features, target, subsample_dict, groups=None
+):
     """
     Splits the data into training and testing sets based on the specified fold.
 
@@ -85,7 +94,7 @@ def get_subsample(data, iter, subsample_size, features, target, subsample_dict, 
         tuple: A tuple containing the training and testing sets.
     """
     train_idx = subsample_dict["subsamples"][subsample_size][iter]
-    test_idx = subsample_dict['test']
+    test_idx = subsample_dict["test"]
 
     train_data = data.loc[train_idx]
     test_data = data.loc[test_idx]
