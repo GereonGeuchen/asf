@@ -31,7 +31,7 @@ def read_epmbench_scenario(path, load_subsample=False):
         with open(os.path.join(path, "subsample.json"), "r") as f:
             subsample_dict = pickle.load(f)
 
-    if load_subsample:
+    if not load_subsample:
         return data, metadata["features"], metadata["targets"], groups, metadata
     else:
         return (
