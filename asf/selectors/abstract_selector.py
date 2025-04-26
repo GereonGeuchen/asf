@@ -44,3 +44,35 @@ class AbstractSelector:
 
     def load(self, path):
         pass
+
+    def get_configuration_space(cs=None):
+        """
+        Get the configuration space for the predictor.
+
+        Parameters
+        ----------
+        cs : ConfigurationSpace, optional
+            The configuration space to use. If None, a new one will be created.
+
+        Returns
+        -------
+        ConfigurationSpace
+            The configuration space for the predictor.
+        """
+        raise NotImplementedError(
+            "get_configuration_space() is not implemented for this predictor"
+        )
+
+    @staticmethod
+    def get_from_configuration(configuration):
+        """
+        Get the configuration space for the predictor.
+
+        Returns
+        -------
+        AbstractPredictor
+            The predictor.
+        """
+        raise NotImplementedError(
+            "get_from_configuration() is not implemented for this predictor"
+        )
