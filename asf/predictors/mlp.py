@@ -37,8 +37,20 @@ class MLPClassifierWrapper(SklearnWrapper):
         )
         self.model_class.fit(X, Y, **kwargs)
 
-    def get_configuration_space():
-        cs = ConfigurationSpace(name="MLP Classifier")
+    def get_configuration_space(cs=None):
+        """
+        Get the configuration space for the MLP Classifier.
+        Parameters
+        ----------
+        cs : ConfigurationSpace, optional
+            The configuration space to add the parameters to. If None, a new ConfigurationSpace will be created.
+        Returns
+        -------
+        ConfigurationSpace
+            The configuration space with the MLP Classifier parameters.
+        """
+        if cs is None:
+            cs = ConfigurationSpace(name="MLP Classifier")
 
         depth = Integer(
             f"{MLPClassifierWrapper.PREFIX}:depth", (1, 3), default=3, log=False
@@ -121,8 +133,20 @@ class MLPRegressorWrapper(SklearnWrapper):
         self.model_class.fit(X, Y, **kwargs)
 
     @staticmethod
-    def get_configuration_space():
-        cs = ConfigurationSpace(name="MLP Regressor")
+    def get_configuration_space(cs=None):
+        """
+        Get the configuration space for the MLP Regressor.
+        Parameters
+        ----------
+        cs : ConfigurationSpace, optional
+            The configuration space to add the parameters to. If None, a new ConfigurationSpace will be created.
+        Returns
+        -------
+        ConfigurationSpace
+            The configuration space with the MLP Regressor parameters.
+        """
+        if cs is None:
+            cs = ConfigurationSpace(name="MLP Regressor")
 
         depth = Integer(
             f"{MLPRegressorWrapper.PREFIX}:depth", (1, 3), default=3, log=False

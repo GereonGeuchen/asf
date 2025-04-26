@@ -79,9 +79,15 @@ class AbstractPredictor(ABC):
         """
         pass
 
-    def get_configuration_space(self):
+    @staticmethod
+    def get_configuration_space(cs=None):
         """
         Get the configuration space for the predictor.
+
+        Parameters
+        ----------
+        cs : ConfigurationSpace, optional
+            The configuration space to add the parameters to. If None, a new ConfigurationSpace will be created.
 
         Returns
         -------

@@ -12,8 +12,20 @@ class LinearClassifierWrapper(SklearnWrapper):
     def __init__(self, init_params: dict = {}):
         super().__init__(SGDClassifier, init_params)
 
-    def get_configuration_space():
-        cs = ConfigurationSpace(name="Linear Classifier")
+    def get_configuration_space(cs=None):
+        """
+        Get the configuration space for the Linear Classifier.
+        Parameters
+        ----------
+        cs : ConfigurationSpace, optional
+            The configuration space to add the parameters to. If None, a new ConfigurationSpace will be created.
+        Returns
+        -------
+        ConfigurationSpace
+            The configuration space with the Linear Classifier parameters.
+        """
+        if cs is None:
+            cs = ConfigurationSpace(name="Linear Classifier")
         # HPOBENCH
         alpha = Float(
             f"{LinearClassifierWrapper.PREFIX}:alpha", (1e-5, 1), log=True, default=1e-3
@@ -44,8 +56,20 @@ class LinearRegressorWrapper(SklearnWrapper):
         super().__init__(SGDRegressor, init_params)
 
     @staticmethod
-    def get_configuration_space():
-        cs = ConfigurationSpace(name="Linear Regressor")
+    def get_configuration_space(cs=None):
+        """
+        Get the configuration space for the Linear Regressor.
+        Parameters
+        ----------
+        cs : ConfigurationSpace, optional
+            The configuration space to add the parameters to. If None, a new ConfigurationSpace will be created.
+        Returns
+        -------
+        ConfigurationSpace
+            The configuration space with the Linear Regressor parameters.
+        """
+        if cs is None:
+            cs = ConfigurationSpace(name="Linear Regressor")
 
         alpha = Float(
             f"{LinearRegressorWrapper.PREFIX}:alpha", (1e-5, 1), log=True, default=1e-3

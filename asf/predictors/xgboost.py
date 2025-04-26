@@ -1,5 +1,11 @@
 from ConfigSpace import ConfigurationSpace, Constant, Float, Integer
-from xgboost import XGBRegressor, XGBClassifier
+
+try:
+    from xgboost import XGBRegressor, XGBClassifier
+
+    XGB_AVAILABLE = True
+except ImportError:
+    XGB_AVAILABLE = False
 
 from asf.predictors.sklearn_wrapper import SklearnWrapper
 from functools import partial
@@ -9,12 +15,28 @@ class XGBoostClassifierWrapper(SklearnWrapper):
     PREFIX = "xgb_classifier"
 
     def __init__(self, init_params: dict = {}):
+        if not XGB_AVAILABLE:
+            raise ImportError(
+                "XGBoost is not installed. Please install it to XGBoost using pip install asf-lib[xgb]."
+            )
         super().__init__(XGBClassifier, init_params)
 
     @staticmethod
-    def get_configuration_space():
-        cs = ConfigurationSpace(name="XGBoost")
-        # NB301
+    def get_configuration_space(cs=None):
+        """
+        Get the configuration space for the XGBoost classifier.
+        Parameters
+        ----------
+        cs : ConfigurationSpace, optional
+            The configuration space to add the parameters to. If None, a new ConfigurationSpace will be created.
+        Returns
+        -------
+        ConfigurationSpace
+            The configuration space with the XGBoost parameters.
+        """
+        if cs is None:
+            cs = ConfigurationSpace(name="XGBoost")
+
         booster = Constant(f"{XGBoostClassifierWrapper.PREFIX}:booster", "gbtree")
         max_depth = Integer(
             f"{XGBoostClassifierWrapper.PREFIX}:max_depth",
@@ -106,8 +128,20 @@ class XGBoostRegressorWrapper(SklearnWrapper):
         super().__init__(XGBRegressor, init_params)
 
     @staticmethod
-    def get_configuration_space():
-        cs = ConfigurationSpace(name="XGBoostRegressor")
+    def get_configuration_space(cs=None):
+        """
+        Get the configuration space for the XGBoost regressor.
+        Parameters
+        ----------
+        cs : ConfigurationSpace, optional
+            The configuration space to add the parameters to. If None, a new ConfigurationSpace will be created.
+        Returns
+        -------
+        ConfigurationSpace
+            The configuration space with the XGBoost parameters.
+        """
+        if cs is None:
+            cs = ConfigurationSpace(name="XGBoostRegressor")
 
         booster = Constant(f"{XGBoostRegressorWrapper.PREFIX}:booster", "gbtree")
         max_depth = Integer(

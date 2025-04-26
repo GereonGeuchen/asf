@@ -11,8 +11,20 @@ class RandomForestClassifierWrapper(SklearnWrapper):
         super().__init__(RandomForestClassifier, init_params)
 
     @staticmethod
-    def get_configuration_space():
-        cs = ConfigurationSpace(name="RandomForest")
+    def get_configuration_space(cs=None):
+        """
+        Get the configuration space for the Random Forest Classifier.
+        Parameters
+        ----------
+        cs : ConfigurationSpace, optional
+            The configuration space to add the parameters to. If None, a new ConfigurationSpace will be created.
+        Returns
+        -------
+        ConfigurationSpace
+            The configuration space with the Random Forest Classifier parameters.
+        """
+        if cs is None:
+            cs = ConfigurationSpace(name="RandomForest")
         # NB 301
         n_estimators = Integer(
             f"{RandomForestClassifierWrapper.PREFIX}:n_estimators",
@@ -80,8 +92,20 @@ class RandomForestRegressorWrapper(SklearnWrapper):
     def __init__(self, init_params: dict = {}):
         super().__init__(RandomForestRegressor, init_params)
 
-    def get_configuration_space():
-        cs = ConfigurationSpace(name="RandomForestRegressor")
+    def get_configuration_space(cs=None):
+        """
+        Get the configuration space for the Random Forest Regressor.
+        Parameters
+        ----------
+        cs : ConfigurationSpace, optional
+            The configuration space to add the parameters to. If None, a new ConfigurationSpace will be created.
+        Returns
+        -------
+        ConfigurationSpace
+            The configuration space with the Random Forest Regressor parameters.
+        """
+        if cs is None:
+            cs = ConfigurationSpace(name="RandomForestRegressor")
 
         n_estimators = Integer(
             f"{RandomForestRegressorWrapper.PREFIX}:n_estimators",

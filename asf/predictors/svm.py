@@ -86,8 +86,20 @@ class SVMRegressorWrapper(SklearnWrapper):
         super().__init__(SVR, init_params)
 
     @staticmethod
-    def get_configuration_space():
-        cs = ConfigurationSpace(name="SVM Regressor")
+    def get_configuration_space(cs=None):
+        """
+        Get the configuration space for the SVM Regressor.
+        Parameters
+        ----------
+        cs : ConfigurationSpace, optional
+            The configuration space to add the parameters to. If None, a new ConfigurationSpace will be created.
+        Returns
+        -------
+        ConfigurationSpace
+            The configuration space with the SVM Regressor parameters.
+        """
+        if cs is None:
+            cs = ConfigurationSpace(name="SVM Regressor")
 
         kernel = Categorical(
             f"{SVMRegressorWrapper.PREFIX}:kernel",
