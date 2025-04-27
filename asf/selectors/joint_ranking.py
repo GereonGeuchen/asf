@@ -12,11 +12,6 @@ from asf.selectors.feature_generator import (
 class JointRanking(AbstractSelector, AbstractFeatureGenerator):
     """
     Joint ranking (Ortuzk et al. 2022)
-
-    Attributes:
-        use_multi_target: Boolean indicating whether to use multi-target regression.
-        normalize: Method to normalize the performance data.
-        regressors: List of trained regression models.
     """
 
     def __init__(
