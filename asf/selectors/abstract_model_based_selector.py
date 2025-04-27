@@ -1,6 +1,7 @@
 from asf.selectors.abstract_selector import AbstractSelector
 from asf.predictors import SklearnWrapper
 from sklearn.base import ClassifierMixin, RegressorMixin
+from asf.predictors.abstract_predictor import AbstractPredictor
 from functools import partial
 from typing import Type, Callable, Any, Union
 from pathlib import Path
@@ -14,29 +15,19 @@ class AbstractModelBasedSelector(AbstractSelector):
     with a model class, save the selector to a file, and load it back.
 
     Attributes:
-        model_class (callable): A callable that represents the model class to
+        model_class (Callable): A callable that represents the model class to
             be used. If the provided model_class is a subclass of
             `ClassifierMixin` or `RegressorMixin`, it is wrapped using
             `SklearnWrapper`.
 
     Methods:
-        save(path):
-            Saves the current instance of the selector to the specified file
-            path using `joblib`.
-
-        load(path):
-            Loads a previously saved instance of the selector from the
-            specified file path using `joblib`.
-
-    Args:
-        model_class (type or callable): The model class to be used. It can be
-            a subclass of `ClassifierMixin` or `RegressorMixin`, or any other
-            callable model class.
-        **kwargs: Additional keyword arguments to be passed to the parent
-            `AbstractSelector` class.
+        save(path: Union[str, Path]) -> None:
+            Saves the current instance of the selector to the specified file path.
+        load(path: Union[str, Path]) -> "AbstractModelBasedSelector":
+            Loads a previously saved instance of the selector from the specified file path.
     """
 
-    def __init__(self, model_class: Union[Type, Callable], **kwargs: Any) -> None:
+    def __init__(self, model_class: Type[AbstractPredictor], **kwargs: Any) -> None:
         """
         Initializes the AbstractModelBasedSelector.
 
@@ -58,22 +49,20 @@ class AbstractModelBasedSelector(AbstractSelector):
 
     def save(self, path: Union[str, Path]) -> None:
         """
-        Saves the selector instance to a file using joblib.
+        Saves the selector instance to the specified file path.
 
         Args:
-            path (Union[str, Path]): The file path where the selector
-                should be saved.
+            path (Union[str, Path]): The file path to save the selector.
         """
         joblib.dump(self, path)
 
     @staticmethod
     def load(path: Union[str, Path]) -> "AbstractModelBasedSelector":
         """
-        Loads a selector instance from a file using joblib.
+        Loads a selector instance from the specified file path.
 
         Args:
-            path (Union[str, Path]): The file path from which to load the
-                selector.
+            path (Union[str, Path]): The file path to load the selector from.
 
         Returns:
             AbstractModelBasedSelector: The loaded selector instance.

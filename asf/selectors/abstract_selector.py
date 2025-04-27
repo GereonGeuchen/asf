@@ -17,7 +17,7 @@ class AbstractSelector:
         Indicates whether the objective is to maximize or minimize the performance metric.
     budget : int or None
         The budget for the selector, if applicable.
-    feature_groups : list or None
+    feature_groups : list[str] or None
         Groups of features to be considered during selection.
     hierarchical_generator : AbstractFeatureGenerator or None
         A generator for hierarchical features, if applicable.
@@ -29,7 +29,7 @@ class AbstractSelector:
         self,
         budget: int | None = None,
         maximize: bool = False,
-        feature_groups: list | None = None,
+        feature_groups: list[str] | None = None,
         hierarchical_generator: AbstractFeatureGenerator | None = None,
     ):
         """
@@ -41,7 +41,7 @@ class AbstractSelector:
             The budget for the selector, if applicable. Defaults to None.
         maximize : bool, optional
             Indicates whether to maximize the performance metric. Defaults to False.
-        feature_groups : list or None, optional
+        feature_groups : list[str] or None, optional
             Groups of features to be considered during selection. Defaults to None.
         hierarchical_generator : AbstractFeatureGenerator or None, optional
             A generator for hierarchical features, if applicable. Defaults to None.
@@ -50,7 +50,7 @@ class AbstractSelector:
         self.budget = budget
         self.feature_groups = feature_groups
         self.hierarchical_generator = hierarchical_generator
-        self.algorithm_features = None
+        self.algorithm_features: pd.DataFrame | None = None
 
     def fit(
         self,
@@ -79,8 +79,8 @@ class AbstractSelector:
                 [features, self.hierarchical_generator.generate_features(features)],
                 axis=1,
             )
-        self.algorithms = performance.columns.to_list()
-        self.features = features.columns.to_list()
+        self.algorithms: list[str] = performance.columns.to_list()
+        self.features: list[str] = features.columns.to_list()
         self.algorithm_features = algorithm_features
         self._fit(features, performance, **kwargs)
 
@@ -128,6 +128,7 @@ class AbstractSelector:
         """
         pass
 
+    @staticmethod
     def get_configuration_space(
         cs: ConfigurationSpace | None = None, **kwargs
     ) -> ConfigurationSpace:

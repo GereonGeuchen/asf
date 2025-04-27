@@ -1,3 +1,17 @@
+"""
+This module provides functionality for tuning selector models using SMAC (Sequential Model-based Algorithm Configuration).
+The `tune_selector` function optimizes hyperparameters for selector models, allowing for flexible configuration
+of preprocessing, feature selection, and algorithm selection pipelines.
+
+Dependencies:
+- numpy
+- pandas
+- ConfigSpace
+- sklearn
+- smac
+- asf (custom modules)
+"""
+
 import numpy as np
 import pandas as pd
 from ConfigSpace import Categorical, ConfigurationSpace
@@ -16,26 +30,55 @@ from asf.utils.groupkfoldshuffle import GroupKFoldShuffle
 def tune_selector(
     X: pd.DataFrame,
     y: pd.DataFrame,
-    selector_class: AbstractSelector = [PairwiseClassifier, PairwiseRegressor],
+    selector_class: list[AbstractSelector] = [PairwiseClassifier, PairwiseRegressor],
     selector_space_kwargs: dict = {},
     selector_kwargs: dict = {},
     preprocessing_class: AbstractPreprocessor = None,
-    pre_solving=None,
-    feature_selector=None,
-    algorithm_pre_selector=None,
-    budget=None,
-    maximize=False,
-    feature_groups=None,
+    pre_solving: object = None,
+    feature_selector: object = None,
+    algorithm_pre_selector: object = None,
+    budget: float = None,
+    maximize: bool = False,
+    feature_groups: list = None,
     output_dir: str = "./smac_output",
-    smac_metric=running_time_selector_performance,
+    smac_metric: callable = running_time_selector_performance,
     smac_kwargs: dict = {},
     smac_scenario_kwargs: dict = {},
-    runcount_limit=100,
-    timeout=np.inf,
-    seed=None,
-    cv=10,
-    groups=None,
-):
+    runcount_limit: int = 100,
+    timeout: float = np.inf,
+    seed: int = None,
+    cv: int = 10,
+    groups: np.ndarray = None,
+) -> SelectorPipeline:
+    """
+    Tunes a selector model using SMAC for hyperparameter optimization.
+
+    Parameters:
+        X (pd.DataFrame): Feature matrix for training and testing.
+        y (pd.DataFrame): Target matrix for training and testing.
+        selector_class (list[AbstractSelector]): List of selector classes to tune. Defaults to [PairwiseClassifier, PairwiseRegressor].
+        selector_space_kwargs (dict): Additional arguments for the selector's configuration space.
+        selector_kwargs (dict): Additional arguments for the selector's instantiation.
+        preprocessing_class (AbstractPreprocessor, optional): Preprocessing class to apply before selector. Defaults to None.
+        pre_solving (object, optional): Pre-solving strategy to use. Defaults to None.
+        feature_selector (object, optional): Feature selector to use. Defaults to None.
+        algorithm_pre_selector (object, optional): Algorithm pre-selector to use. Defaults to None.
+        budget (float, optional): Budget for the selector. Defaults to None.
+        maximize (bool): Whether to maximize the metric. Defaults to False.
+        feature_groups (list, optional): Feature groups to consider. Defaults to None.
+        output_dir (str): Directory to store SMAC output. Defaults to "./smac_output".
+        smac_metric (callable): Metric function to evaluate the selector's performance. Defaults to `running_time_selector_performance`.
+        smac_kwargs (dict): Additional arguments for SMAC's optimization facade.
+        smac_scenario_kwargs (dict): Additional arguments for SMAC's scenario configuration.
+        runcount_limit (int): Maximum number of function evaluations. Defaults to 100.
+        timeout (float): Maximum wall-clock time for optimization. Defaults to np.inf.
+        seed (int, optional): Random seed for reproducibility. Defaults to None.
+        cv (int): Number of cross-validation splits. Defaults to 10.
+        groups (np.ndarray, optional): Group labels for cross-validation. Defaults to None.
+
+    Returns:
+        SelectorPipeline: A pipeline with the best-tuned selector and preprocessing steps.
+    """
     if type(selector_class) is not list:
         selector_class = [selector_class]
 

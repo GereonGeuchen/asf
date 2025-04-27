@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder
 
+from asf.predictors.abstract_predictor import AbstractPredictor
 from asf.selectors.abstract_model_based_selector import AbstractModelBasedSelector
 
 
@@ -14,7 +15,7 @@ class SimpleRanking(AbstractModelBasedSelector):
         classifier: The trained classification model.
     """
 
-    def __init__(self, model_class, **kwargs):
+    def __init__(self, model_class: AbstractPredictor, **kwargs):
         """
         Initializes the MultiClassClassifier with the given parameters.
 

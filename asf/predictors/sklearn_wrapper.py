@@ -1,5 +1,7 @@
 from sklearn.base import ClassifierMixin
 from asf.predictors.abstract_predictor import AbstractPredictor
+from typing import Any, Dict
+import numpy as np
 
 
 class SklearnWrapper(AbstractPredictor):
@@ -10,9 +12,9 @@ class SklearnWrapper(AbstractPredictor):
 
     Methods
     -------
-    fit(X, Y)
+    fit(X, Y, sample_weight=None, **kwargs)
         Fit the model to the data.
-    predict(X)
+    predict(X, **kwargs)
         Predict using the model.
     save(file_path)
         Save the model to a file.
@@ -20,47 +22,61 @@ class SklearnWrapper(AbstractPredictor):
         Load the model from a file.
     """
 
-    def __init__(self, model_class: ClassifierMixin, init_params: dict = {}):
+    def __init__(self, model_class: ClassifierMixin, init_params: Dict[str, Any] = {}):
         """
         Initialize the wrapper with a scikit-learn model.
 
         Parameters
         ----------
         model_class : ClassifierMixin
-            An instance of a scikit-learn model.
+            A scikit-learn model class.
+        init_params : dict, optional
+            Initialization parameters for the scikit-learn model (default is an empty dictionary).
         """
         self.model_class = model_class(**init_params)
 
-    def fit(self, X, Y, sample_weight=None, **kwargs):
+    def fit(
+        self,
+        X: np.ndarray,
+        Y: np.ndarray,
+        sample_weight: np.ndarray = None,
+        **kwargs: Any,
+    ) -> None:
         """
         Fit the model to the data.
 
         Parameters
         ----------
-        X : array-like
-            Training data.
-        Y : array-like
-            Target values.
+        X : np.ndarray
+            Training data of shape (n_samples, n_features).
+        Y : np.ndarray
+            Target values of shape (n_samples,).
+        sample_weight : np.ndarray, optional
+            Sample weights of shape (n_samples,) (default is None).
+        **kwargs : Any
+            Additional keyword arguments for the scikit-learn model's `fit` method.
         """
         self.model_class.fit(X, Y, sample_weight=sample_weight, **kwargs)
 
-    def predict(self, X, **kwargs):
+    def predict(self, X: np.ndarray, **kwargs: Any) -> np.ndarray:
         """
         Predict using the model.
 
         Parameters
         ----------
-        X : array-like
-            Data to predict on.
+        X : np.ndarray
+            Data to predict on of shape (n_samples, n_features).
+        **kwargs : Any
+            Additional keyword arguments for the scikit-learn model's `predict` method.
 
         Returns
         -------
-        array-like
-            Predicted values.
+        np.ndarray
+            Predicted values of shape (n_samples,).
         """
         return self.model_class.predict(X, **kwargs)
 
-    def save(self, file_path: str):
+    def save(self, file_path: str) -> None:
         """
         Save the model to a file.
 
@@ -73,7 +89,7 @@ class SklearnWrapper(AbstractPredictor):
 
         joblib.dump(self, file_path)
 
-    def load(self, file_path: str):
+    def load(self, file_path: str) -> "SklearnWrapper":
         """
         Load the model from a file.
 

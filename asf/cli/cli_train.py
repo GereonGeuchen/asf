@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
-"""CLI entry point for training selectors."""
+"""CLI entry point for training selectors.
+
+This script provides a command-line interface for training model-based selectors.
+It allows users to specify the selector type, model, budget, and other parameters
+to train and save the selector model.
+"""
 
 import argparse
 from pathlib import Path
 from functools import partial
+from typing import Dict, Callable, List
 
 import pandas as pd
 
@@ -11,7 +17,8 @@ from asf import selectors
 
 import sklearn
 
-pandas_read_map = {
+# Mapping of file extensions to pandas read functions
+pandas_read_map: Dict[str, Callable] = {
     ".csv": pd.read_csv,
     ".parquet": pd.read_parquet,
     ".json": pd.read_json,
@@ -23,7 +30,11 @@ pandas_read_map = {
 
 
 def parser_function() -> argparse.ArgumentParser:
-    """Define command line arguments."""
+    """Define command line arguments for the CLI.
+
+    Returns:
+        argparse.ArgumentParser: The argument parser with defined arguments.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--selector",
@@ -35,7 +46,7 @@ def parser_function() -> argparse.ArgumentParser:
         "--model",
         default="RandomForestClassifier",
         help="Model to use for the selector. "
-        "Make sure to specify as a an attribute of sklearn.ensemble.",
+        "Make sure to specify as an attribute of sklearn.ensemble.",
     )
     parser.add_argument(
         "--budget",
@@ -51,7 +62,13 @@ def parser_function() -> argparse.ArgumentParser:
         required=False,
         help="Maximize the objective",
     )
-    parser.add_argument("--performance-metric", type=str, default="", required=False)
+    parser.add_argument(
+        "--performance-metric",
+        type=str,
+        default="",
+        required=False,
+        help="Performance metric to optimize",
+    )
     parser.add_argument(
         "--feature-data",
         type=Path,
@@ -78,14 +95,17 @@ def build_cli_command(
     feature_data: Path,
     performance_data: Path,
     destination: Path,
-) -> list[str]:
-    """Build CLI command from variables for async jobs.
+) -> List[str]:
+    """Build a CLI command from variables for async jobs.
 
     Args:
-        selector: Selector to train
-        feature_data: Path to feature data DataFrame
-        performance_data: Path to performance data DataFrame
-        destination: Path to save model
+        selector (selectors.AbstractModelBasedSelector): Selector to train.
+        feature_data (Path): Path to feature data DataFrame.
+        performance_data (Path): Path to performance data DataFrame.
+        destination (Path): Path to save the trained model.
+
+    Returns:
+        List[str]: A list of command-line arguments to execute the training job.
     """
     model_class = (
         selector.model_class.args[0]
@@ -94,7 +114,7 @@ def build_cli_command(
     )
     return [
         "python",
-        Path(__file__).absolute(),
+        str(Path(__file__).absolute()),
         "--selector",
         type(selector).__name__,
         "--model",
@@ -118,7 +138,7 @@ if __name__ == "__main__":
     parser = parser_function()
     args = parser.parse_args()
 
-    # Parse selector in to variable
+    # Parse selector into variable
     selector_class = getattr(selectors, args.selector)
     model_class = getattr(sklearn.ensemble, args.model)
 

@@ -8,39 +8,61 @@ class EPMRandomForest(ExtraTreesRegressor, AbstractPredictor):
     Implementation of random forest as done in the paper
     "Algorithm runtime prediction: Methods & evaluation" by Hutter, Xu, Hoos, and Leyton-Brown (2014).
 
+    Attributes
+    ----------
+    log : bool
+        Whether to apply logarithmic transformation to tree values during training.
+
     Methods
     -------
-    fit(X, Y)
+    fit(X: np.ndarray, y: np.ndarray, sample_weight: np.ndarray | None = None) -> None
         Fit the model to the data.
-    predict(X)
-        Predict using the model.
-    save(file_path)
+    predict(X: np.ndarray) -> tuple[np.ndarray, np.ndarray]
+        Predict using the model and return means and variances.
+    save(file_path: str) -> None
         Save the model to a file.
-    load(file_path)
+    load(file_path: str) -> EPMRandomForest
         Load the model from a file.
     """
 
     def __init__(  # TODO check hparams
         self,
         *,
-        log=False,
+        log: bool = False,
         **kwargs,
     ) -> None:
-        super().__init__(
-            **kwargs,
-        )
+        """
+        Initialize the EPMRandomForest model.
+
+        Parameters
+        ----------
+        log : bool, optional
+            Whether to apply logarithmic transformation to tree values during training, by default False.
+        **kwargs : dict
+            Additional keyword arguments passed to the ExtraTreesRegressor.
+        """
+        super().__init__(**kwargs)
         self.log = log
 
-    def fit(self, X, y, sample_weight=None):
+    def fit(
+        self, X: np.ndarray, y: np.ndarray, sample_weight: np.ndarray | None = None
+    ) -> None:
         """
         Fit the model to the data.
 
         Parameters
         ----------
-        X : array-like
-            Training data.
-        y : array-like
-            Target values.
+        X : np.ndarray
+            Training data of shape (n_samples, n_features).
+        y : np.ndarray
+            Target values of shape (n_samples,).
+        sample_weight : np.ndarray | None, optional
+            Sample weights, by default None. Currently not supported.
+
+        Raises
+        ------
+        AssertionError
+            If sample weights are provided.
         """
         assert sample_weight is None, "Sample weights are not supported"
         super().fit(X=X, y=y, sample_weight=sample_weight)
@@ -55,19 +77,23 @@ class EPMRandomForest(ExtraTreesRegressor, AbstractPredictor):
                 for k in np.unique(preds):
                     tree.tree_.value[k, 0, 0] = np.log(np.exp(curY[preds == k]).mean())
 
-    def predict(self, X):
+    def predict(self, X: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         """
         Predict using the model.
 
         Parameters
         ----------
-        X : array-like
-            Data to predict on.
+        X : np.ndarray
+            Data to predict on of shape (n_samples, n_features).
 
         Returns
         -------
-        array-like
-            Predicted values.
+        tuple[np.ndarray, np.ndarray]
+            A tuple containing:
+            - means : np.ndarray of shape (n_samples, 1)
+                Predicted mean values.
+            - vars : np.ndarray of shape (n_samples, 1)
+                Predicted variances.
         """
         preds = []
         for tree, samples_idx in zip(self.estimators_, self.estimators_samples_):
@@ -79,7 +105,7 @@ class EPMRandomForest(ExtraTreesRegressor, AbstractPredictor):
 
         return means.reshape(-1, 1), vars.reshape(-1, 1)
 
-    def save(self, file_path: str):
+    def save(self, file_path: str) -> None:
         """
         Save the model to a file.
 
@@ -92,7 +118,7 @@ class EPMRandomForest(ExtraTreesRegressor, AbstractPredictor):
 
         joblib.dump(self, file_path)
 
-    def load(self, file_path: str):
+    def load(self, file_path: str) -> "EPMRandomForest":
         """
         Load the model from a file.
 

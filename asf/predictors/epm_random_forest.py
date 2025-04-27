@@ -6,45 +6,82 @@ from asf.predictors import AbstractPredictor
 
 class EPMRandomForest(ForestRegressor, AbstractPredictor):
     """
-    Implementation of random forest as done in the paper
+    Implementation of random forest as described in the paper
     "Algorithm runtime prediction: Methods & evaluation" by Hutter, Xu, Hoos, and Leyton-Brown (2014).
 
-    Methods
-    -------
-    fit(X, Y)
-        Fit the model to the data.
-    predict(X)
-        Predict using the model.
-    save(file_path)
-        Save the model to a file.
-    load(file_path)
-        Load the model from a file.
+    This class extends `ForestRegressor` and `AbstractPredictor` to provide
+    a random forest implementation with additional functionality for runtime prediction.
+
+    Parameters
+    ----------
+    n_estimators : int, optional
+        The number of trees in the forest. Default is 100.
+    log : bool, optional
+        Whether to apply logarithmic transformation to the tree values. Default is False.
+    cross_trees_variance : bool, optional
+        Whether to compute variance across trees. Default is False.
+    criterion : str, optional
+        The function to measure the quality of a split. Default is "squared_error".
+    splitter : str, optional
+        The strategy used to choose the split at each node. Default is "random".
+    max_depth : int, optional
+        The maximum depth of the tree. Default is None.
+    min_samples_split : int, optional
+        The minimum number of samples required to split an internal node. Default is 2.
+    min_samples_leaf : int, optional
+        The minimum number of samples required to be at a leaf node. Default is 1.
+    min_weight_fraction_leaf : float, optional
+        The minimum weighted fraction of the sum total of weights required to be at a leaf node. Default is 0.0.
+    max_features : float, optional
+        The number of features to consider when looking for the best split. Default is 1.0.
+    max_leaf_nodes : int, optional
+        Grow trees with max_leaf_nodes in best-first fashion. Default is None.
+    min_impurity_decrease : float, optional
+        A node will be split if this split induces a decrease of the impurity greater than or equal to this value. Default is 0.0.
+    bootstrap : bool, optional
+        Whether bootstrap samples are used when building trees. Default is False.
+    oob_score : bool, optional
+        Whether to use out-of-bag samples to estimate the generalization score. Default is False.
+    n_jobs : int, optional
+        The number of jobs to run in parallel. Default is None.
+    random_state : int, optional
+        Controls the randomness of the estimator. Default is None.
+    verbose : int, optional
+        Controls the verbosity when fitting and predicting. Default is 0.
+    warm_start : bool, optional
+        When set to True, reuse the solution of the previous call to fit and add more estimators to the ensemble. Default is False.
+    ccp_alpha : float, optional
+        Complexity parameter used for Minimal Cost-Complexity Pruning. Default is 0.0.
+    max_samples : int or float, optional
+        If bootstrap is True, the number of samples to draw from X to train each base estimator. Default is None.
+    monotonic_cst : array-like, optional
+        Constraints for monotonicity of features. Default is None.
     """
 
     def __init__(
         self,
         n_estimators: int = 100,
         *,
-        log=False,
-        cross_trees_variance=False,
-        criterion="squared_error",
-        splitter="random",
-        max_depth=None,
-        min_samples_split=2,
-        min_samples_leaf=1,
-        min_weight_fraction_leaf=0.0,
-        max_features=1.0,
-        max_leaf_nodes=None,
-        min_impurity_decrease=0.0,
+        log: bool = False,
+        cross_trees_variance: bool = False,
+        criterion: str = "squared_error",
+        splitter: str = "random",
+        max_depth: int = None,
+        min_samples_split: int = 2,
+        min_samples_leaf: int = 1,
+        min_weight_fraction_leaf: float = 0.0,
+        max_features: float = 1.0,
+        max_leaf_nodes: int = None,
+        min_impurity_decrease: float = 0.0,
         bootstrap: bool = False,
         oob_score: bool = False,
-        n_jobs=None,
-        random_state=None,
+        n_jobs: int = None,
+        random_state: int = None,
         verbose: int = 0,
         warm_start: bool = False,
-        ccp_alpha=0.0,
-        max_samples=None,
-        monotonic_cst=None,
+        ccp_alpha: float = 0.0,
+        max_samples: int | float = None,
+        monotonic_cst: np.ndarray = None,
     ) -> None:
         super().__init__(
             DecisionTreeRegressor(),
@@ -83,16 +120,25 @@ class EPMRandomForest(ForestRegressor, AbstractPredictor):
         self.splitter = splitter
         self.log = log
 
-    def fit(self, X, y, sample_weight=None):
+    def fit(
+        self, X: np.ndarray, y: np.ndarray, sample_weight: np.ndarray = None
+    ) -> None:
         """
         Fit the model to the data.
 
         Parameters
         ----------
-        X : array-like
-            Training data.
-        y : array-like
-            Target values.
+        X : np.ndarray
+            Training data of shape (n_samples, n_features).
+        y : np.ndarray
+            Target values of shape (n_samples,).
+        sample_weight : np.ndarray, optional
+            Sample weights. Default is None.
+
+        Raises
+        ------
+        AssertionError
+            If sample weights are provided, as they are not supported.
         """
         assert sample_weight is None, "Sample weights are not supported"
         super().fit(X=X, y=y, sample_weight=sample_weight)
@@ -107,19 +153,21 @@ class EPMRandomForest(ForestRegressor, AbstractPredictor):
                 for k in np.unique(preds):
                     tree.tree_.value[k, 0, 0] = np.log(np.exp(curY[preds == k]).mean())
 
-    def predict(self, X):
+    def predict(self, X: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         """
         Predict using the model.
 
         Parameters
         ----------
-        X : array-like
-            Data to predict on.
+        X : np.ndarray
+            Data to predict on of shape (n_samples, n_features).
 
         Returns
         -------
-        array-like
-            Predicted values.
+        tuple[np.ndarray, np.ndarray]
+            A tuple containing:
+            - Predicted means of shape (n_samples, 1).
+            - Predicted variances of shape (n_samples, 1).
         """
         preds = []
         for tree, samples_idx in zip(self.estimators_, self.estimators_samples_):
@@ -131,7 +179,7 @@ class EPMRandomForest(ForestRegressor, AbstractPredictor):
 
         return means.reshape(-1, 1), vars.reshape(-1, 1)
 
-    def save(self, file_path: str):
+    def save(self, file_path: str) -> None:
         """
         Save the model to a file.
 
@@ -144,7 +192,7 @@ class EPMRandomForest(ForestRegressor, AbstractPredictor):
 
         joblib.dump(self, file_path)
 
-    def load(self, file_path: str):
+    def load(self, file_path: str) -> "EPMRandomForest":
         """
         Load the model from a file.
 

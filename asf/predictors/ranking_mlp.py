@@ -1,9 +1,11 @@
-from typing import Callable
+from typing import Callable, Union
 
 import pandas as pd
 
 try:
     import torch
+    from torch.utils.data import DataLoader
+    from torch.optim import Optimizer
 
     TORCH_AVAILABLE = True
 except ImportError:
@@ -16,24 +18,40 @@ from asf.predictors.utils.mlp import get_mlp
 
 
 class RankingMLP(AbstractPredictor):
+    """
+    A ranking-based predictor using a Multi-Layer Perceptron (MLP).
+
+    This class implements a ranking model that uses an MLP to predict
+    the performance of algorithms based on input features.
+    """
+
     def __init__(
         self,
-        model: torch.nn.Module | None = None,
-        input_size: int | None = None,
-        loss: Callable | None = bpr_loss,
-        optimizer: torch.optim.Optimizer | None = torch.optim.Adam,
+        model: Union[torch.nn.Module, None] = None,
+        input_size: Union[int, None] = None,
+        loss: Callable = bpr_loss,
+        optimizer: Callable[..., Optimizer] = torch.optim.Adam,
         batch_size: int = 128,
         epochs: int = 500,
         seed: int = 42,
         device: str = "cpu",
-        compile=True,
+        compile: bool = True,
         **kwargs,
     ):
         """
-        Initializes the JointRanking with the given parameters.
+        Initializes the RankingMLP with the given parameters.
 
         Args:
-            model: The model to be used.
+            model (torch.nn.Module | None): The pre-defined PyTorch model to use. If None, a new MLP is created.
+            input_size (int | None): The input size for the MLP. Required if `model` is None.
+            loss (Callable): The loss function to use. Defaults to `bpr_loss`.
+            optimizer (Callable[..., torch.optim.Optimizer]): The optimizer class to use. Defaults to `torch.optim.Adam`.
+            batch_size (int): The batch size for training. Defaults to 128.
+            epochs (int): The number of training epochs. Defaults to 500.
+            seed (int): The random seed for reproducibility. Defaults to 42.
+            device (str): The device to use for training (e.g., "cpu" or "cuda"). Defaults to "cpu".
+            compile (bool): Whether to compile the model using `torch.compile`. Defaults to True.
+            **kwargs: Additional arguments for the parent class.
         """
         super().__init__(**kwargs)
         assert TORCH_AVAILABLE, "PyTorch is not available. Please install it."
@@ -65,7 +83,18 @@ class RankingMLP(AbstractPredictor):
         features: pd.DataFrame,
         performance: pd.DataFrame,
         algorithm_features: pd.DataFrame,
-    ):
+    ) -> DataLoader:
+        """
+        Creates a DataLoader for the given features and performance data.
+
+        Args:
+            features (pd.DataFrame): DataFrame containing the feature data.
+            performance (pd.DataFrame): DataFrame containing the performance data.
+            algorithm_features (pd.DataFrame): DataFrame containing algorithm-specific features.
+
+        Returns:
+            torch.utils.data.DataLoader: A DataLoader for the dataset.
+        """
         dataset = RankingDataset(features, performance, algorithm_features)
         return torch.utils.data.DataLoader(
             dataset, batch_size=self.batch_size, shuffle=True, num_workers=4
@@ -76,15 +105,18 @@ class RankingMLP(AbstractPredictor):
         features: pd.DataFrame,
         performance: pd.DataFrame,
         algorithm_features: pd.DataFrame,
-    ):
+    ) -> "RankingMLP":
         """
         Fits the model to the given feature and performance data.
 
         Args:
-            features: DataFrame containing the feature data.
-            performance: DataFrame containing the performance data.
-        """
+            features (pd.DataFrame): DataFrame containing the feature data.
+            performance (pd.DataFrame): DataFrame containing the performance data.
+            algorithm_features (pd.DataFrame): DataFrame containing algorithm-specific features.
 
+        Returns:
+            RankingMLP: The fitted model.
+        """
         print(self.model)
         dataloader = self._get_dataloader(features, performance, algorithm_features)
 
@@ -115,15 +147,15 @@ class RankingMLP(AbstractPredictor):
 
         return self
 
-    def predict(self, features: pd.DataFrame):
+    def predict(self, features: pd.DataFrame) -> pd.DataFrame:
         """
         Predicts the performance of algorithms for the given features.
 
         Args:
-            features: DataFrame containing the feature data.
+            features (pd.DataFrame): DataFrame containing the feature data.
 
         Returns:
-            DataFrame containing the predicted performance data.
+            pd.DataFrame: DataFrame containing the predicted performance data.
         """
         self.model.eval()
 
@@ -132,8 +164,20 @@ class RankingMLP(AbstractPredictor):
 
         return predictions
 
-    def save(self, file_path):
+    def save(self, file_path: str) -> None:
+        """
+        Saves the model to the specified file path.
+
+        Args:
+            file_path (str): The path to save the model.
+        """
         torch.save(self.model, file_path)
 
-    def load(self, file_path):
-        torch.load(file_path)
+    def load(self, file_path: str) -> None:
+        """
+        Loads the model from the specified file path.
+
+        Args:
+            file_path (str): The path to load the model from.
+        """
+        self.model = torch.load(file_path)

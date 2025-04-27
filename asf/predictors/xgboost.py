@@ -1,4 +1,6 @@
 from ConfigSpace import ConfigurationSpace, Constant, Float, Integer
+from typing import Optional, Dict, Any, Callable
+from functools import partial
 
 try:
     from xgboost import XGBRegressor, XGBClassifier, XGBRanker
@@ -8,27 +10,42 @@ except ImportError:
     XGB_AVAILABLE = False
 
 from asf.predictors.sklearn_wrapper import SklearnWrapper
-from functools import partial
 
 
 class XGBoostClassifierWrapper(SklearnWrapper):
-    PREFIX = "xgb_classifier"
+    """
+    Wrapper for the XGBoost classifier to integrate with the ASF framework.
+    """
 
-    def __init__(self, init_params: dict = {}):
+    PREFIX: str = "xgb_classifier"
+
+    def __init__(self, init_params: Optional[Dict[str, Any]] = None):
+        """
+        Initialize the XGBoostClassifierWrapper.
+
+        Parameters
+        ----------
+        init_params : dict, optional
+            Initialization parameters for the XGBoost classifier.
+        """
         if not XGB_AVAILABLE:
             raise ImportError(
-                "XGBoost is not installed. Please install it to XGBoost using pip install asf-lib[xgb]."
+                "XGBoost is not installed. Please install it using pip install asf-lib[xgb]."
             )
-        super().__init__(XGBClassifier, init_params)
+        super().__init__(XGBClassifier, init_params or {})
 
     @staticmethod
-    def get_configuration_space(cs=None):
+    def get_configuration_space(
+        cs: Optional[ConfigurationSpace] = None,
+    ) -> ConfigurationSpace:
         """
         Get the configuration space for the XGBoost classifier.
+
         Parameters
         ----------
         cs : ConfigurationSpace, optional
             The configuration space to add the parameters to. If None, a new ConfigurationSpace will be created.
+
         Returns
         -------
         ConfigurationSpace
@@ -97,7 +114,25 @@ class XGBoostClassifierWrapper(SklearnWrapper):
         return cs
 
     @staticmethod
-    def get_from_configuration(configuration, additional_params={}):
+    def get_from_configuration(
+        configuration: Dict[str, Any],
+        additional_params: Optional[Dict[str, Any]] = None,
+    ) -> Callable[..., "XGBoostClassifierWrapper"]:
+        """
+        Create an XGBoostClassifierWrapper from a configuration.
+
+        Parameters
+        ----------
+        configuration : dict
+            The configuration dictionary.
+        additional_params : dict, optional
+            Additional parameters to include in the configuration.
+
+        Returns
+        -------
+        Callable[..., XGBoostClassifierWrapper]
+            A callable that initializes the wrapper with the given configuration.
+        """
         xgb_params = {
             "booster": configuration[f"{XGBoostClassifierWrapper.PREFIX}:booster"],
             "max_depth": configuration[f"{XGBoostClassifierWrapper.PREFIX}:max_depth"],
@@ -115,26 +150,42 @@ class XGBoostClassifierWrapper(SklearnWrapper):
             "learning_rate": configuration[
                 f"{XGBoostClassifierWrapper.PREFIX}:learning_rate"
             ],
-            **additional_params,
+            **(additional_params or {}),
         }
 
         return partial(XGBoostClassifierWrapper, init_params=xgb_params)
 
 
 class XGBoostRegressorWrapper(SklearnWrapper):
-    PREFIX = "xgb_regressor"
+    """
+    Wrapper for the XGBoost regressor to integrate with the ASF framework.
+    """
 
-    def __init__(self, init_params: dict = {}):
-        super().__init__(XGBRegressor, init_params)
+    PREFIX: str = "xgb_regressor"
+
+    def __init__(self, init_params: Optional[Dict[str, Any]] = None):
+        """
+        Initialize the XGBoostRegressorWrapper.
+
+        Parameters
+        ----------
+        init_params : dict, optional
+            Initialization parameters for the XGBoost regressor.
+        """
+        super().__init__(XGBRegressor, init_params or {})
 
     @staticmethod
-    def get_configuration_space(cs=None):
+    def get_configuration_space(
+        cs: Optional[ConfigurationSpace] = None,
+    ) -> ConfigurationSpace:
         """
         Get the configuration space for the XGBoost regressor.
+
         Parameters
         ----------
         cs : ConfigurationSpace, optional
             The configuration space to add the parameters to. If None, a new ConfigurationSpace will be created.
+
         Returns
         -------
         ConfigurationSpace
@@ -203,7 +254,25 @@ class XGBoostRegressorWrapper(SklearnWrapper):
         return cs
 
     @staticmethod
-    def get_from_configuration(configuration, additional_params={}):
+    def get_from_configuration(
+        configuration: Dict[str, Any],
+        additional_params: Optional[Dict[str, Any]] = None,
+    ) -> Callable[..., "XGBoostRegressorWrapper"]:
+        """
+        Create an XGBoostRegressorWrapper from a configuration.
+
+        Parameters
+        ----------
+        configuration : dict
+            The configuration dictionary.
+        additional_params : dict, optional
+            Additional parameters to include in the configuration.
+
+        Returns
+        -------
+        Callable[..., XGBoostRegressorWrapper]
+            A callable that initializes the wrapper with the given configuration.
+        """
         xgb_params = {
             "booster": configuration[f"{XGBoostRegressorWrapper.PREFIX}:booster"],
             "max_depth": configuration[f"{XGBoostRegressorWrapper.PREFIX}:max_depth"],
@@ -221,26 +290,42 @@ class XGBoostRegressorWrapper(SklearnWrapper):
             "learning_rate": configuration[
                 f"{XGBoostRegressorWrapper.PREFIX}:learning_rate"
             ],
-            **additional_params,
+            **(additional_params or {}),
         }
 
         return partial(XGBoostRegressorWrapper, init_params=xgb_params)
 
 
 class XGBoostRankerWrapper(SklearnWrapper):
-    PREFIX = "xgb_ranker"
+    """
+    Wrapper for the XGBoost ranker to integrate with the ASF framework.
+    """
 
-    def __init__(self, init_params: dict = {}):
-        super().__init__(XGBRanker, init_params)
+    PREFIX: str = "xgb_ranker"
+
+    def __init__(self, init_params: Optional[Dict[str, Any]] = None):
+        """
+        Initialize the XGBoostRankerWrapper.
+
+        Parameters
+        ----------
+        init_params : dict, optional
+            Initialization parameters for the XGBoost ranker.
+        """
+        super().__init__(XGBRanker, init_params or {})
 
     @staticmethod
-    def get_configuration_space(cs=None):
+    def get_configuration_space(
+        cs: Optional[ConfigurationSpace] = None,
+    ) -> ConfigurationSpace:
         """
         Get the configuration space for the XGBoost ranker.
+
         Parameters
         ----------
         cs : ConfigurationSpace, optional
             The configuration space to add the parameters to. If None, a new ConfigurationSpace will be created.
+
         Returns
         -------
         ConfigurationSpace
@@ -308,7 +393,25 @@ class XGBoostRankerWrapper(SklearnWrapper):
         return cs
 
     @staticmethod
-    def get_from_configuration(configuration, additional_params={}):
+    def get_from_configuration(
+        configuration: Dict[str, Any],
+        additional_params: Optional[Dict[str, Any]] = None,
+    ) -> Callable[..., "XGBoostRankerWrapper"]:
+        """
+        Create an XGBoostRankerWrapper from a configuration.
+
+        Parameters
+        ----------
+        configuration : dict
+            The configuration dictionary.
+        additional_params : dict, optional
+            Additional parameters to include in the configuration.
+
+        Returns
+        -------
+        Callable[..., XGBoostRankerWrapper]
+            A callable that initializes the wrapper with the given configuration.
+        """
         xgb_params = {
             "booster": configuration[f"{XGBoostRankerWrapper.PREFIX}:booster"],
             "max_depth": configuration[f"{XGBoostRankerWrapper.PREFIX}:max_depth"],
@@ -326,7 +429,7 @@ class XGBoostRankerWrapper(SklearnWrapper):
             "learning_rate": configuration[
                 f"{XGBoostRankerWrapper.PREFIX}:learning_rate"
             ],
-            **additional_params,
+            **(additional_params or {}),
         }
 
         return partial(XGBoostRankerWrapper, init_params=xgb_params)

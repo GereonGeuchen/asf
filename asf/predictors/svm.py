@@ -1,18 +1,45 @@
 from ConfigSpace import Categorical, ConfigurationSpace, Float, Integer
 from sklearn.svm import SVC, SVR
 from functools import partial
+from typing import Dict, Any, Optional
 
 from asf.predictors.sklearn_wrapper import SklearnWrapper
 
 
 class SVMClassifierWrapper(SklearnWrapper):
+    """
+    A wrapper for the Scikit-learn SVC (Support Vector Classifier) model.
+    Provides methods to define a configuration space and create an instance
+    of the classifier from a configuration.
+
+    Attributes
+    ----------
+    PREFIX : str
+        Prefix used for parameter names in the configuration space.
+    """
+
     PREFIX = "svm_classifier"
 
-    def __init__(self, init_params: dict = {}):
+    def __init__(self, init_params: Dict[str, Any] = {}):
+        """
+        Initialize the SVMClassifierWrapper.
+
+        Parameters
+        ----------
+        init_params : dict, optional
+            Dictionary of parameters to initialize the SVC model.
+        """
         super().__init__(SVC, init_params)
 
-    def get_configuration_space():
-        # NB301
+    def get_configuration_space() -> ConfigurationSpace:
+        """
+        Define the configuration space for the SVM classifier.
+
+        Returns
+        -------
+        ConfigurationSpace
+            The configuration space containing hyperparameters for the SVM classifier.
+        """
         cs = ConfigurationSpace(name="SVM")
 
         kernel = Categorical(
@@ -63,7 +90,24 @@ class SVMClassifierWrapper(SklearnWrapper):
         return cs
 
     @staticmethod
-    def get_from_configuration(configuration, additional_params={}):
+    def get_from_configuration(
+        configuration: Dict[str, Any], additional_params: Optional[Dict[str, Any]] = {}
+    ) -> partial:
+        """
+        Create an SVMClassifierWrapper instance from a configuration.
+
+        Parameters
+        ----------
+        configuration : dict
+            Dictionary containing the configuration parameters.
+        additional_params : dict, optional
+            Additional parameters to include in the model initialization.
+
+        Returns
+        -------
+        partial
+            A partial function to create an SVMClassifierWrapper instance.
+        """
         svm_params = {
             "kernel": configuration[f"{SVMClassifierWrapper.PREFIX}:kernel"],
             "degree": configuration[f"{SVMClassifierWrapper.PREFIX}:degree"],
@@ -80,23 +124,47 @@ class SVMClassifierWrapper(SklearnWrapper):
 
 
 class SVMRegressorWrapper(SklearnWrapper):
+    """
+    A wrapper for the Scikit-learn SVR (Support Vector Regressor) model.
+    Provides methods to define a configuration space and create an instance
+    of the regressor from a configuration.
+
+    Attributes
+    ----------
+    PREFIX : str
+        Prefix used for parameter names in the configuration space.
+    """
+
     PREFIX = "svm_regressor"
 
-    def __init__(self, init_params: dict = {}):
+    def __init__(self, init_params: Dict[str, Any] = {}):
+        """
+        Initialize the SVMRegressorWrapper.
+
+        Parameters
+        ----------
+        init_params : dict, optional
+            Dictionary of parameters to initialize the SVR model.
+        """
         super().__init__(SVR, init_params)
 
     @staticmethod
-    def get_configuration_space(cs=None):
+    def get_configuration_space(
+        cs: Optional[ConfigurationSpace] = None,
+    ) -> ConfigurationSpace:
         """
-        Get the configuration space for the SVM Regressor.
+        Define the configuration space for the SVM regressor.
+
         Parameters
         ----------
         cs : ConfigurationSpace, optional
-            The configuration space to add the parameters to. If None, a new ConfigurationSpace will be created.
+            The configuration space to add the parameters to. If None, a new
+            ConfigurationSpace will be created.
+
         Returns
         -------
         ConfigurationSpace
-            The configuration space with the SVM Regressor parameters.
+            The configuration space containing hyperparameters for the SVM regressor.
         """
         if cs is None:
             cs = ConfigurationSpace(name="SVM Regressor")
@@ -144,7 +212,24 @@ class SVMRegressorWrapper(SklearnWrapper):
         return cs
 
     @staticmethod
-    def get_from_configuration(configuration, additional_params={}):
+    def get_from_configuration(
+        configuration: Dict[str, Any], additional_params: Optional[Dict[str, Any]] = {}
+    ) -> partial:
+        """
+        Create an SVMRegressorWrapper instance from a configuration.
+
+        Parameters
+        ----------
+        configuration : dict
+            Dictionary containing the configuration parameters.
+        additional_params : dict, optional
+            Additional parameters to include in the model initialization.
+
+        Returns
+        -------
+        partial
+            A partial function to create an SVMRegressorWrapper instance.
+        """
         svr_params = {
             "kernel": configuration[f"{SVMRegressorWrapper.PREFIX}:kernel"],
             "degree": configuration[f"{SVMRegressorWrapper.PREFIX}:degree"],

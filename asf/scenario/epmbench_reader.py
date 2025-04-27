@@ -1,21 +1,41 @@
 import json
 import os
 import pickle
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import pandas as pd
 
 
-def read_epmbench_scenario(path, load_subsample=False):
+def read_epmbench_scenario(
+    path: str, load_subsample: bool = False
+) -> Union[
+    Tuple[pd.DataFrame, List[str], List[str], Optional[pd.DataFrame], Dict[str, Any]],
+    Tuple[
+        pd.DataFrame,
+        List[str],
+        List[str],
+        Optional[pd.DataFrame],
+        Dict[str, Any],
+        Dict[str, Any],
+    ],
+]:
     """
     Reads the EPMBench scenario from the given path.
 
     Args:
+        path (str): Path to the EPMBench scenario directory.
+        load_subsample (bool, optional): Whether to load subsample data. Defaults to False.
 
-        path (str): Path to the EPMBench scenario file.
-
-        Returns:
-        dict: A dictionary containing the scenario metadata.
-
+    Returns:
+        Union[Tuple[pd.DataFrame, List[str], List[str], Optional[pd.DataFrame], Dict[str, Any]],
+              Tuple[pd.DataFrame, List[str], List[str], Optional[pd.DataFrame], Dict[str, Any], Dict[str, Any]]]:
+              If `load_subsample` is False, returns a tuple containing:
+                - data (pd.DataFrame): The main dataset.
+                - features (List[str]): List of feature names.
+                - targets (List[str]): List of target names.
+                - groups (Optional[pd.DataFrame]): Group information if available, otherwise None.
+                - metadata (Dict[str, Any]): Metadata dictionary.
+              If `load_subsample` is True, an additional subsample dictionary is included in the tuple.
     """
     with open(os.path.join(path, "metadata.json"), "r") as f:
         metadata = json.load(f)
@@ -44,18 +64,39 @@ def read_epmbench_scenario(path, load_subsample=False):
         )
 
 
-def get_cv_fold(data, fold, features, target, groups=None):
+def get_cv_fold(
+    data: pd.DataFrame,
+    fold: int,
+    features: List[str],
+    target: List[str],
+    groups: Optional[pd.DataFrame] = None,
+) -> Tuple[
+    pd.DataFrame,
+    pd.DataFrame,
+    pd.DataFrame,
+    pd.DataFrame,
+    Optional[pd.DataFrame],
+    Optional[pd.DataFrame],
+]:
     """
     Splits the data into training and testing sets based on the specified fold.
 
     Args:
         data (pd.DataFrame): The dataset.
         fold (int): The fold number.
-        features (list): List of feature names.
-        targets (list): List of target names.
+        features (List[str]): List of feature names.
+        target (List[str]): List of target names.
+        groups (Optional[pd.DataFrame], optional): Group information if available. Defaults to None.
 
     Returns:
-        tuple: A tuple containing the training and testing sets.
+        Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, Optional[pd.DataFrame], Optional[pd.DataFrame]]:
+        A tuple containing:
+            - X_train (pd.DataFrame): Training features.
+            - y_train (pd.DataFrame): Training targets.
+            - X_test (pd.DataFrame): Testing features.
+            - y_test (pd.DataFrame): Testing targets.
+            - groups_train (Optional[pd.DataFrame]): Training groups if available, otherwise None.
+            - groups_test (Optional[pd.DataFrame]): Testing groups if available, otherwise None.
     """
     train_idx = data["cv"] != fold
     test_idx = data["cv"] == fold
@@ -79,19 +120,42 @@ def get_cv_fold(data, fold, features, target, groups=None):
 
 
 def get_subsample(
-    data, iter, subsample_size, features, target, subsample_dict, groups=None
-):
+    data: pd.DataFrame,
+    iter: int,
+    subsample_size: int,
+    features: List[str],
+    target: List[str],
+    subsample_dict: Dict[str, Any],
+    groups: Optional[pd.DataFrame] = None,
+) -> Tuple[
+    pd.DataFrame,
+    pd.DataFrame,
+    pd.DataFrame,
+    pd.DataFrame,
+    Optional[pd.DataFrame],
+    Optional[pd.DataFrame],
+]:
     """
-    Splits the data into training and testing sets based on the specified fold.
+    Splits the data into training and testing sets based on the specified subsample iteration.
 
     Args:
         data (pd.DataFrame): The dataset.
         iter (int): The iteration number.
-        features (list): List of feature names.
-        targets (list): List of target names.
+        subsample_size (int): The size of the subsample.
+        features (List[str]): List of feature names.
+        target (List[str]): List of target names.
+        subsample_dict (Dict[str, Any]): Dictionary containing subsample indices.
+        groups (Optional[pd.DataFrame], optional): Group information if available. Defaults to None.
 
     Returns:
-        tuple: A tuple containing the training and testing sets.
+        Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, Optional[pd.DataFrame], Optional[pd.DataFrame]]:
+        A tuple containing:
+            - X_train (pd.DataFrame): Training features.
+            - y_train (pd.DataFrame): Training targets.
+            - X_test (pd.DataFrame): Testing features.
+            - y_test (pd.DataFrame): Testing targets.
+            - groups_train (Optional[pd.DataFrame]): Training groups if available, otherwise None.
+            - groups_test (Optional[pd.DataFrame]): Testing groups if available, otherwise None.
     """
     train_idx = subsample_dict["subsamples"][subsample_size][iter]
     test_idx = subsample_dict["test"]

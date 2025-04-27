@@ -1,5 +1,5 @@
 try:
-    from typing import override
+    from typing import override, Optional, Dict, Any
 except ImportError:
 
     def override(func):
@@ -15,13 +15,28 @@ from functools import partial
 
 
 class MLPClassifierWrapper(SklearnWrapper):
+    """
+    A wrapper for the MLPClassifier from scikit-learn, providing additional functionality
+    for configuration space and parameter handling.
+    """
+
     PREFIX = "mlp_classifier"
 
-    def __init__(self, init_params: dict = {}):
-        super().__init__(MLPClassifier, init_params)
+    def __init__(self, init_params: Optional[Dict[str, Any]] = None):
+        """
+        Initialize the MLPClassifierWrapper.
+
+        Parameters
+        ----------
+        init_params : dict, optional
+            Initial parameters for the MLPClassifier.
+        """
+        super().__init__(MLPClassifier, init_params or {})
 
     @override
-    def fit(self, X, Y, sample_weight=None, **kwargs):
+    def fit(
+        self, X: Any, Y: Any, sample_weight: Optional[Any] = None, **kwargs: Any
+    ) -> None:
         """
         Fit the model to the data.
 
@@ -31,19 +46,28 @@ class MLPClassifierWrapper(SklearnWrapper):
             Training data.
         Y : array-like
             Target values.
+        sample_weight : array-like, optional
+            Sample weights. Not supported for MLPClassifier.
+        kwargs : dict
+            Additional arguments for the fit method.
         """
         assert sample_weight is None, (
             "Sample weights are not supported for MLPClassifier"
         )
         self.model_class.fit(X, Y, **kwargs)
 
-    def get_configuration_space(cs=None):
+    @staticmethod
+    def get_configuration_space(
+        cs: Optional[ConfigurationSpace] = None,
+    ) -> ConfigurationSpace:
         """
         Get the configuration space for the MLP Classifier.
+
         Parameters
         ----------
         cs : ConfigurationSpace, optional
             The configuration space to add the parameters to. If None, a new ConfigurationSpace will be created.
+
         Returns
         -------
         ConfigurationSpace
@@ -86,10 +110,29 @@ class MLPClassifierWrapper(SklearnWrapper):
         return cs
 
     @staticmethod
-    def get_from_configuration(configuration, additional_params={}):
+    def get_from_configuration(
+        configuration: ConfigurationSpace,
+        additional_params: Optional[Dict[str, Any]] = None,
+    ) -> partial:
+        """
+        Create an MLPClassifierWrapper instance from a configuration.
+
+        Parameters
+        ----------
+        configuration : ConfigurationSpace
+            The configuration containing the parameters.
+        additional_params : dict, optional
+            Additional parameters to override the default configuration.
+
+        Returns
+        -------
+        partial
+            A partial function to create an MLPClassifierWrapper instance.
+        """
+        additional_params = additional_params or {}
         hidden_layers = [
-            configuration[f"{MLPRegressorWrapper.PREFIX}:width"]
-        ] * configuration[f"{MLPRegressorWrapper.PREFIX}:depth"]
+            configuration[f"{MLPClassifierWrapper.PREFIX}:width"]
+        ] * configuration[f"{MLPClassifierWrapper.PREFIX}:depth"]
 
         if "activation" not in additional_params:
             additional_params["activation"] = "relu"
@@ -98,10 +141,10 @@ class MLPClassifierWrapper(SklearnWrapper):
 
         mlp_params = {
             "hidden_layer_sizes": hidden_layers,
-            "batch_size": configuration[f"{MLPRegressorWrapper.PREFIX}:batch_size"],
-            "alpha": configuration[f"{MLPRegressorWrapper.PREFIX}:alpha"],
+            "batch_size": configuration[f"{MLPClassifierWrapper.PREFIX}:batch_size"],
+            "alpha": configuration[f"{MLPClassifierWrapper.PREFIX}:alpha"],
             "learning_rate_init": configuration[
-                f"{MLPRegressorWrapper.PREFIX}:learning_rate_init"
+                f"{MLPClassifierWrapper.PREFIX}:learning_rate_init"
             ],
             **additional_params,
         }
@@ -110,13 +153,28 @@ class MLPClassifierWrapper(SklearnWrapper):
 
 
 class MLPRegressorWrapper(SklearnWrapper):
+    """
+    A wrapper for the MLPRegressor from scikit-learn, providing additional functionality
+    for configuration space and parameter handling.
+    """
+
     PREFIX = "mlp_regressor"
 
-    def __init__(self, init_params: dict = {}):
-        super().__init__(MLPRegressor, init_params)
+    def __init__(self, init_params: Optional[Dict[str, Any]] = None):
+        """
+        Initialize the MLPRegressorWrapper.
+
+        Parameters
+        ----------
+        init_params : dict, optional
+            Initial parameters for the MLPRegressor.
+        """
+        super().__init__(MLPRegressor, init_params or {})
 
     @override
-    def fit(self, X, Y, sample_weight=None, **kwargs):
+    def fit(
+        self, X: Any, Y: Any, sample_weight: Optional[Any] = None, **kwargs: Any
+    ) -> None:
         """
         Fit the model to the data.
 
@@ -126,6 +184,10 @@ class MLPRegressorWrapper(SklearnWrapper):
             Training data.
         Y : array-like
             Target values.
+        sample_weight : array-like, optional
+            Sample weights. Not supported for MLPRegressor.
+        kwargs : dict
+            Additional arguments for the fit method.
         """
         assert sample_weight is None, (
             "Sample weights are not supported for MLPRegressor"
@@ -133,13 +195,17 @@ class MLPRegressorWrapper(SklearnWrapper):
         self.model_class.fit(X, Y, **kwargs)
 
     @staticmethod
-    def get_configuration_space(cs=None):
+    def get_configuration_space(
+        cs: Optional[ConfigurationSpace] = None,
+    ) -> ConfigurationSpace:
         """
         Get the configuration space for the MLP Regressor.
+
         Parameters
         ----------
         cs : ConfigurationSpace, optional
             The configuration space to add the parameters to. If None, a new ConfigurationSpace will be created.
+
         Returns
         -------
         ConfigurationSpace
@@ -182,7 +248,26 @@ class MLPRegressorWrapper(SklearnWrapper):
         return cs
 
     @staticmethod
-    def get_from_configuration(configuration, additional_params={}):
+    def get_from_configuration(
+        configuration: ConfigurationSpace,
+        additional_params: Optional[Dict[str, Any]] = None,
+    ) -> partial:
+        """
+        Create an MLPRegressorWrapper instance from a configuration.
+
+        Parameters
+        ----------
+        configuration : ConfigurationSpace
+            The configuration containing the parameters.
+        additional_params : dict, optional
+            Additional parameters to override the default configuration.
+
+        Returns
+        -------
+        partial
+            A partial function to create an MLPRegressorWrapper instance.
+        """
+        additional_params = additional_params or {}
         hidden_layers = [
             configuration[f"{MLPRegressorWrapper.PREFIX}:width"]
         ] * configuration[f"{MLPRegressorWrapper.PREFIX}:depth"]

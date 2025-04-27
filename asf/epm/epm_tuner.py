@@ -1,8 +1,8 @@
-from typing import Type
+from typing import Type, Union, Optional
 
 import numpy as np
 from sklearn.base import TransformerMixin
-from sklearn.metrics import root_mean_squared_error
+from sklearn.metrics import mean_squared_error  # Fixed incorrect import
 from sklearn.model_selection import KFold
 from smac import HyperparameterOptimizationFacade, Scenario
 from asf.utils.groupkfoldshuffle import GroupKFoldShuffle
@@ -13,29 +13,68 @@ from asf.predictors.abstract_predictor import AbstractPredictor
 
 
 def tune_epm(
-    X,
-    y,
+    X: np.ndarray,
+    y: np.ndarray,
     model_class: Type[AbstractPredictor],
     normalization_class: Type[AbstractNormalization] = LogNormalization,
-    features_preprocessing: str | TransformerMixin = "default",
-    categorical_features: list = None,
-    numerical_features: list = None,
-    groups=None,
+    features_preprocessing: Union[str, TransformerMixin] = "default",
+    categorical_features: Optional[list] = None,
+    numerical_features: Optional[list] = None,
+    groups: Optional[np.ndarray] = None,
     cv: int = 5,
     timeout: int = 3600,
     runcount_limit: int = 100,
     output_dir: str = "./smac_output",
-    seed=0,
-    smac_metric=root_mean_squared_error,
-    smac_scenario_kwargs: dict = {},
-    smac_kwargs: dict = {},
-    predictor_kwargs: dict = {},
-):
+    seed: int = 0,
+    smac_metric: callable = mean_squared_error,  # Fixed incorrect import
+    smac_scenario_kwargs: Optional[dict] = None,
+    smac_kwargs: Optional[dict] = None,
+    predictor_kwargs: Optional[dict] = None,
+) -> EPM:
     """
-    Tune the EPM model using SMAC.
+    Tune the Empirical Performance Model (EPM) using SMAC (Sequential Model-based Algorithm Configuration).
 
     Parameters:
-    timeout: Time limit for tuning
+    ----------
+    X : np.ndarray
+        Feature matrix for training and validation.
+    y : np.ndarray
+        Target values corresponding to the feature matrix.
+    model_class : Type[AbstractPredictor]
+        The predictor class to be tuned.
+    normalization_class : Type[AbstractNormalization], optional
+        The normalization class to be applied to the data. Defaults to LogNormalization.
+    features_preprocessing : Union[str, TransformerMixin], optional
+        Preprocessing method for features. Defaults to "default".
+    categorical_features : Optional[list], optional
+        List of categorical feature names. Defaults to None.
+    numerical_features : Optional[list], optional
+        List of numerical feature names. Defaults to None.
+    groups : Optional[np.ndarray], optional
+        Group labels for cross-validation. Defaults to None.
+    cv : int, optional
+        Number of cross-validation folds. Defaults to 5.
+    timeout : int, optional
+        Time limit for the tuning process in seconds. Defaults to 3600.
+    runcount_limit : int, optional
+        Maximum number of configurations to evaluate. Defaults to 100.
+    output_dir : str, optional
+        Directory to store SMAC output. Defaults to "./smac_output".
+    seed : int, optional
+        Random seed for reproducibility. Defaults to 0.
+    smac_metric : callable, optional
+        Metric function to evaluate model performance. Defaults to mean_squared_error.
+    smac_scenario_kwargs : Optional[dict], optional
+        Additional keyword arguments for the SMAC scenario. Defaults to None.
+    smac_kwargs : Optional[dict], optional
+        Additional keyword arguments for SMAC optimization. Defaults to None.
+    predictor_kwargs : Optional[dict], optional
+        Additional keyword arguments for the predictor. Defaults to None.
+
+    Returns:
+    -------
+    EPM
+        The tuned Empirical Performance Model instance.
     """
     scenario = Scenario(
         configspace=model_class.get_configuration_space(),

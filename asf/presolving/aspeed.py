@@ -7,8 +7,29 @@ from asf.presolving.presolver import AbstractPresolver
 
 
 # Python functions to handle custom operations
-def insert_factory(ts):
-    def insert(i, s, t):
+def insert_factory(ts: dict) -> callable:
+    """
+    Creates an `insert` function that adds a tuple (i, t) to the list associated with a key in the dictionary `ts`.
+
+    Args:
+        ts (dict): A dictionary to store tuples of (i, t) indexed by string keys.
+
+    Returns:
+        callable: A function that inserts a tuple into the dictionary.
+    """
+
+    def insert(i: int, s: str, t: int) -> clingo.Number:
+        """
+        Inserts a tuple (i, t) into the dictionary `ts` under the key `s`.
+
+        Args:
+            i (int): An identifier.
+            s (str): A string key.
+            t (int): A value to be stored.
+
+        Returns:
+            clingo.Number: Always returns clingo.Number(1).
+        """
         key = str(s)
         if key not in ts:
             ts[key] = []
@@ -18,8 +39,27 @@ def insert_factory(ts):
     return insert
 
 
-def order_factory(ts):
-    def order(s):
+def order_factory(ts: dict) -> callable:
+    """
+    Creates an `order` function that sorts and processes tuples in the dictionary `ts`.
+
+    Args:
+        ts (dict): A dictionary containing lists of tuples to be sorted.
+
+    Returns:
+        callable: A function that orders tuples and generates a list of clingo.Function objects.
+    """
+
+    def order(s: str) -> list[clingo.Function]:
+        """
+        Orders tuples in the dictionary `ts` under the key `s` and generates clingo.Function objects.
+
+        Args:
+            s (str): A string key.
+
+        Returns:
+            list[clingo.Function]: A list of clingo.Function objects representing ordered pairs.
+        """
         key = str(s)
         if key not in ts:
             ts[key] = []
@@ -36,15 +76,42 @@ def order_factory(ts):
 
 
 class Aspeed(AbstractPresolver):
-    def __init__(self, metadata, cores: int, cutoff: int):
+    """
+    A presolver class that uses Answer Set Programming (ASP) to compute a schedule for solving instances.
+
+    Attributes:
+        cores (int): Number of CPU cores to use.
+        cutoff (int): Time limit for solving.
+        data_threshold (int): Minimum number of instances to use.
+        data_fraction (float): Fraction of instances to use.
+        schedule (list): Computed schedule of algorithms and their budgets.
+    """
+
+    def __init__(self, metadata: dict, cores: int, cutoff: int) -> None:
+        """
+        Initializes the Aspeed presolver.
+
+        Args:
+            metadata (dict): Metadata for the presolver.
+            cores (int): Number of CPU cores to use.
+            cutoff (int): Time limit for solving.
+        """
         super().__init__(metadata)
         self.cores = cores
         self.cutoff = cutoff
         self.data_threshold = 300  # minimal number of instances to use
         self.data_fraction = 0.3  # fraction of instances to use
+        self.schedule: list[tuple[str, float]] = []
 
-    def _fit(self, features: pd.DataFrame, performance: pd.DataFrame):
-        ts = {}
+    def _fit(self, features: pd.DataFrame, performance: pd.DataFrame) -> None:
+        """
+        Fits the presolver to the given features and performance data.
+
+        Args:
+            features (pd.DataFrame): A DataFrame containing feature data.
+            performance (pd.DataFrame): A DataFrame containing performance data.
+        """
+        ts: dict = {}
 
         # Create factories for the functions using the local `ts`
         insert = insert_factory(ts)
@@ -117,7 +184,16 @@ class Aspeed(AbstractPresolver):
         # Ground the logic program
         ctl.ground(data_in)
 
-        def clingo_callback(model):
+        def clingo_callback(model: clingo.Model) -> bool:
+            """
+            Callback function to process the Clingo model.
+
+            Args:
+                model (clingo.Model): The Clingo model.
+
+            Returns:
+                bool: Always returns False to stop after the first model.
+            """
             schedule_dict = {}
             for slice in model.symbols(shown=True):
                 algo = self.algorithms[slice.arguments[1].number]
@@ -134,4 +210,10 @@ class Aspeed(AbstractPresolver):
                 self.schedule = []
 
     def _predict(self) -> dict[str, list[tuple[str, float]]]:
+        """
+        Predicts the schedule based on the fitted model.
+
+        Returns:
+            dict[str, list[tuple[str, float]]]: A dictionary containing the schedule.
+        """
         return self.schedule

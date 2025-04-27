@@ -1,17 +1,20 @@
 import pandas as pd
+from typing import Dict, List, Tuple, Optional, Union
 
 
-def single_best_solver(schedules, performance, maximize):
+def single_best_solver(
+    schedules: pd.DataFrame, performance: pd.DataFrame, maximize: bool
+) -> float:
     """
-    Selects the best solver for each instance.
+    Selects the single best solver across all instances based on the aggregated performance.
 
     Args:
-        schedules (pd.DataFrame): The schedules to evaluate.
+        schedules (pd.DataFrame): The schedules to evaluate (not used in this function).
         performance (pd.DataFrame): The performance data for the algorithms.
         maximize (bool): Whether to maximize or minimize the performance.
 
     Returns:
-        pd.Series: The selected solvers.
+        float: The best aggregated performance value across all instances.
     """
     perf_sum = performance.sum(axis=0)
     if maximize:
@@ -20,17 +23,19 @@ def single_best_solver(schedules, performance, maximize):
         return perf_sum.min()
 
 
-def virtual_best_solver(schedules, performance, maximize):
+def virtual_best_solver(
+    schedules: pd.DataFrame, performance: pd.DataFrame, maximize: bool
+) -> float:
     """
-    Selects the best solver for each instance.
+    Selects the virtual best solver for each instance by choosing the best performance per instance.
 
     Args:
-        schedules (pd.DataFrame): The schedules to evaluate.
+        schedules (pd.DataFrame): The schedules to evaluate (not used in this function).
         performance (pd.DataFrame): The performance data for the algorithms.
         maximize (bool): Whether to maximize or minimize the performance.
 
     Returns:
-        pd.Series: The selected solvers.
+        float: The sum of the best performance values for each instance.
     """
     if maximize:
         return performance.max(axis=1).sum()
@@ -39,21 +44,25 @@ def virtual_best_solver(schedules, performance, maximize):
 
 
 def running_time_selector_performance(
-    schedules, performance, budget, par=10, feature_time=None
-):
+    schedules: Dict[str, List[Tuple[str, float]]],
+    performance: pd.DataFrame,
+    budget: float,
+    par: float = 10,
+    feature_time: Optional[pd.DataFrame] = None,
+) -> Dict[str, Union[float, int]]:
     """
-    Calculates the performance of a selector.
+    Calculates the total running time for a selector based on the given schedules and performance data.
 
     Args:
-        schedules (dict): The schedules to evaluate.
+        schedules (Dict[str, List[Tuple[str, float]]]): The schedules to evaluate, where each key is an instance
+            and the value is a list of tuples (algorithm, allocated budget).
         performance (pd.DataFrame): The performance data for the algorithms.
-        maximize (bool): Whether to maximize or minimize the performance.
         budget (float): The budget for the scenario.
-        par (float): The penalization factor.
-        feature_time (pd.DataFrame): The feature time data.
+        par (float): The penalization factor for unsolved instances.
+        feature_time (Optional[pd.DataFrame]): The feature time data for each instance. Defaults to zero if not provided.
 
     Returns:
-        float: The total running time.
+        Dict[str, Union[float, int]]: A dictionary mapping each instance to its total running time.
     """
     if feature_time is None:
         feature_time = pd.DataFrame(
@@ -90,18 +99,26 @@ def running_time_selector_performance(
     return total_time
 
 
-def running_time_closed_gap(schedules, performance, budget, par, feature_time):
+def running_time_closed_gap(
+    schedules: Dict[str, List[Tuple[str, float]]],
+    performance: pd.DataFrame,
+    budget: float,
+    par: float,
+    feature_time: pd.DataFrame,
+) -> float:
     """
-    Selects the best solver for each instance.
+    Calculates the closed gap metric for a given selector.
 
     Args:
-        schedules (pd.DataFrame): The schedules to evaluate.
+        schedules (Dict[str, List[Tuple[str, float]]]): The schedules to evaluate.
         performance (pd.DataFrame): The performance data for the algorithms.
         budget (float): The budget for the scenario.
-        par (float): The penalization factor.
+        par (float): The penalization factor for unsolved instances.
+        feature_time (pd.DataFrame): The feature time data for each instance.
 
     Returns:
-        float: The closed gap value.
+        float: The closed gap value, representing the improvement of the selector over the single best solver
+        relative to the virtual best solver.
     """
     sbs_val = single_best_solver(schedules, performance, False)
     vbs_val = virtual_best_solver(schedules, performance, False)

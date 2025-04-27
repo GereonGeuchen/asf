@@ -1,55 +1,58 @@
 import numpy as np
 import pandas as pd
 import inspect
+from typing import Type, List, Dict, Union
 
 from asf.selectors.abstract_model_based_selector import AbstractModelBasedSelector
-from asf.selectors.feature_generator import (
-    AbstractFeatureGenerator,
-)
+from asf.selectors.feature_generator import AbstractFeatureGenerator
 
 
 class PerformanceModel(AbstractModelBasedSelector, AbstractFeatureGenerator):
     """
-    PerformancePredictor is a class that predicts the performance of algorithms
+    PerformanceModel is a class that predicts the performance of algorithms
     based on given features. It can handle both single-target and multi-target
     regression models.
 
     Attributes:
-        model_class: The class of the regression model to be used.
-        use_multi_target: Boolean indicating whether to use multi-target regression.
-        normalize: Method to normalize the performance data.
-        regressors: List of trained regression models.
+        model_class (Type): The class of the regression model to be used.
+        use_multi_target (bool): Indicates whether to use multi-target regression.
+        normalize (str): Method to normalize the performance data. Default is "log".
+        regressors (Union[List, object]): List of trained regression models or a single model for multi-target regression.
+        algorithm_features (Optional[pd.DataFrame]): Features specific to each algorithm, if applicable.
+        algorithms (List[str]): List of algorithm names.
+        maximize (bool): Whether to maximize or minimize the performance metric.
+        budget (float): Budget associated with the predictions.
     """
 
     def __init__(
         self,
-        model_class,
-        use_multi_target=False,
-        normalize="log",
+        model_class: Type,
+        use_multi_target: bool = False,
+        normalize: str = "log",
         **kwargs,
     ):
         """
-        Initializes the PerformancePredictor with the given parameters.
+        Initializes the PerformanceModel with the given parameters.
 
         Args:
-            model_class: The class of the regression model to be used.
-            use_multi_target: Boolean indicating whether to use multi-target regression.
-            normalize: Method to normalize the performance data.
-            hierarchical_generator: Feature generator to be used.
+            model_class (Type): The class of the regression model to be used.
+            use_multi_target (bool): Indicates whether to use multi-target regression.
+            normalize (str): Method to normalize the performance data. Default is "log".
+            **kwargs: Additional arguments for the parent classes.
         """
         AbstractModelBasedSelector.__init__(self, model_class, **kwargs)
         AbstractFeatureGenerator.__init__(self)
-        self.regressors = []
-        self.use_multi_target = use_multi_target
-        self.normalize = normalize
+        self.regressors: Union[List, object] = []
+        self.use_multi_target: bool = use_multi_target
+        self.normalize: str = normalize
 
-    def _fit(self, features: pd.DataFrame, performance: pd.DataFrame):
+    def _fit(self, features: pd.DataFrame, performance: pd.DataFrame) -> None:
         """
         Fits the regression models to the given features and performance data.
 
         Args:
-            features: DataFrame containing the feature data.
-            performance: DataFrame containing the performance data.
+            features (pd.DataFrame): DataFrame containing the feature data.
+            performance (pd.DataFrame): DataFrame containing the performance data.
         """
         assert self.algorithm_features is None, (
             "PerformanceModel does not use algorithm features."
@@ -92,15 +95,16 @@ class PerformanceModel(AbstractModelBasedSelector, AbstractFeatureGenerator):
                 self.regressors = self.model_class(**regressor_init_args)
                 self.regressors.fit(train_data.iloc[:, :-1], train_data.iloc[:, -1])
 
-    def _predict(self, features: pd.DataFrame):
+    def _predict(self, features: pd.DataFrame) -> Dict[str, List[tuple]]:
         """
         Predicts the performance of algorithms for the given features.
 
         Args:
-            features: DataFrame containing the feature data.
+            features (pd.DataFrame): DataFrame containing the feature data.
 
         Returns:
-            A dictionary mapping instance names to the predicted best algorithm.
+            Dict[str, List[tuple]]: A dictionary mapping instance names to the predicted best algorithm
+            and the associated budget.
         """
         predictions = self.generate_features(features)
 
@@ -118,15 +122,15 @@ class PerformanceModel(AbstractModelBasedSelector, AbstractFeatureGenerator):
             for i, instance_name in enumerate(features.index)
         }
 
-    def generate_features(self, features: pd.DataFrame) -> pd.DataFrame:
+    def generate_features(self, features: pd.DataFrame) -> np.ndarray:
         """
         Generates predictions for the given features using the trained models.
 
         Args:
-            features: DataFrame containing the feature data.
+            features (pd.DataFrame): DataFrame containing the feature data.
 
         Returns:
-            DataFrame containing the predictions for each algorithm.
+            np.ndarray: Array containing the predictions for each algorithm.
         """
         if self.use_multi_target:
             predictions = self.regressors.predict(features)

@@ -19,19 +19,28 @@ class RegressionMLP(AbstractPredictor):
         model: torch.nn.Module | None = None,
         input_size: int | None = None,
         loss: torch.nn.modules.loss._Loss | None = torch.nn.MSELoss(),
-        optimizer: torch.optim.Optimizer | None = torch.optim.Adam,
+        optimizer: type[torch.optim.Optimizer] | None = torch.optim.Adam,
         batch_size: int = 128,
         epochs: int = 2000,
         seed: int = 42,
         device: str = "cpu",
-        compile=True,
+        compile: bool = True,
         **kwargs,
     ):
         """
-        Initializes the JointRanking with the given parameters.
+        Initializes the RegressionMLP with the given parameters.
 
         Args:
-            model: The model to be used.
+            model (torch.nn.Module | None): The PyTorch model to be used. If None, a new MLP model will be created.
+            input_size (int | None): The size of the input features. Required if `model` is None.
+            loss (torch.nn.modules.loss._Loss | None): The loss function to be used. Defaults to Mean Squared Error Loss.
+            optimizer (type[torch.optim.Optimizer] | None): The optimizer class to be used. Defaults to Adam.
+            batch_size (int): The batch size for training. Defaults to 128.
+            epochs (int): The number of epochs for training. Defaults to 2000.
+            seed (int): The random seed for reproducibility. Defaults to 42.
+            device (str): The device to run the model on ('cpu' or 'cuda'). Defaults to 'cpu'.
+            compile (bool): Whether to compile the model using `torch.compile`. Defaults to True.
+            **kwargs: Additional keyword arguments passed to the parent class.
         """
         super().__init__(**kwargs)
 
@@ -58,21 +67,35 @@ class RegressionMLP(AbstractPredictor):
         if compile:
             self.model = torch.compile(self.model)
 
-    def _get_dataloader(self, features: pd.DataFrame, performance: pd.DataFrame):
+    def _get_dataloader(
+        self, features: pd.DataFrame, performance: pd.DataFrame
+    ) -> torch.utils.data.DataLoader:
+        """
+        Creates a DataLoader for the given features and performance data.
+
+        Args:
+            features (pd.DataFrame): DataFrame containing the feature data.
+            performance (pd.DataFrame): DataFrame containing the performance data.
+
+        Returns:
+            torch.utils.data.DataLoader: DataLoader for the dataset.
+        """
         dataset = RegressionDataset(features, performance)
         return torch.utils.data.DataLoader(
             dataset, batch_size=self.batch_size, shuffle=True
         )
 
-    def fit(self, features: pd.DataFrame, performance: pd.DataFrame):
+    def fit(self, features: pd.DataFrame, performance: pd.DataFrame) -> "RegressionMLP":
         """
         Fits the model to the given feature and performance data.
 
         Args:
-            features: DataFrame containing the feature data.
-            performance: DataFrame containing the performance data.
-        """
+            features (pd.DataFrame): DataFrame containing the feature data.
+            performance (pd.DataFrame): DataFrame containing the performance data.
 
+        Returns:
+            RegressionMLP: The fitted model instance.
+        """
         features = pd.DataFrame(
             SimpleImputer().fit_transform(features.values),
             index=features.index,
@@ -96,25 +119,37 @@ class RegressionMLP(AbstractPredictor):
 
         return self
 
-    def predict(self, features: pd.DataFrame):
+    def predict(self, features: pd.DataFrame) -> pd.DataFrame:
         """
         Predicts the performance of algorithms for the given features.
 
         Args:
-            features: DataFrame containing the feature data.
+            features (pd.DataFrame): DataFrame containing the feature data.
 
         Returns:
-            DataFrame containing the predicted performance data.
+            pd.DataFrame: DataFrame containing the predicted performance data.
         """
         self.model.eval()
 
         features = torch.from_numpy(features.values).to(self.device)
         predictions = self.model(features).detach().numpy()
 
-        return predictions
+        return pd.DataFrame(predictions, index=features.cpu().numpy().index)
 
-    def save(self, file_path):
+    def save(self, file_path: str) -> None:
+        """
+        Saves the model to the specified file path.
+
+        Args:
+            file_path (str): The path to save the model.
+        """
         torch.save(self.model, file_path)
 
-    def load(self, file_path):
-        torch.load(file_path)
+    def load(self, file_path: str) -> None:
+        """
+        Loads the model from the specified file path.
+
+        Args:
+            file_path (str): The path to load the model from.
+        """
+        self.model = torch.load(file_path)

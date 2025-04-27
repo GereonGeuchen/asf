@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Type
+from typing import Type, Union, Optional
 
 import pandas as pd
 from sklearn.base import RegressorMixin
@@ -12,17 +12,43 @@ from asf.predictors.abstract_predictor import AbstractPredictor
 
 
 class EPM:
+    """
+    The EPM (Empirical Performance Model) class is a wrapper for machine learning models
+    that includes preprocessing, normalization, and optional inverse transformation of predictions.
+
+    Attributes:
+        predictor_class (Type[AbstractPredictor] | Type[RegressorMixin]): The class of the predictor to use.
+        normalization_class (Type[AbstractNormalization]): The normalization class to apply to the target variable.
+        transform_back (bool): Whether to apply inverse transformation to predictions.
+        features_preprocessing (Union[str, TransformerMixin]): Preprocessing pipeline for features.
+        predictor_config (Optional[dict]): Configuration for the predictor.
+        predictor_kwargs (Optional[dict]): Additional keyword arguments for the predictor.
+    """
+
     def __init__(
         self,
-        predictor_class: Type[AbstractPredictor] | Type[RegressorMixin],
+        predictor_class: Union[Type[AbstractPredictor], Type[RegressorMixin]],
         normalization_class: Type[AbstractNormalization] = LogNormalization,
         transform_back: bool = True,
-        features_preprocessing: str | TransformerMixin = "default",
-        categorical_features: list = None,
-        numerical_features: list = None,
-        predictor_config=None,
-        predictor_kwargs=None,
+        features_preprocessing: Union[str, TransformerMixin] = "default",
+        categorical_features: Optional[list] = None,
+        numerical_features: Optional[list] = None,
+        predictor_config: Optional[dict] = None,
+        predictor_kwargs: Optional[dict] = None,
     ):
+        """
+        Initialize the EPM model.
+
+        Parameters:
+            predictor_class (Type[AbstractPredictor] | Type[RegressorMixin]): The class of the predictor to use.
+            normalization_class (Type[AbstractNormalization]): The normalization class to apply to the target variable.
+            transform_back (bool): Whether to apply inverse transformation to predictions.
+            features_preprocessing (Union[str, TransformerMixin]): Preprocessing pipeline for features.
+            categorical_features (Optional[list]): List of categorical feature names.
+            numerical_features (Optional[list]): List of numerical feature names.
+            predictor_config (Optional[dict]): Configuration for the predictor.
+            predictor_kwargs (Optional[dict]): Additional keyword arguments for the predictor.
+        """
         if isinstance(predictor_class, type) and issubclass(
             predictor_class, (RegressorMixin)
         ):
@@ -44,14 +70,22 @@ class EPM:
         else:
             self.features_preprocessing = features_preprocessing
 
-    def fit(self, X, y, sample_weight=None):
+    def fit(
+        self,
+        X: Union[pd.DataFrame, pd.Series, list],
+        y: Union[pd.Series, list],
+        sample_weight: Optional[list] = None,
+    ) -> "EPM":
         """
         Fit the EPM model to the data.
 
         Parameters:
-        X: Features
-        y: Target variable
-        sample_weight: Sample weights (optional)
+            X (Union[pd.DataFrame, pd.Series, list]): Features.
+            y (Union[pd.Series, list]): Target variable.
+            sample_weight (Optional[list]): Sample weights (optional).
+
+        Returns:
+            EPM: The fitted EPM model.
         """
         if self.features_preprocessing is not None:
             X = self.features_preprocessing.fit_transform(X)
@@ -75,13 +109,15 @@ class EPM:
         self.predictor.fit(X, y, sample_weight=sample_weight)
         return self
 
-    def predict(self, X):
+    def predict(self, X: Union[pd.DataFrame, pd.Series, list]) -> list:
         """
         Predict using the fitted EPM model.
 
         Parameters:
-        X: Features"
-        "
+            X (Union[pd.DataFrame, pd.Series, list]): Features.
+
+        Returns:
+            list: Predicted values.
         """
         if self.features_preprocessing is not None:
             X = self.features_preprocessing.transform(X)

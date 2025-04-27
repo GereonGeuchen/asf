@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 from abc import ABC, abstractmethod
 
 
@@ -8,14 +8,18 @@ class AbstractPredictor(ABC):
 
     Methods
     -------
-    fit(X, Y)
+    fit(X, Y, **kwargs)
         Fit the model to the data.
-    predict(X)
+    predict(X, **kwargs)
         Predict using the model.
     save(file_path)
         Save the model to a file.
     load(file_path)
         Load the model from a file.
+    get_configuration_space(cs)
+        Get the configuration space for the predictor.
+    get_from_configuration(configuration)
+        Get a predictor instance from a configuration.
     """
 
     def __init__(self):
@@ -25,38 +29,42 @@ class AbstractPredictor(ABC):
         pass
 
     @abstractmethod
-    def fit(self, X: Any, Y: Any, **kwargs):
+    def fit(self, X: Any, Y: Any, **kwargs: Any) -> None:
         """
         Fit the model to the data.
 
         Parameters
         ----------
-        X : array-like
+        X : Any
             Training data.
-        Y : array-like
+        Y : Any
             Target values.
+        kwargs : Any
+            Additional arguments for fitting the model.
         """
         pass
 
     @abstractmethod
-    def predict(self, X: Any, **kwargs) -> Any:
+    def predict(self, X: Any, **kwargs: Any) -> Any:
         """
         Predict using the model.
 
         Parameters
         ----------
-        X : array-like
+        X : Any
             Data to predict on.
+        kwargs : Any
+            Additional arguments for prediction.
 
         Returns
         -------
-        array-like
+        Any
             Predicted values.
         """
         pass
 
     @abstractmethod
-    def save(self, file_path: str):
+    def save(self, file_path: str) -> None:
         """
         Save the model to a file.
 
@@ -68,7 +76,7 @@ class AbstractPredictor(ABC):
         pass
 
     @abstractmethod
-    def load(self, file_path: str):
+    def load(self, file_path: str) -> None:
         """
         Load the model from a file.
 
@@ -80,33 +88,48 @@ class AbstractPredictor(ABC):
         pass
 
     @staticmethod
-    def get_configuration_space(cs=None):
+    def get_configuration_space(cs: Optional[Any] = None) -> Any:
         """
         Get the configuration space for the predictor.
 
         Parameters
         ----------
-        cs : ConfigurationSpace, optional
-            The configuration space to add the parameters to. If None, a new ConfigurationSpace will be created.
+        cs : Optional[Any], optional
+            The configuration space to add the parameters to. If None, a new configuration space will be created.
 
         Returns
         -------
-        ConfigurationSpace
+        Any
             The configuration space for the predictor.
+
+        Raises
+        ------
+        NotImplementedError
+            If the method is not implemented for the predictor.
         """
         raise NotImplementedError(
             "get_configuration_space() is not implemented for this predictor"
         )
 
     @staticmethod
-    def get_from_configuration(configuration):
+    def get_from_configuration(configuration: Any) -> "AbstractPredictor":
         """
-        Get the configuration space for the predictor.
+        Get a predictor instance from a configuration.
+
+        Parameters
+        ----------
+        configuration : Any
+            The configuration to create the predictor from.
 
         Returns
         -------
         AbstractPredictor
-            The predictor.
+            The predictor instance.
+
+        Raises
+        ------
+        NotImplementedError
+            If the method is not implemented for the predictor.
         """
         raise NotImplementedError(
             "get_from_configuration() is not implemented for this predictor"
