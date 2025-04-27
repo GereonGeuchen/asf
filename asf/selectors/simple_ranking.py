@@ -52,6 +52,9 @@ class SimpleRanking(AbstractModelBasedSelector):
 
         performance = performance[self.metadata.algorithms]
         features = features[self.metadata.features]
+        features.index.name = "INSTANCE_ID"
+
+        self.algorithm_features.index.name = "ALGORITHM"
 
         total_features = pd.merge(
             features.reset_index(), self.algorithm_features.reset_index(), how="cross"
@@ -59,33 +62,33 @@ class SimpleRanking(AbstractModelBasedSelector):
 
         stacked_performance = performance.stack().reset_index()
         stacked_performance.columns = [
-            performance.index.name,
-            performance.columns.name,
-            "performance",
+            "INSTANCE_ID",
+            "ALGORITHM",
+            "PERFORMANCE",
         ]
         merged = total_features.merge(
             stacked_performance,
-            right_on=[performance.index.name, performance.columns.name],
-            left_on=[features.index.name, self.algorithm_features.index.name],
+            right_on=["INSTANCE_ID", "ALGORITHM"],
+            left_on=["INSTANCE_ID", "ALGORITHM"],
             how="left",
         )
 
         gdfs = []
-        for group, gdf in merged.groupby(features.index.name):
-            gdf["rank"] = gdf["performance"].rank(ascending=True, method="min")
+        for group, gdf in merged.groupby("INSTANCE_ID"):
+            gdf["rank"] = gdf["PERFORMANCE"].rank(ascending=True, method="min")
             gdfs.append(gdf)
         merged = pd.concat(gdfs)
 
         total_features = merged.drop(
             columns=[
-                performance.index.name,
-                performance.columns.name,
-                "performance",
+                "INSTANCE_ID",
+                "ALGORITHM",
+                "PERFORMANCE",
                 "rank",
                 self.algorithm_features.index.name,
             ]
         )
-        qid = merged[features.index.name].values
+        qid = merged["INSTANCE_ID"].values
         encoder = OrdinalEncoder()
         qid = encoder.fit_transform(qid.reshape(-1, 1)).flatten()
 
@@ -125,7 +128,7 @@ class SimpleRanking(AbstractModelBasedSelector):
             chosen = predictions[ids].argmin()
             scheds[instance_name] = [
                 (
-                    total_features.loc[ids].iloc[chosen]["algorithm"],
+                    total_features.loc[ids].iloc[chosen]["ALGORITHM"],
                     self.metadata.budget,
                 )
             ]
