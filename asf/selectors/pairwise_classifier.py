@@ -58,7 +58,11 @@ class PairwiseClassifier(AbstractModelBasedSelector, AbstractFeatureGenerator):
                 algo1_times = performance[algorithm]
                 algo2_times = performance[other_algorithm]
 
-                diffs = algo1_times < algo2_times
+                if self.metadata.maximize:
+                    diffs = algo1_times > algo2_times
+                else:
+                    diffs = algo1_times < algo2_times
+
                 cur_model = self.model_class()
                 cur_model.fit(
                     features,
