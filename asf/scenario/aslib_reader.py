@@ -2,8 +2,6 @@ import os
 
 import pandas as pd
 
-from asf import SelectionScenarioMetadata
-
 try:
     import yaml
     from yaml import SafeLoader as Loader
@@ -17,7 +15,7 @@ except ImportError:
 
 def read_scenario(
     path: str, add_running_time_features: bool = True
-) -> tuple[SelectionScenarioMetadata, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, dict, bool, float]:
     """Read an ASlib scenario from a file.
 
     Args:
@@ -25,7 +23,7 @@ def read_scenario(
         add_running_time_features (bool, optional): Whether to add running time features. Defaults to True.
 
     Returns:
-        tuple[SelectionScenarioMetadata, pd.DataFrame, pd.DataFrame, pd.DataFrame]: The metadata, features, performance, and cross-validation data.
+        tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, dict, bool, float]: The features, performance, cross-validation data, feature groups, maximize flag, and budget.
     """
     if not ASLIB_AVAILABLE:
         raise ImportError(
@@ -41,22 +39,10 @@ def read_scenario(
     with open(description_path, "r") as f:
         description = yaml.load(f, Loader=Loader)
 
-    algorithms = list(description["metainfo_algorithms"].keys())
     features = description["features_deterministic"]
-    performance_metric = description["performance_measures"][0]
     feature_groups = description["feature_steps"]
     maximize = description["maximize"][0]
     budget = description["algorithm_cutoff_time"]
-
-    metadata = SelectionScenarioMetadata(
-        algorithms=algorithms,
-        algorith_features=None,
-        features=features,
-        performance_metric=performance_metric,
-        feature_groups=feature_groups,
-        maximize=maximize,
-        budget=budget,
-    )
 
     with open(performance_path, "r") as f:
         performance = load(f)
@@ -93,4 +79,4 @@ def read_scenario(
     features = features.sort_index()
     performance = performance.sort_index()
     cv = cv.sort_index()
-    return metadata, features, performance, cv
+    return features, performance, cv, feature_groups, maximize, budget

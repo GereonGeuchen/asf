@@ -35,7 +35,7 @@ aspeed = [ 'clingo' ]
 aslib = [ 'pyyaml' ]
 nn = [ 'torch' ]
 tune = [ 'smac' ]
-xgb = [ 'xgb' ]
+xgb = [ 'xgboost' ]
 
 [build-system]
 requires = ["setuptools", "wheel"]

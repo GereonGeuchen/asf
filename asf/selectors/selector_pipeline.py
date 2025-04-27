@@ -1,23 +1,26 @@
-from asf.scenario.scenario_metadata import SelectionScenarioMetadata
 from asf.selectors.abstract_selector import AbstractSelector
 
 
 class SelectorPipeline:
     def __init__(
         self,
-        metadata: SelectionScenarioMetadata,
         selector: AbstractSelector,
         preprocessor=None,
         pre_solving=None,
         feature_selector=None,
         algorithm_pre_selector=None,
+        budget=None,
+        maximize=False,
+        feature_groups=None,
     ):
-        self.metadata = metadata
         self.selector = selector
         self.preprocessor = preprocessor
         self.pre_solving = pre_solving
         self.feature_selector = feature_selector
         self.algorithm_pre_selector = algorithm_pre_selector
+        self.budget = budget
+        self.maximize = maximize
+        self.feature_groups = feature_groups
 
     def fit(self, X, y):
         if self.preprocessor:
@@ -36,7 +39,11 @@ class SelectorPipeline:
             self.pre_solving = self.pre_solving()
             self.pre_solving.fit(X, y)
 
-        self.selector = self.selector(metadata=self.metadata)
+        self.selector = self.selector(
+            budget=self.budget,
+            maximize=self.maximize,
+            feature_groups=self.feature_groups,
+        )
         self.selector.fit(X, y)
 
     def predict(self, X):

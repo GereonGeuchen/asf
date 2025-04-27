@@ -1,5 +1,4 @@
 import pandas as pd
-from asf.scenario.scenario_metadata import SelectionScenarioMetadata
 from asf.selectors.feature_generator import (
     AbstractFeatureGenerator,
 )
@@ -9,10 +8,14 @@ from ConfigSpace import ConfigurationSpace, Categorical, Configuration
 class AbstractSelector:
     def __init__(
         self,
-        metadata: SelectionScenarioMetadata,
+        budget=None,
+        maximize=False,
+        feature_groups=None,
         hierarchical_generator: AbstractFeatureGenerator = None,
     ):
-        self.metadata = metadata
+        self.maximize = maximize
+        self.budget = budget
+        self.feature_groups = feature_groups
         self.hierarchical_generator = hierarchical_generator
         self.algorithm_features = None
 
@@ -29,6 +32,8 @@ class AbstractSelector:
                 [features, self.hierarchical_generator.generate_features(features)],
                 axis=1,
             )
+        self.algorithms = performance.columns.to_list()
+        self.features = features.columns.to_list()
         self.algorithm_features = algorithm_features
         self._fit(features, performance, **kwargs)
 

@@ -5,8 +5,8 @@ from functools import partial
 
 
 class AbstractModelBasedSelector(AbstractSelector):
-    def __init__(self, model_class, metadata, hierarchical_generator=...):
-        super().__init__(metadata, hierarchical_generator)
+    def __init__(self, model_class, **kwargs):
+        super().__init__(**kwargs)
 
         if isinstance(model_class, type) and issubclass(
             model_class, (ClassifierMixin, RegressorMixin)

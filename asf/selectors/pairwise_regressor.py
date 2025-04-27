@@ -24,7 +24,7 @@ class PairwiseRegressor(AbstractModelBasedSelector, AbstractFeatureGenerator):
         regressors: List of trained regressors for pairwise comparisons.
     """
 
-    def __init__(self, model_class, metadata, hierarchical_generator=None):
+    def __init__(self, model_class, **kwargs):
         """
         Initializes the PairwiseRegressor with a given model class and hierarchical feature generator.
 
@@ -32,9 +32,7 @@ class PairwiseRegressor(AbstractModelBasedSelector, AbstractFeatureGenerator):
             model_class: The regression model to be used for pairwise comparisons.
             hierarchical_generator (AbstractFeatureGenerator, optional): The feature generator to be used. Defaults to DummyFeatureGenerator.
         """
-        AbstractModelBasedSelector.__init__(
-            self, model_class, metadata, hierarchical_generator
-        )
+        AbstractModelBasedSelector.__init__(self, model_class, **kwargs)
         AbstractFeatureGenerator.__init__(self)
         self.regressors = []
 
@@ -49,8 +47,8 @@ class PairwiseRegressor(AbstractModelBasedSelector, AbstractFeatureGenerator):
         assert self.algorithm_features is None, (
             "PairwiseRegressor does not use algorithm features."
         )
-        for i, algorithm in enumerate(self.metadata.algorithms):
-            for other_algorithm in self.metadata.algorithms[i + 1 :]:
+        for i, algorithm in enumerate(self.algorithms):
+            for other_algorithm in self.algorithms[i + 1 :]:
                 algo1_times = performance[algorithm]
                 algo2_times = performance[other_algorithm]
 
@@ -77,8 +75,10 @@ class PairwiseRegressor(AbstractModelBasedSelector, AbstractFeatureGenerator):
         return {
             instance_name: [
                 (
-                    predictions_sum.loc[instance_name].idxmin(),
-                    self.metadata.budget,
+                    predictions_sum.loc[instance_name].idmax()
+                    if self.maximize
+                    else predictions_sum.loc[instance_name].idxmin(),
+                    self.budget,
                 )
             ]
             for i, instance_name in enumerate(features.index)
@@ -96,11 +96,9 @@ class PairwiseRegressor(AbstractModelBasedSelector, AbstractFeatureGenerator):
         """
 
         cnt = 0
-        predictions_sum = pd.DataFrame(
-            0, index=features.index, columns=self.metadata.algorithms
-        )
-        for i, algorithm in enumerate(self.metadata.algorithms):
-            for j, other_algorithm in enumerate(self.metadata.algorithms[i + 1 :]):
+        predictions_sum = pd.DataFrame(0, index=features.index, columns=self.algorithms)
+        for i, algorithm in enumerate(self.algorithms):
+            for j, other_algorithm in enumerate(self.algorithms[i + 1 :]):
                 prediction = self.regressors[cnt].predict(features)
                 predictions_sum[algorithm] += prediction
                 predictions_sum[other_algorithm] -= prediction

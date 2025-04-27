@@ -4,28 +4,8 @@ from asf.selectors.abstract_model_based_selector import AbstractModelBasedSelect
 
 
 class MultiClassClassifier(AbstractModelBasedSelector):
-    """
-    MultiClassClassifier is a class that predicts the best algorithm for a given instance
-    using a multi-class classification model.
-
-    Attributes:
-        model_class: The class of the classification model to be used.
-        metadata: Metadata containing information about the algorithms.
-        classifier: The trained classification model.
-    """
-
-    def __init__(self, model_class, metadata, hierarchical_generator=None):
-        """
-        Initializes the MultiClassClassifier with the given parameters.
-
-        Args:
-            model_class: The class of the classification model to be used.
-            metadata: Metadata containing information about the algorithms.
-            hierarchical_generator: Feature generator to be used.
-        """
-        AbstractModelBasedSelector.__init__(
-            self, model_class, metadata, hierarchical_generator
-        )
+    def __init__(self, model_class, **kwargs):
+        AbstractModelBasedSelector.__init__(self, model_class, **kwargs)
         self.classifier = None
 
     def _fit(self, features: pd.DataFrame, performance: pd.DataFrame):
@@ -55,8 +35,6 @@ class MultiClassClassifier(AbstractModelBasedSelector):
         predictions = self.classifier.predict(features)
 
         return {
-            instance_name: [
-                (self.metadata.algorithms[predictions[i]], self.metadata.budget)
-            ]
+            instance_name: [(self.algorithms[predictions[i]], self.budget)]
             for i, instance_name in enumerate(features.index)
         }

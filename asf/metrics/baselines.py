@@ -1,45 +1,45 @@
 import pandas as pd
 
 
-def single_best_solver(schedules, performance, metadata):
+def single_best_solver(schedules, performance, maximize):
     """
     Selects the best solver for each instance.
 
     Args:
         schedules (pd.DataFrame): The schedules to evaluate.
         performance (pd.DataFrame): The performance data for the algorithms.
-        metadata (SelectionScenarioMetadata): The metadata for the scenario.
+        maximize (bool): Whether to maximize or minimize the performance.
 
     Returns:
         pd.Series: The selected solvers.
     """
     perf_sum = performance.sum(axis=0)
-    if metadata.maximize:
-        return perf_sum.min()
+    if maximize:
+        return perf_sum.max()
     else:
         return perf_sum.min()
 
 
-def virtual_best_solver(schedules, performance, metadata):
+def virtual_best_solver(schedules, performance, maximize):
     """
     Selects the best solver for each instance.
 
     Args:
         schedules (pd.DataFrame): The schedules to evaluate.
         performance (pd.DataFrame): The performance data for the algorithms.
-        metadata (SelectionScenarioMetadata): The metadata for the scenario.
+        maximize (bool): Whether to maximize or minimize the performance.
 
     Returns:
         pd.Series: The selected solvers.
     """
-    if metadata.maximize:
+    if maximize:
         return performance.max(axis=1).sum()
     else:
         return performance.min(axis=1).sum()
 
 
 def running_time_selector_performance(
-    schedules, performance, metadata, par=10, feature_time=None
+    schedules, performance, budget, par=10, feature_time=None
 ):
     """
     Calculates the performance of a selector.
@@ -47,8 +47,10 @@ def running_time_selector_performance(
     Args:
         schedules (dict): The schedules to evaluate.
         performance (pd.DataFrame): The performance data for the algorithms.
-        metadata (SelectionScenarioMetadata): The metadata for the scenario.
+        maximize (bool): Whether to maximize or minimize the performance.
+        budget (float): The budget for the scenario.
         par (float): The penalization factor.
+        feature_time (pd.DataFrame): The feature time data.
 
     Returns:
         float: The total running time.
@@ -59,11 +61,11 @@ def running_time_selector_performance(
         )
     total_time = {}
     for instance, schedule in schedules.items():
-        allocated_times = {algorithm: 0 for algorithm in metadata.algorithms}
+        allocated_times = {algorithm: 0 for algorithm in performance.columns}
         solved = False
         for algorithm, algo_budget in schedule:
             remaining_budget = (
-                metadata.budget
+                budget
                 - sum(allocated_times.values())
                 - feature_time.loc[instance].item()
             )
@@ -84,29 +86,29 @@ def running_time_selector_performance(
                 sum(allocated_times.values()) + feature_time.loc[instance].item()
             )
         else:
-            total_time[instance] = metadata.budget * par
+            total_time[instance] = budget * par
     return total_time
 
 
-def running_time_closed_gap(schedules, performance, metadata, par, feature_time):
+def running_time_closed_gap(schedules, performance, budget, par, feature_time):
     """
     Selects the best solver for each instance.
 
     Args:
         schedules (pd.DataFrame): The schedules to evaluate.
         performance (pd.DataFrame): The performance data for the algorithms.
-        metadata (SelectionScenarioMetadata): The metadata for the scenario.
+        budget (float): The budget for the scenario.
         par (float): The penalization factor.
 
     Returns:
         float: The closed gap value.
     """
-    sbs_val = single_best_solver(schedules, performance, metadata)
-    vbs_val = virtual_best_solver(schedules, performance, metadata)
+    sbs_val = single_best_solver(schedules, performance, False)
+    vbs_val = virtual_best_solver(schedules, performance, False)
     s_val = sum(
         list(
             running_time_selector_performance(
-                schedules, performance, metadata, par, feature_time
+                schedules, performance, budget, par, feature_time
             ).values()
         )
     )

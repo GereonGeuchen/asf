@@ -9,10 +9,9 @@ from asf.selectors import (
     SimpleRanking,
     JointRanking,
 )
-from asf.scenario.scenario_metadata import SelectionScenarioMetadata
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from xgboost import XGBRanker
-from asf.selectors.selector_tuner import selector_tuner
+from asf.selectors.selector_tuner import tune_selector
 from asf.selectors.selector_pipeline import SelectorPipeline
 import shutil
 
@@ -75,18 +74,6 @@ def dummy_features():
     return pd.DataFrame(data, columns=["feature1", "feature2", "feature3"])
 
 
-@pytest.fixture
-def dummy_metadata():
-    return SelectionScenarioMetadata(
-        algorithms=["algo1", "algo2", "algo3"],
-        features=["feature1", "feature2", "feature3"],
-        feature_groups={"group1": ["feature1", "feature2"], "group2": ["feature3"]},
-        performance_metric="time",
-        maximize=False,
-        budget=None,
-    )
-
-
 def validate_predictions(predictions):
     """
     Validates that predictions have the expected structure:
@@ -103,42 +90,36 @@ def validate_predictions(predictions):
     )
 
 
-def test_pairwise_classifier(dummy_performance, dummy_features, dummy_metadata):
-    classifier = PairwiseClassifier(
-        model_class=RandomForestClassifier, metadata=dummy_metadata
-    )
+def test_pairwise_classifier(dummy_performance, dummy_features):
+    classifier = PairwiseClassifier(model_class=RandomForestClassifier)
     classifier.fit(dummy_features, dummy_performance)
     predictions = classifier.predict(dummy_features)
     validate_predictions(predictions)
 
 
-def test_multi_class_classifier(dummy_performance, dummy_features, dummy_metadata):
-    classifier = MultiClassClassifier(
-        model_class=RandomForestClassifier, metadata=dummy_metadata
-    )
+def test_multi_class_classifier(dummy_performance, dummy_features):
+    classifier = MultiClassClassifier(model_class=RandomForestClassifier)
     classifier.fit(dummy_features, dummy_performance)
     predictions = classifier.predict(dummy_features)
     validate_predictions(predictions)
 
 
-def test_pairwise_regressor(dummy_performance, dummy_features, dummy_metadata):
-    regressor = PairwiseRegressor(
-        model_class=RandomForestRegressor, metadata=dummy_metadata
-    )
+def test_pairwise_regressor(dummy_performance, dummy_features):
+    regressor = PairwiseRegressor(model_class=RandomForestRegressor)
     regressor.fit(dummy_features, dummy_performance)
     predictions = regressor.predict(dummy_features)
     validate_predictions(predictions)
 
 
-def test_performance_model(dummy_performance, dummy_features, dummy_metadata):
-    model = PerformanceModel(model_class=RandomForestRegressor, metadata=dummy_metadata)
+def test_performance_model(dummy_performance, dummy_features):
+    model = PerformanceModel(model_class=RandomForestRegressor)
     model.fit(dummy_features, dummy_performance)
     predictions = model.predict(dummy_features)
     validate_predictions(predictions)
 
 
-def save_load(dummy_performance, dummy_features, dummy_metadata):
-    model = PerformanceModel(model_class=RandomForestRegressor, metadata=dummy_metadata)
+def save_load(dummy_performance, dummy_features):
+    model = PerformanceModel(model_class=RandomForestRegressor)
     model.fit(dummy_features, dummy_performance)
     model.save("model.pkl")
     loaded_model = PerformanceModel.load("model.pkl")
@@ -146,26 +127,25 @@ def save_load(dummy_performance, dummy_features, dummy_metadata):
     validate_predictions(predictions)
 
 
-def test_simple_ranking(dummy_performance, dummy_features, dummy_metadata):
-    selector = SimpleRanking(model_class=XGBRanker, metadata=dummy_metadata)
+def test_simple_ranking(dummy_performance, dummy_features):
+    selector = SimpleRanking(model_class=XGBRanker)
     selector.fit(dummy_features, dummy_performance)
     predictions = selector.predict(dummy_features)
     validate_predictions(predictions)
 
 
-def test_joint_ranking(dummy_performance, dummy_features, dummy_metadata):
-    selector = JointRanking(metadata=dummy_metadata)
+def test_joint_ranking(dummy_performance, dummy_features):
+    selector = JointRanking()
     selector.fit(dummy_features, dummy_performance)
     predictions = selector.predict(dummy_features)
     validate_predictions(predictions)
 
 
-def test_selector_tuner(dummy_performance, dummy_features, dummy_metadata):
+def test_selector_tuner(dummy_performance, dummy_features):
     # Keep runcount_limit and cv low for fast testing
-    tuned_pipeline = selector_tuner(
+    tuned_pipeline = tune_selector(
         X=dummy_features,
         y=dummy_performance,
-        metadata=dummy_metadata,
         selector_class=[PairwiseClassifier, PairwiseRegressor],
         runcount_limit=2,
         cv=2,

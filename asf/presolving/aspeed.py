@@ -120,7 +120,7 @@ class Aspeed(AbstractPresolver):
         def clingo_callback(model):
             schedule_dict = {}
             for slice in model.symbols(shown=True):
-                algo = self.metadata.algorithms[slice.arguments[1].number]
+                algo = self.algorithms[slice.arguments[1].number]
                 budget = slice.arguments[2].number
                 schedule_dict[algo] = budget
                 self.schedule = sorted(schedule_dict.items(), key=lambda x: x[1])

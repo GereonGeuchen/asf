@@ -8,7 +8,6 @@ from functools import partial
 import pandas as pd
 
 from asf import selectors
-from asf.scenario.scenario_metadata import SelectionScenarioMetadata
 
 import sklearn
 
@@ -101,11 +100,11 @@ def build_cli_command(
         "--model",
         f"{model_class.__name__}",
         "--budget",
-        str(selector.metadata.budget),
+        str(selector.budget),
         "--maximize",
-        str(selector.metadata.maximize),
+        str(selector.maximize),
         "--performance-metric",
-        str(selector.metadata.performance_metric),
+        str(selector.performance_metric),
         "--feature-data",
         str(feature_data),
         "--performance-data",
@@ -130,15 +129,12 @@ if __name__ == "__main__":
     performance_data: pd.DataFrame = pandas_read_map[args.performance_data.suffix](
         args.performance_data, index_col=0
     )
-    # Parse metadata
-    metadata = SelectionScenarioMetadata(
-        performance_data.columns.to_list(),
-        features.columns.to_list(),
-        performance_metric=args.performance_metric,
+
+    selector = selector_class(
+        model_class,
         maximize=args.maximize,
         budget=args.budget,
     )
-    selector = selector_class(model_class, metadata)
     selector.fit(features, performance_data)
 
     # Save the model to the specified path

@@ -16,7 +16,6 @@ class PerformanceModel(AbstractModelBasedSelector, AbstractFeatureGenerator):
 
     Attributes:
         model_class: The class of the regression model to be used.
-        metadata: Metadata containing information about the algorithms.
         use_multi_target: Boolean indicating whether to use multi-target regression.
         normalize: Method to normalize the performance data.
         regressors: List of trained regression models.
@@ -25,24 +24,20 @@ class PerformanceModel(AbstractModelBasedSelector, AbstractFeatureGenerator):
     def __init__(
         self,
         model_class,
-        metadata,
         use_multi_target=False,
         normalize="log",
-        hierarchical_generator=None,
+        **kwargs,
     ):
         """
         Initializes the PerformancePredictor with the given parameters.
 
         Args:
             model_class: The class of the regression model to be used.
-            metadata: Metadata containing information about the algorithms.
             use_multi_target: Boolean indicating whether to use multi-target regression.
             normalize: Method to normalize the performance data.
             hierarchical_generator: Feature generator to be used.
         """
-        AbstractModelBasedSelector.__init__(
-            self, model_class, metadata, hierarchical_generator
-        )
+        AbstractModelBasedSelector.__init__(self, model_class, **kwargs)
         AbstractFeatureGenerator.__init__(self)
         self.regressors = []
         self.use_multi_target = use_multi_target
@@ -74,7 +69,7 @@ class PerformanceModel(AbstractModelBasedSelector, AbstractFeatureGenerator):
             self.regressors.fit(features, performance)
         else:
             if self.algorithm_features is None:
-                for i, algorithm in enumerate(self.metadata.algorithms):
+                for i, algorithm in enumerate(self.algorithms):
                     algo_times = performance.iloc[:, i]
 
                     cur_model = self.model_class(**regressor_init_args)
@@ -82,7 +77,7 @@ class PerformanceModel(AbstractModelBasedSelector, AbstractFeatureGenerator):
                     self.regressors.append(cur_model)
             else:
                 train_data = []
-                for i, algorithm in enumerate(self.metadata.algorithms):
+                for i, algorithm in enumerate(self.algorithms):
                     data = pd.merge(
                         features,
                         self.algorithm_features.loc[algorithm],
@@ -112,8 +107,12 @@ class PerformanceModel(AbstractModelBasedSelector, AbstractFeatureGenerator):
         return {
             instance_name: [
                 (
-                    self.metadata.algorithms[np.argmin(predictions[i])],
-                    self.metadata.budget,
+                    self.algorithms[
+                        np.argmax(predictions[i])
+                        if self.maximize
+                        else np.argmin(predictions[i])
+                    ],
+                    self.budget,
                 )
             ]
             for i, instance_name in enumerate(features.index)
@@ -133,17 +132,13 @@ class PerformanceModel(AbstractModelBasedSelector, AbstractFeatureGenerator):
             predictions = self.regressors.predict(features)
         else:
             if self.algorithm_features is None:
-                predictions = np.zeros(
-                    (features.shape[0], len(self.metadata.algorithms))
-                )
-                for i, algorithm in enumerate(self.metadata.algorithms):
+                predictions = np.zeros((features.shape[0], len(self.algorithms)))
+                for i, algorithm in enumerate(self.algorithms):
                     prediction = self.regressors[i].predict(features)
                     predictions[:, i] = prediction
             else:
-                predictions = np.zeros(
-                    (features.shape[0], len(self.metadata.algorithms))
-                )
-                for i, algorithm in enumerate(self.metadata.algorithms):
+                predictions = np.zeros((features.shape[0], len(self.algorithms)))
+                for i, algorithm in enumerate(self.algorithms):
                     data = pd.merge(
                         features,
                         self.algorithm_features.loc[algorithm],

@@ -14,7 +14,6 @@ class JointRanking(AbstractSelector, AbstractFeatureGenerator):
     Joint ranking (Ortuzk et al. 2022)
 
     Attributes:
-        metadata: Metadata containing information about the algorithms.
         use_multi_target: Boolean indicating whether to use multi-target regression.
         normalize: Method to normalize the performance data.
         regressors: List of trained regression models.
@@ -22,9 +21,8 @@ class JointRanking(AbstractSelector, AbstractFeatureGenerator):
 
     def __init__(
         self,
-        metadata,
         model=None,
-        hierarchical_generator=None,
+        **kwargs,
     ):
         """
         Initializes the PerformancePredictor with the given parameters.
@@ -36,7 +34,7 @@ class JointRanking(AbstractSelector, AbstractFeatureGenerator):
             normalize: Method to normalize the performance data.
             hierarchical_generator: Feature generator to be used.
         """
-        AbstractSelector.__init__(self, metadata, hierarchical_generator)
+        AbstractSelector.__init__(self, **kwargs)
         AbstractFeatureGenerator.__init__(self)
         self.model = model
 
@@ -51,23 +49,19 @@ class JointRanking(AbstractSelector, AbstractFeatureGenerator):
         if self.algorithm_features is None:
             encoder = OneHotEncoder(sparse_output=False)
             self.algorithm_features = pd.DataFrame(
-                encoder.fit_transform(
-                    np.array(self.metadata.algorithms).reshape(-1, 1)
-                ),
-                index=self.metadata.algorithms,
-                columns=[f"algo_{i}" for i in range(len(self.metadata.algorithms))],
+                encoder.fit_transform(np.array(self.algorithms).reshape(-1, 1)),
+                index=self.algorithms,
+                columns=[f"algo_{i}" for i in range(len(self.algorithms))],
             )
 
         print(features)
         print(performance)
         if self.model is None:
             self.model = RankingMLP(
-                input_size=len(self.metadata.features) + len(self.metadata.algorithms)
+                input_size=len(self.features) + len(self.algorithms)
             )
 
-        self.model.fit(
-            features[self.metadata.features], performance, self.algorithm_features
-        )
+        self.model.fit(features[self.features], performance, self.algorithm_features)
 
     def _predict(self, features: pd.DataFrame):
         """
@@ -84,8 +78,12 @@ class JointRanking(AbstractSelector, AbstractFeatureGenerator):
         return {
             instance_name: [
                 (
-                    self.metadata.algorithms[np.argmin(predictions[i])],
-                    self.metadata.budget,
+                    self.algorithms[
+                        np.armax(predictions[i])
+                        if self.maximize
+                        else np.argmin(predictions[i])
+                    ],
+                    self.budget,
                 )
             ]
             for i, instance_name in enumerate(features.index)
@@ -102,15 +100,13 @@ class JointRanking(AbstractSelector, AbstractFeatureGenerator):
             DataFrame containing the predictions for each algorithm.
         """
 
-        predictions = np.zeros((features.shape[0], len(self.metadata.algorithms)))
+        predictions = np.zeros((features.shape[0], len(self.algorithms)))
 
-        features = features[self.metadata.features]
-        for i, algorithm in enumerate(self.metadata.algorithms):
+        features = features[self.features]
+        for i, algorithm in enumerate(self.algorithms):
             # import pdb; pdb.set_trace()
             data = features.assign(**self.algorithm_features.loc[algorithm])
-            data = data[
-                self.algorithm_features.columns.to_list() + self.metadata.features
-            ]
+            data = data[self.algorithm_features.columns.to_list() + self.features]
             prediction = self.model.predict(data)
             predictions[:, i] = prediction.flatten()
             print(predictions)

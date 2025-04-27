@@ -14,7 +14,7 @@ class SimpleRanking(AbstractModelBasedSelector):
         classifier: The trained classification model.
     """
 
-    def __init__(self, model_class, metadata, hierarchical_generator=None):
+    def __init__(self, model_class, **kwargs):
         """
         Initializes the MultiClassClassifier with the given parameters.
 
@@ -23,9 +23,7 @@ class SimpleRanking(AbstractModelBasedSelector):
             metadata: Metadata containing information about the algorithms.
             hierarchical_generator: Feature generator to be used.
         """
-        AbstractModelBasedSelector.__init__(
-            self, model_class, metadata, hierarchical_generator
-        )
+        AbstractModelBasedSelector.__init__(self, model_class, **kwargs)
         self.classifier = None
 
     def _fit(
@@ -43,15 +41,13 @@ class SimpleRanking(AbstractModelBasedSelector):
         if self.algorithm_features is None:
             encoder = OneHotEncoder(sparse_output=False)
             self.algorithm_features = pd.DataFrame(
-                encoder.fit_transform(
-                    np.array(self.metadata.algorithms).reshape(-1, 1)
-                ),
-                index=self.metadata.algorithms,
-                columns=[f"algo_{i}" for i in range(len(self.metadata.algorithms))],
+                encoder.fit_transform(np.array(self.algorithms).reshape(-1, 1)),
+                index=self.algorithms,
+                columns=[f"algo_{i}" for i in range(len(self.algorithms))],
             )
 
-        performance = performance[self.metadata.algorithms]
-        features = features[self.metadata.features]
+        performance = performance[self.algorithms]
+        features = features[self.features]
         features.index.name = "INSTANCE_ID"
 
         self.algorithm_features.index.name = "ALGORITHM"
@@ -75,7 +71,9 @@ class SimpleRanking(AbstractModelBasedSelector):
 
         gdfs = []
         for group, gdf in merged.groupby("INSTANCE_ID"):
-            gdf["rank"] = gdf["PERFORMANCE"].rank(ascending=True, method="min")
+            gdf["rank"] = gdf["PERFORMANCE"].rank(
+                ascending=True, method="max" if self.maximize else "min"
+            )
             gdfs.append(gdf)
         merged = pd.concat(gdfs)
 
@@ -110,16 +108,14 @@ class SimpleRanking(AbstractModelBasedSelector):
             A dictionary mapping instance names to the predicted best algorithm.
         """
 
-        features = features[self.metadata.features]
+        features = features[self.features]
 
         total_features = pd.merge(
             features.reset_index(), self.algorithm_features.reset_index(), how="cross"
         )
 
         predictions = self.classifier.predict(
-            total_features[
-                list(self.metadata.features) + list(self.algorithm_features.columns)
-            ]
+            total_features[list(self.features) + list(self.algorithm_features.columns)]
         )
 
         scheds = {}
@@ -129,7 +125,7 @@ class SimpleRanking(AbstractModelBasedSelector):
             scheds[instance_name] = [
                 (
                     total_features.loc[ids].iloc[chosen]["ALGORITHM"],
-                    self.metadata.budget,
+                    self.budget,
                 )
             ]
 

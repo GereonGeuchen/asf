@@ -25,9 +25,7 @@ class PairwiseClassifier(AbstractModelBasedSelector, AbstractFeatureGenerator):
         classifiers (list[ClassifierMixin]): List of trained classifiers for pairwise comparisons.
     """
 
-    def __init__(
-        self, model_class, metadata, hierarchical_generator=None, use_weights=True
-    ):
+    def __init__(self, model_class, use_weights=True, **kwargs):
         """
         Initializes the PairwiseClassifier with a given model class and hierarchical feature generator.
 
@@ -35,9 +33,7 @@ class PairwiseClassifier(AbstractModelBasedSelector, AbstractFeatureGenerator):
             model_class (ClassifierMixin): The classifier model to be used for pairwise comparisons.
             hierarchical_generator (AbstractFeatureGenerator, optional): The feature generator to be used. Defaults to DummyFeatureGenerator.
         """
-        AbstractModelBasedSelector.__init__(
-            self, model_class, metadata, hierarchical_generator
-        )
+        AbstractModelBasedSelector.__init__(self, model_class, **kwargs)
         AbstractFeatureGenerator.__init__(self)
         self.classifiers: list[AbstractPredictor] = []
         self.use_weights = use_weights
@@ -53,12 +49,12 @@ class PairwiseClassifier(AbstractModelBasedSelector, AbstractFeatureGenerator):
         assert self.algorithm_features is None, (
             "PairwiseClassifier does not use algorithm features."
         )
-        for i, algorithm in enumerate(self.metadata.algorithms):
-            for other_algorithm in self.metadata.algorithms[i + 1 :]:
+        for i, algorithm in enumerate(self.algorithms):
+            for other_algorithm in self.algorithms[i + 1 :]:
                 algo1_times = performance[algorithm]
                 algo2_times = performance[other_algorithm]
 
-                if self.metadata.maximize:
+                if self.maximize:
                     diffs = algo1_times > algo2_times
                 else:
                     diffs = algo1_times < algo2_times
@@ -89,7 +85,7 @@ class PairwiseClassifier(AbstractModelBasedSelector, AbstractFeatureGenerator):
             instance_name: [
                 (
                     predictions_sum.loc[instance_name].idxmax(),
-                    self.metadata.budget,
+                    self.budget,
                 )
             ]
             for i, instance_name in enumerate(features.index)
@@ -106,11 +102,9 @@ class PairwiseClassifier(AbstractModelBasedSelector, AbstractFeatureGenerator):
             np.ndarray: An array of predictions for each instance and algorithm pair.
         """
         cnt = 0
-        predictions_sum = pd.DataFrame(
-            0, index=features.index, columns=self.metadata.algorithms
-        )
-        for i, algorithm in enumerate(self.metadata.algorithms):
-            for j, other_algorithm in enumerate(self.metadata.algorithms[i + 1 :]):
+        predictions_sum = pd.DataFrame(0, index=features.index, columns=self.algorithms)
+        for i, algorithm in enumerate(self.algorithms):
+            for j, other_algorithm in enumerate(self.algorithms[i + 1 :]):
                 prediction = self.classifiers[cnt].predict(features)
                 predictions_sum.loc[prediction, algorithm] += 1
                 predictions_sum.loc[~prediction, other_algorithm] += 1

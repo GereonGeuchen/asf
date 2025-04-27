@@ -6,7 +6,6 @@ from smac import HyperparameterOptimizationFacade, Scenario
 
 from asf.metrics.baselines import running_time_selector_performance
 from asf.preprocessing.abstrtract_preprocessor import AbstractPreprocessor
-from asf.scenario.scenario_metadata import SelectionScenarioMetadata
 from asf.selectors.abstract_selector import AbstractSelector
 from asf.selectors.pairwise_classifier import PairwiseClassifier
 from asf.selectors.pairwise_regressor import PairwiseRegressor
@@ -14,10 +13,9 @@ from asf.selectors.selector_pipeline import SelectorPipeline
 from asf.utils.groupkfoldshuffle import GroupKFoldShuffle
 
 
-def selector_tuner(
+def tune_selector(
     X: pd.DataFrame,
     y: pd.DataFrame,
-    metadata: SelectionScenarioMetadata,
     selector_class: AbstractSelector = [PairwiseClassifier, PairwiseRegressor],
     selector_space_kwargs: dict = {},
     selector_kwargs: dict = {},
@@ -25,6 +23,9 @@ def selector_tuner(
     pre_solving=None,
     feature_selector=None,
     algorithm_pre_selector=None,
+    budget=None,
+    maximize=False,
+    feature_groups=None,
     output_dir: str = "./smac_output",
     smac_metric=running_time_selector_performance,
     smac_kwargs: dict = {},
@@ -77,7 +78,6 @@ def selector_tuner(
             y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
 
             selector = SelectorPipeline(
-                metadata=metadata,
                 selector=cs_transform["selector"][
                     config["selector"]
                 ].get_from_configuration(config, cs_transform, **selector_kwargs),
@@ -85,6 +85,9 @@ def selector_tuner(
                 pre_solving=pre_solving,
                 feature_selector=feature_selector,
                 algorithm_pre_selector=algorithm_pre_selector,
+                budget=budget,
+                maximize=maximize,
+                feature_groups=feature_groups,
             )
             selector.fit(X_train, y_train)
 
@@ -99,7 +102,6 @@ def selector_tuner(
 
     del smac  # clean up SMAC to free memory and delete dask client
     return SelectorPipeline(
-        metadata=metadata,
         selector=cs_transform["selector"][
             best_config["selector"]
         ].get_from_configuration(best_config, cs_transform, **selector_kwargs),
@@ -107,4 +109,7 @@ def selector_tuner(
         pre_solving=pre_solving,
         feature_selector=feature_selector,
         algorithm_pre_selector=algorithm_pre_selector,
+        budget=budget,
+        maximize=maximize,
+        feature_groups=feature_groups,
     )
