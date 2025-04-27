@@ -1,3 +1,6 @@
+import pandas as pd
+
+
 def single_best_solver(schedules, performance, metadata):
     """
     Selects the best solver for each instance.
@@ -36,7 +39,7 @@ def virtual_best_solver(schedules, performance, metadata):
 
 
 def running_time_selector_performance(
-    schedules, performance, metadata, par, feature_time
+    schedules, performance, metadata, par=10, feature_time=None
 ):
     """
     Calculates the performance of a selector.
@@ -50,6 +53,10 @@ def running_time_selector_performance(
     Returns:
         float: The total running time.
     """
+    if feature_time is None:
+        feature_time = pd.DataFrame(
+            0, index=performance.index, columns=["feature_time"]
+        )
     total_time = {}
     for instance, schedule in schedules.items():
         allocated_times = {algorithm: 0 for algorithm in metadata.algorithms}

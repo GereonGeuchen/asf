@@ -4,39 +4,12 @@ import numpy as np
 from sklearn.base import TransformerMixin
 from sklearn.metrics import root_mean_squared_error
 from sklearn.model_selection import KFold
-from sklearn.model_selection._split import _BaseKFold
 from smac import HyperparameterOptimizationFacade, Scenario
+from asf.utils.groupkfoldshuffle import GroupKFoldShuffle
 
 from asf.epm.epm import EPM
 from asf.normalization.normalizations import AbstractNormalization, LogNormalization
 from asf.predictors.abstract_predictor import AbstractPredictor
-
-
-class GroupKFoldShuffle(_BaseKFold):
-    def __init__(self, n_splits=5, *, shuffle=False, random_state=None):
-        super().__init__(n_splits=n_splits, shuffle=shuffle, random_state=random_state)
-
-    def split(self, X, y=None, groups=None):
-        # Find the unique groups in the dataset.
-        unique_groups = np.unique(groups)
-
-        # Shuffle the unique groups if shuffle is true.
-        if self.shuffle:
-            np.random.seed(self.random_state)
-            unique_groups = np.random.permutation(unique_groups)
-
-        # Split the shuffled groups into n_splits.
-        split_groups = np.array_split(unique_groups, self.n_splits)
-
-        # For each split, determine the train and test indices.
-        for test_group_ids in split_groups:
-            test_mask = np.isin(groups, test_group_ids)
-            train_mask = ~test_mask
-
-            train_idx = np.where(train_mask)[0]
-            test_idx = np.where(test_mask)[0]
-
-            yield train_idx, test_idx
 
 
 def tune_epm(

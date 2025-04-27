@@ -3,9 +3,17 @@ from asf.selectors.abstract_model_based_selector import AbstractModelBasedSelect
 from asf.selectors.feature_generator import (
     AbstractFeatureGenerator,
 )
+from asf.predictors import (
+    AbstractPredictor,
+    RandomForestRegressorWrapper,
+    XGBoostRegressorWrapper,
+)
+from ConfigSpace import ConfigurationSpace, Categorical, Configuration
+from functools import partial
 
 
 class PairwiseRegressor(AbstractModelBasedSelector, AbstractFeatureGenerator):
+    PREFIX = "pairwise_regressor"
     """
     PairwiseRegressor is a selector that uses pairwise regression of algorithms
     to predict the best algorithm for a given instance.
@@ -98,3 +106,69 @@ class PairwiseRegressor(AbstractModelBasedSelector, AbstractFeatureGenerator):
                 cnt += 1
 
         return predictions_sum
+
+    @staticmethod
+    def get_configuration_space(
+        cs=None,
+        model_class: list[AbstractPredictor] = [
+            RandomForestRegressorWrapper,
+            XGBoostRegressorWrapper,
+        ],
+        hierarchical_generator: list[AbstractFeatureGenerator] | None = None,
+        **kwargs,
+    ):
+        """
+        Get the configuration space for the predictor.
+        Parameters
+        ----------
+        cs : ConfigurationSpace, optional
+            The configuration space to use. If None, a new one will be created.
+        model_class : list, optional
+            The list of model classes to use. Defaults to [RandomForestClassifierWrapper, XGBoostClassifierWrapper].
+        **kwargs : dict, optional
+            Additional keyword arguments to pass to the model class.
+        Returns
+        -------
+        ConfigurationSpace
+            The configuration space for the predictor.
+        """
+        if cs is None:
+            cs = ConfigurationSpace()
+
+        cs.add(
+            Categorical(
+                name=f"{PairwiseRegressor.PREFIX}:model_class",
+                choices=model_class,
+            )
+        )
+
+        PairwiseRegressor._add_hierarchical_generator_space(
+            cs=cs,
+            hierarchical_generator=hierarchical_generator,
+        )
+
+        for model in model_class:
+            model.get_configuration_space(cs=cs, **kwargs)
+
+        return cs
+
+    @staticmethod
+    def get_from_configuration(metadata, configuration: Configuration):
+        """
+        Get the configuration space for the predictor.
+
+        Returns
+        -------
+        AbstractPredictor
+            The predictor.
+        """
+        model_class = configuration[f"{PairwiseRegressor.PREFIX}:model_class"]
+
+        model = model_class.get_from_configuration(configuration)
+
+        return partial(
+            PairwiseRegressor,
+            model_class=model,
+            metadata=metadata,
+            hierarchical_generator=None,
+        )

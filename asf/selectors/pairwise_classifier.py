@@ -1,13 +1,20 @@
 import numpy as np
 import pandas as pd
-from asf.predictors import AbstractPredictor
+from ConfigSpace import ConfigurationSpace, Categorical, Configuration
+from asf.predictors import (
+    AbstractPredictor,
+    RandomForestClassifierWrapper,
+    XGBoostClassifierWrapper,
+)
 from asf.selectors.abstract_model_based_selector import AbstractModelBasedSelector
 from asf.selectors.feature_generator import (
     AbstractFeatureGenerator,
 )
+from functools import partial
 
 
 class PairwiseClassifier(AbstractModelBasedSelector, AbstractFeatureGenerator):
+    PREFIX = "pairwise_classifier"
     """
     PairwiseClassifier is a selector that uses pairwise comparison of algorithms
     to predict the best algorithm for a given instance.
@@ -105,3 +112,80 @@ class PairwiseClassifier(AbstractModelBasedSelector, AbstractFeatureGenerator):
                 cnt += 1
 
         return predictions_sum
+
+    @staticmethod
+    def get_configuration_space(
+        cs=None,
+        model_class: list[AbstractPredictor] = [
+            RandomForestClassifierWrapper,
+            XGBoostClassifierWrapper,
+        ],
+        hierarchical_generator: list[AbstractFeatureGenerator] | None = None,
+        **kwargs,
+    ):
+        """
+        Get the configuration space for the predictor.
+        Parameters
+        ----------
+        cs : ConfigurationSpace, optional
+            The configuration space to use. If None, a new one will be created.
+        model_class : list, optional
+            The list of model classes to use. Defaults to [RandomForestClassifierWrapper, XGBoostClassifierWrapper].
+        **kwargs : dict, optional
+            Additional keyword arguments to pass to the model class.
+        Returns
+        -------
+        ConfigurationSpace
+            The configuration space for the predictor.
+        """
+        if cs is None:
+            cs = ConfigurationSpace()
+
+        if f"{PairwiseClassifier.PREFIX}:model_class" not in cs:
+            cs.add(
+                Categorical(
+                    name=f"{PairwiseClassifier.PREFIX}:model_class",
+                    choices=model_class,
+                )
+            )
+
+        if f"{PairwiseClassifier.PREFIX}:use_weights" not in cs:
+            cs.add(
+                Categorical(
+                    name=f"{PairwiseClassifier.PREFIX}:use_weights",
+                    choices=[True, False],
+                )
+            )
+
+        PairwiseClassifier._add_hierarchical_generator_space(
+            cs=cs,
+            hierarchical_generator=hierarchical_generator,
+        )
+
+        for model in model_class:
+            model.get_configuration_space(cs=cs, **kwargs)
+
+        return cs
+
+    @staticmethod
+    def get_from_configuration(metadata, configuration: Configuration):
+        """
+        Get the configuration space for the predictor.
+
+        Returns
+        -------
+        AbstractPredictor
+            The predictor.
+        """
+        model_class = configuration[f"{PairwiseClassifier.PREFIX}:model_class"]
+        use_weights = configuration[f"{PairwiseClassifier.PREFIX}:use_weights"]
+
+        model = model_class.get_from_configuration(configuration)
+
+        return partial(
+            PairwiseClassifier,
+            model_class=model,
+            metadata=metadata,
+            use_weights=use_weights,
+            hierarchical_generator=None,
+        )

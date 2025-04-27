@@ -3,6 +3,7 @@ from asf.scenario.scenario_metadata import SelectionScenarioMetadata
 from asf.selectors.feature_generator import (
     AbstractFeatureGenerator,
 )
+from ConfigSpace import ConfigurationSpace, Categorical, Configuration
 
 
 class AbstractSelector:
@@ -45,9 +46,9 @@ class AbstractSelector:
     def load(self, path):
         pass
 
-    def get_configuration_space(cs=None):
+    def get_configuration_space(cs: ConfigurationSpace = None, **kwargs):
         """
-        Get the configuration space for the predictor.
+        Get the configuration space for the selector.
 
         Parameters
         ----------
@@ -57,22 +58,56 @@ class AbstractSelector:
         Returns
         -------
         ConfigurationSpace
-            The configuration space for the predictor.
+            The configuration space for the selector.
         """
         raise NotImplementedError(
-            "get_configuration_space() is not implemented for this predictor"
+            "get_configuration_space() is not implemented for this selector"
         )
 
     @staticmethod
-    def get_from_configuration(configuration):
+    def get_from_configuration(configuration: Configuration):
         """
-        Get the configuration space for the predictor.
+        Get the configuration space for the selector.
 
         Returns
         -------
-        AbstractPredictor
-            The predictor.
+        AbstractSelector
+            The selector.
         """
         raise NotImplementedError(
-            "get_from_configuration() is not implemented for this predictor"
+            "get_from_configuration() is not implemented for this selector"
         )
+
+    @staticmethod
+    def _add_hierarchical_generator_space(
+        cs,
+        hierarchical_generator: list[AbstractFeatureGenerator] | None = None,
+        **kwargs,
+    ):
+        """
+        Add the hierarchical generator space to the configuration space.
+
+        Parameters
+        ----------
+        cs : ConfigurationSpace
+            The configuration space to use.
+        hierarchical_generator : list[AbstractFeatureGenerator] | None, optional
+            The list of hierarchical generators to add. Defaults to None.
+        **kwargs : dict
+            Additional keyword arguments to pass to the model class.
+        """
+        if hierarchical_generator is not None:
+            if "hierarchical_generator" in cs:
+                return
+
+            cs.add(
+                Categorical(
+                    name="hierarchical_generator",
+                    choices=hierarchical_generator,
+                )
+            )
+
+            for generator in hierarchical_generator:
+                generator.get_configuration_space(cs=cs, **kwargs)
+
+        return cs
