@@ -103,7 +103,7 @@ class AbstractSelector:
             cs.add(
                 Categorical(
                     name="hierarchical_generator",
-                    choices=hierarchical_generator,
+                    items=hierarchical_generator,
                 )
             )
 

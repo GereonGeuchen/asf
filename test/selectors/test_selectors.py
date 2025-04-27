@@ -12,6 +12,9 @@ from asf.selectors import (
 from asf.scenario.scenario_metadata import SelectionScenarioMetadata
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from xgboost import XGBRanker
+from asf.selectors.selector_tuner import selector_tuner
+from asf.selectors.selector_pipeline import SelectorPipeline
+import shutil
 
 
 @pytest.fixture
@@ -155,3 +158,26 @@ def test_joint_ranking(dummy_performance, dummy_features, dummy_metadata):
     selector.fit(dummy_features, dummy_performance)
     predictions = selector.predict(dummy_features)
     validate_predictions(predictions)
+
+
+def test_selector_tuner(dummy_performance, dummy_features, dummy_metadata):
+    # Keep runcount_limit and cv low for fast testing
+    tuned_pipeline = selector_tuner(
+        X=dummy_features,
+        y=dummy_performance,
+        metadata=dummy_metadata,
+        selector_class=[PairwiseClassifier, PairwiseRegressor],
+        runcount_limit=2,
+        cv=2,
+        seed=42,
+        output_dir="./smac_test_output",  # Use a test-specific output dir
+        smac_scenario_kwargs={},
+    )
+    assert isinstance(tuned_pipeline, SelectorPipeline)
+    # Fit the best pipeline found by the tuner
+    tuned_pipeline.fit(dummy_features, dummy_performance)
+    predictions = tuned_pipeline.predict(dummy_features)
+    validate_predictions(predictions)
+
+    # Clean up SMAC output directory if needed (optional)
+    shutil.rmtree("./smac_test_output", ignore_errors=True)

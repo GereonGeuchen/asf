@@ -11,6 +11,7 @@ from asf.selectors.feature_generator import (
     AbstractFeatureGenerator,
 )
 from functools import partial
+from typing import Optional
 
 
 class PairwiseClassifier(AbstractModelBasedSelector, AbstractFeatureGenerator):
@@ -115,12 +116,13 @@ class PairwiseClassifier(AbstractModelBasedSelector, AbstractFeatureGenerator):
 
     @staticmethod
     def get_configuration_space(
-        cs=None,
+        cs: Optional[ConfigurationSpace] = None,
+        cs_transform: Optional[dict] = None,
         model_class: list[AbstractPredictor] = [
             RandomForestClassifierWrapper,
             XGBoostClassifierWrapper,
         ],
-        hierarchical_generator: list[AbstractFeatureGenerator] | None = None,
+        hierarchical_generator: Optional[list[AbstractFeatureGenerator]] = None,
         **kwargs,
     ):
         """
@@ -141,19 +143,25 @@ class PairwiseClassifier(AbstractModelBasedSelector, AbstractFeatureGenerator):
         if cs is None:
             cs = ConfigurationSpace()
 
+        if cs_transform is None:
+            cs_transform = dict()
+
         if f"{PairwiseClassifier.PREFIX}:model_class" not in cs:
             cs.add(
                 Categorical(
                     name=f"{PairwiseClassifier.PREFIX}:model_class",
-                    choices=model_class,
+                    items=[str(c.__name__) for c in model_class],
                 )
             )
+            cs_transform[f"{PairwiseClassifier.PREFIX}:model_class"] = {
+                str(c.__name__): c for c in model_class
+            }
 
         if f"{PairwiseClassifier.PREFIX}:use_weights" not in cs:
             cs.add(
                 Categorical(
                     name=f"{PairwiseClassifier.PREFIX}:use_weights",
-                    choices=[True, False],
+                    items=[True, False],
                 )
             )
 
@@ -165,10 +173,10 @@ class PairwiseClassifier(AbstractModelBasedSelector, AbstractFeatureGenerator):
         for model in model_class:
             model.get_configuration_space(cs=cs, **kwargs)
 
-        return cs
+        return cs, cs_transform
 
     @staticmethod
-    def get_from_configuration(metadata, configuration: Configuration):
+    def get_from_configuration(configuration: Configuration, cs_transform: dict):
         """
         Get the configuration space for the predictor.
 
@@ -177,15 +185,16 @@ class PairwiseClassifier(AbstractModelBasedSelector, AbstractFeatureGenerator):
         AbstractPredictor
             The predictor.
         """
-        model_class = configuration[f"{PairwiseClassifier.PREFIX}:model_class"]
+        model_class = cs_transform[f"{PairwiseClassifier.PREFIX}:model_class"][
+            configuration[f"{PairwiseClassifier.PREFIX}:model_class"]
+        ]
         use_weights = configuration[f"{PairwiseClassifier.PREFIX}:use_weights"]
 
-        model = model_class.get_from_configuration(configuration)
+        model = model_class.get_from_configuration(configuration, cs_transform)
 
         return partial(
             PairwiseClassifier,
             model_class=model,
-            metadata=metadata,
             use_weights=use_weights,
             hierarchical_generator=None,
         )

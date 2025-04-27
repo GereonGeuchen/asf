@@ -10,6 +10,7 @@ from asf.predictors import (
 )
 from ConfigSpace import ConfigurationSpace, Categorical, Configuration
 from functools import partial
+from typing import Optional
 
 
 class PairwiseRegressor(AbstractModelBasedSelector, AbstractFeatureGenerator):
@@ -109,7 +110,8 @@ class PairwiseRegressor(AbstractModelBasedSelector, AbstractFeatureGenerator):
 
     @staticmethod
     def get_configuration_space(
-        cs=None,
+        cs: Optional[ConfigurationSpace] = None,
+        cs_transform: Optional[dict] = None,
         model_class: list[AbstractPredictor] = [
             RandomForestRegressorWrapper,
             XGBoostRegressorWrapper,
@@ -138,9 +140,12 @@ class PairwiseRegressor(AbstractModelBasedSelector, AbstractFeatureGenerator):
         cs.add(
             Categorical(
                 name=f"{PairwiseRegressor.PREFIX}:model_class",
-                choices=model_class,
+                items=[str(c.__name__) for c in model_class],
             )
         )
+        cs_transform[f"{PairwiseRegressor.PREFIX}:model_class"] = {
+            str(c.__name__): c for c in model_class
+        }
 
         PairwiseRegressor._add_hierarchical_generator_space(
             cs=cs,
@@ -150,10 +155,10 @@ class PairwiseRegressor(AbstractModelBasedSelector, AbstractFeatureGenerator):
         for model in model_class:
             model.get_configuration_space(cs=cs, **kwargs)
 
-        return cs
+        return cs, cs_transform
 
     @staticmethod
-    def get_from_configuration(metadata, configuration: Configuration):
+    def get_from_configuration(configuration: Configuration, cs_transform):
         """
         Get the configuration space for the predictor.
 
@@ -162,13 +167,14 @@ class PairwiseRegressor(AbstractModelBasedSelector, AbstractFeatureGenerator):
         AbstractPredictor
             The predictor.
         """
-        model_class = configuration[f"{PairwiseRegressor.PREFIX}:model_class"]
+        model_class = cs_transform[f"{PairwiseRegressor.PREFIX}:model_class"][
+            configuration[f"{PairwiseRegressor.PREFIX}:model_class"]
+        ]
 
-        model = model_class.get_from_configuration(configuration)
+        model = model_class.get_from_configuration(configuration, cs_transform)
 
         return partial(
             PairwiseRegressor,
             model_class=model,
-            metadata=metadata,
             hierarchical_generator=None,
         )

@@ -12,6 +12,7 @@ class SelectorPipeline:
         feature_selector=None,
         algorithm_pre_selector=None,
     ):
+        self.metadata = metadata
         self.selector = selector
         self.preprocessor = preprocessor
         self.pre_solving = pre_solving
@@ -20,17 +21,22 @@ class SelectorPipeline:
 
     def fit(self, X, y):
         if self.preprocessor:
+            self.preprocessor = self.preprocessor()
             X = self.preprocessor.fit_transform(X)
 
         if self.algorithm_pre_selector:
+            self.algorithm_pre_selector = self.algorithm_pre_selector()
             X, y = self.algorithm_pre_selector.fit_transform(X, y)
 
         if self.feature_selector:
+            self.feature_selector = self.feature_selector()
             X, y = self.feature_selector.fit_transform(X, y)
 
         if self.pre_solving:
+            self.pre_solving = self.pre_solving()
             self.pre_solving.fit(X, y)
 
+        self.selector = self.selector(metadata=self.metadata)
         self.selector.fit(X, y)
 
     def predict(self, X):

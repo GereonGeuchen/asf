@@ -30,7 +30,7 @@ def selector_tuner(
     smac_kwargs: dict = {},
     smac_scenario_kwargs: dict = {},
     runcount_limit=100,
-    timeout=None,
+    timeout=np.inf,
     seed=None,
     cv=10,
     groups=None,
@@ -39,14 +39,21 @@ def selector_tuner(
         selector_class = [selector_class]
 
     cs = ConfigurationSpace()
+    cs_transform = {}
+
     cs.add(
         Categorical(
             name="selector",
-            choices=selector_class,
+            items=[str(c.__name__) for c in selector_class],
         )
     )
+
+    cs_transform["selector"] = {str(c.__name__): c for c in selector_class}
+
     for selector in selector_class:
-        selector.get_configuration_space(cs=cs, **selector_space_kwargs)
+        cs, cs_transform = selector.get_configuration_space(
+            cs=cs, cs_transform=cs_transform, **selector_space_kwargs
+        )
 
     scenario = Scenario(
         configspace=cs,
@@ -71,9 +78,9 @@ def selector_tuner(
 
             selector = SelectorPipeline(
                 metadata=metadata,
-                selector=config["selector"].get_from_configuration(
-                    config, **selector_kwargs
-                ),
+                selector=cs_transform["selector"][
+                    config["selector"]
+                ].get_from_configuration(config, cs_transform, **selector_kwargs),
                 preprocessor=preprocessing_class,
                 pre_solving=pre_solving,
                 feature_selector=feature_selector,
@@ -93,11 +100,11 @@ def selector_tuner(
     del smac  # clean up SMAC to free memory and delete dask client
     return SelectorPipeline(
         metadata=metadata,
-        selector=best_config["selector"].get_from_configuration(
-            best_config, **selector_kwargs
-        ),
+        selector=cs_transform["selector"][
+            best_config["selector"]
+        ].get_from_configuration(best_config, cs_transform, **selector_kwargs),
         preprocessor=preprocessing_class,
         pre_solving=pre_solving,
         feature_selector=feature_selector,
-        alggorithm_pre_selector=algorithm_pre_selector,
+        algorithm_pre_selector=algorithm_pre_selector,
     )
