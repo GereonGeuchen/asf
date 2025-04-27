@@ -28,13 +28,13 @@ dependencies = [
   'scikit-learn',
   'pandas',
   "ConfigSpace",
+  "smac"
 ]
 
 [project.optional-dependencies]
 aspeed = [ 'clingo' ]
 aslib = [ 'pyyaml' ]
 nn = [ 'torch' ]
-tune = [ 'smac' ]
 xgb = [ 'xgboost' ]
 
 [build-system]
