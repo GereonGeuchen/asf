@@ -1,7 +1,7 @@
 [![PyPI - Version](https://img.shields.io/pypi/v/asf-lib)](https://pypi.org/project/asf-lib/)
 [![Python versions](https://img.shields.io/pypi/pyversions/asf-lib)](https://pypi.org/project/asf-lib/)
 [![License](https://img.shields.io/pypi/l/asf-lib?color=informational)](LICENSE)
-[![Python application](https://github.com/hadarshavit/asf/actions/workflows/PyTest.yml/badge.svg)](https://github.com/hadarshavit/asf/actions/workflows/PyTest.yml)
+[![Python application](https://github.com/hadarshavit/asf/actions/workflows/tests.yml/badge.svg)](https://github.com/hadarshavit/asf/actions/workflows/tests.yml)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14957286.svg)](https://doi.org/10.5281/zenodo.14957286)
 
 # ASF: Algorithm Selection Framework
