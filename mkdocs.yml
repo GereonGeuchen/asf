@@ -45,7 +45,6 @@ nav:
       - Scenarios: api/scenario.md
       - Selectors: api/selectors.md
       - Utils: api/utils.md
-  - License: license.md
 
 extra:
   version:

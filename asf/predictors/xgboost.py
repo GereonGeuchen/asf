@@ -1,6 +1,7 @@
 from ConfigSpace import ConfigurationSpace, Constant, Float, Integer
 from typing import Optional, Dict, Any, Callable
 from functools import partial
+import numpy as np
 
 try:
     from xgboost import XGBRegressor, XGBClassifier, XGBRanker
@@ -33,6 +34,54 @@ class XGBoostClassifierWrapper(SklearnWrapper):
                 "XGBoost is not installed. Please install it using pip install asf-lib[xgb]."
             )
         super().__init__(XGBClassifier, init_params or {})
+
+    def fit(
+        self,
+        X: np.ndarray,
+        Y: np.ndarray,
+        sample_weight: np.ndarray = None,
+        **kwargs: Any,
+    ) -> None:
+        """
+        Fit the model to the data.
+
+        Parameters
+        ----------
+        X : np.ndarray
+            Training data of shape (n_samples, n_features).
+        Y : np.ndarray
+            Target values of shape (n_samples,).
+        sample_weight : np.ndarray, optional
+            Sample weights of shape (n_samples,) (default is None).
+        **kwargs : Any
+            Additional keyword arguments for the scikit-learn model's `fit` method.
+        """
+        if Y.dtype == bool:
+            self.bool_labels = True
+        else:
+            self.bool_labels = False
+
+        self.model_class.fit(X, Y, sample_weight=sample_weight, **kwargs)
+
+    def predict(self, X: np.ndarray, **kwargs: Any) -> np.ndarray:
+        """
+        Predict using the model.
+
+        Parameters
+        ----------
+        X : np.ndarray
+            Data to predict on of shape (n_samples, n_features).
+        **kwargs : Any
+            Additional keyword arguments for the scikit-learn model's `predict` method.
+
+        Returns
+        -------
+        np.ndarray
+            Predicted values of shape (n_samples,).
+        """
+        if self.bool_labels:
+            return self.model_class.predict(X, **kwargs).astype(bool)
+        return self.model_class.predict(X, **kwargs)
 
     @staticmethod
     def get_configuration_space(

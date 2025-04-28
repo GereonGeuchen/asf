@@ -173,8 +173,7 @@ class PairwiseRegressor(AbstractModelBasedSelector, AbstractFeatureGenerator):
 
         model = model_class.get_from_configuration(configuration, cs_transform)
 
-        return partial(
-            PairwiseRegressor,
+        return PairwiseRegressor(
             model_class=model,
             hierarchical_generator=None,
         )

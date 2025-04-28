@@ -198,8 +198,7 @@ class PairwiseClassifier(AbstractModelBasedSelector, AbstractFeatureGenerator):
 
         model = model_class.get_from_configuration(configuration, cs_transform)
 
-        return partial(
-            PairwiseClassifier,
+        return PairwiseClassifier(
             model_class=model,
             use_weights=use_weights,
             hierarchical_generator=None,

@@ -13,6 +13,20 @@ from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from xgboost import XGBRanker
 from asf.selectors.selector_tuner import tune_selector
 from asf.selectors.selector_pipeline import SelectorPipeline
+from asf.predictors import (
+    RandomForestClassifierWrapper,
+    RandomForestRegressorWrapper,
+    XGBoostClassifierWrapper,
+    XGBoostRegressorWrapper,
+    SVMClassifierWrapper,
+    SVMRegressorWrapper,
+    LinearClassifierWrapper,
+    LinearRegressorWrapper,
+    # EPMRandomForest,
+    MLPClassifierWrapper,
+    MLPRegressorWrapper,
+    # RegressionMLP,
+)
 import shutil
 
 
@@ -90,29 +104,77 @@ def validate_predictions(predictions):
     )
 
 
-def test_pairwise_classifier(dummy_performance, dummy_features):
-    classifier = PairwiseClassifier(model_class=RandomForestClassifier)
+@pytest.mark.parametrize(
+    "model_class",
+    [
+        RandomForestClassifier,
+        RandomForestClassifierWrapper,
+        XGBoostClassifierWrapper,
+        SVMClassifierWrapper,
+        LinearClassifierWrapper,
+        MLPClassifierWrapper,
+    ],
+)
+def test_pairwise_classifier(dummy_performance, dummy_features, model_class):
+    classifier = PairwiseClassifier(
+        model_class=model_class, use_weights=model_class != MLPClassifierWrapper
+    )
     classifier.fit(dummy_features, dummy_performance)
     predictions = classifier.predict(dummy_features)
     validate_predictions(predictions)
 
 
-def test_multi_class_classifier(dummy_performance, dummy_features):
-    classifier = MultiClassClassifier(model_class=RandomForestClassifier)
+@pytest.mark.parametrize(
+    "model_class",
+    [
+        RandomForestClassifier,
+        RandomForestClassifierWrapper,
+        XGBoostClassifierWrapper,
+        SVMClassifierWrapper,
+        LinearClassifierWrapper,
+        MLPClassifierWrapper,
+    ],
+)
+def test_multi_class_classifier(dummy_performance, dummy_features, model_class):
+    classifier = MultiClassClassifier(model_class=model_class)
     classifier.fit(dummy_features, dummy_performance)
     predictions = classifier.predict(dummy_features)
     validate_predictions(predictions)
 
 
-def test_pairwise_regressor(dummy_performance, dummy_features):
-    regressor = PairwiseRegressor(model_class=RandomForestRegressor)
+@pytest.mark.parametrize(
+    "model_class",
+    [
+        RandomForestRegressorWrapper,
+        XGBoostRegressorWrapper,
+        SVMRegressorWrapper,
+        LinearRegressorWrapper,
+        # EPMRandomForest,
+        MLPRegressorWrapper,
+        # RegressionMLP,
+    ],
+)
+def test_pairwise_regressor(dummy_performance, dummy_features, model_class):
+    regressor = PairwiseRegressor(model_class=model_class)
     regressor.fit(dummy_features, dummy_performance)
     predictions = regressor.predict(dummy_features)
     validate_predictions(predictions)
 
 
-def test_performance_model(dummy_performance, dummy_features):
-    model = PerformanceModel(model_class=RandomForestRegressor)
+@pytest.mark.parametrize(
+    "model_class",
+    [
+        RandomForestRegressorWrapper,
+        XGBoostRegressorWrapper,
+        SVMRegressorWrapper,
+        LinearRegressorWrapper,
+        # EPMRandomForest,
+        MLPRegressorWrapper,
+        # RegressionMLP,
+    ],
+)
+def test_performance_model(dummy_performance, dummy_features, model_class):
+    model = PerformanceModel(model_class=model_class)
     model.fit(dummy_features, dummy_performance)
     predictions = model.predict(dummy_features)
     validate_predictions(predictions)
