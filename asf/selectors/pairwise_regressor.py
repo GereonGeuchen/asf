@@ -10,7 +10,18 @@ from asf.predictors import (
     RandomForestRegressorWrapper,
     XGBoostRegressorWrapper,
 )
-from ConfigSpace import ConfigurationSpace, Categorical, Configuration, EqualsCondition
+
+try:
+    from ConfigSpace import (
+        ConfigurationSpace,
+        Categorical,
+        Configuration,
+        EqualsCondition,
+    )
+
+    CONFIGSPACE_AVAILABLE = True
+except ImportError:
+    CONFIGSPACE_AVAILABLE = False
 from functools import partial
 from typing import Optional, List, Dict, Tuple
 
@@ -108,108 +119,110 @@ class PairwiseRegressor(AbstractModelBasedSelector, AbstractFeatureGenerator):
 
         return predictions_sum
 
-    @staticmethod
-    def get_configuration_space(
-        cs: Optional[ConfigurationSpace] = None,
-        cs_transform: Optional[Dict[str, Dict[str, type]]] = None,
-        model_class: List[type[AbstractPredictor]] = [
-            RandomForestRegressorWrapper,
-            XGBoostRegressorWrapper,
-        ],
-        pre_prefix: str = "",
-        parent_param: Optional[Hyperparameter] = None,
-        parent_value: Optional[str] = None,
-        **kwargs,
-    ) -> Tuple[ConfigurationSpace, Dict[str, Dict[str, type]]]:
-        """
-        Get the configuration space for the predictor.
+    if CONFIGSPACE_AVAILABLE:
 
-        Args:
-            cs (Optional[ConfigurationSpace]): The configuration space to use. If None, a new one will be created.
-            cs_transform (Optional[Dict[str, Dict[str, type]]]): A dictionary for transforming configuration space values.
-            model_class (List[type]): The list of model classes to use. Defaults to [RandomForestRegressorWrapper, XGBoostRegressorWrapper].
-            hierarchical_generator (Optional[List[AbstractFeatureGenerator]]): List of hierarchical feature generators.
-            kwargs: Additional keyword arguments to pass to the model class.
+        @staticmethod
+        def get_configuration_space(
+            cs: Optional[ConfigurationSpace] = None,
+            cs_transform: Optional[Dict[str, Dict[str, type]]] = None,
+            model_class: List[type[AbstractPredictor]] = [
+                RandomForestRegressorWrapper,
+                XGBoostRegressorWrapper,
+            ],
+            pre_prefix: str = "",
+            parent_param: Optional[Hyperparameter] = None,
+            parent_value: Optional[str] = None,
+            **kwargs,
+        ) -> Tuple[ConfigurationSpace, Dict[str, Dict[str, type]]]:
+            """
+            Get the configuration space for the predictor.
 
-        Returns:
-            Tuple[ConfigurationSpace, Dict[str, Dict[str, type]]]: The configuration space and its transformation dictionary.
-        """
-        if cs is None:
-            cs = ConfigurationSpace()
+            Args:
+                cs (Optional[ConfigurationSpace]): The configuration space to use. If None, a new one will be created.
+                cs_transform (Optional[Dict[str, Dict[str, type]]]): A dictionary for transforming configuration space values.
+                model_class (List[type]): The list of model classes to use. Defaults to [RandomForestRegressorWrapper, XGBoostRegressorWrapper].
+                hierarchical_generator (Optional[List[AbstractFeatureGenerator]]): List of hierarchical feature generators.
+                kwargs: Additional keyword arguments to pass to the model class.
 
-        if pre_prefix != "":
-            prefix = f"{pre_prefix}:{PairwiseRegressor.PREFIX}"
-        else:
-            prefix = PairwiseRegressor.PREFIX
+            Returns:
+                Tuple[ConfigurationSpace, Dict[str, Dict[str, type]]]: The configuration space and its transformation dictionary.
+            """
+            if cs is None:
+                cs = ConfigurationSpace()
 
-        model_class_param = Categorical(
-            name=f"{prefix}:model_class",
-            items=[str(c.__name__) for c in model_class],
-        )
+            if pre_prefix != "":
+                prefix = f"{pre_prefix}:{PairwiseRegressor.PREFIX}"
+            else:
+                prefix = PairwiseRegressor.PREFIX
 
-        cs_transform[f"{prefix}:model_class"] = {
-            str(c.__name__): c for c in model_class
-        }
-
-        params = [model_class_param]
-
-        if parent_param is not None:
-            conditions = [
-                EqualsCondition(
-                    child=param,
-                    parent=parent_param,
-                    value=parent_value,
-                )
-                for param in params
-            ]
-        else:
-            conditions = []
-
-        cs.add(params + conditions)
-
-        for model in model_class:
-            model.get_configuration_space(
-                cs=cs,
-                pre_prefix=f"{prefix}:model_class",
-                parent_param=model_class_param,
-                parent_value=str(model.__name__),
-                **kwargs,
+            model_class_param = Categorical(
+                name=f"{prefix}:model_class",
+                items=[str(c.__name__) for c in model_class],
             )
 
-        return cs, cs_transform
+            cs_transform[f"{prefix}:model_class"] = {
+                str(c.__name__): c for c in model_class
+            }
 
-    @staticmethod
-    def get_from_configuration(
-        configuration: Configuration,
-        cs_transform: Dict[str, Dict[str, type]],
-        pre_prefix: str = "",
-        **kwargs,
-    ) -> partial:
-        """
-        Get the configuration space for the predictor.
+            params = [model_class_param]
 
-        Args:
-            configuration (Configuration): The configuration object.
-            cs_transform (Dict[str, Dict[str, type]]): The transformation dictionary for the configuration space.
+            if parent_param is not None:
+                conditions = [
+                    EqualsCondition(
+                        child=param,
+                        parent=parent_param,
+                        value=parent_value,
+                    )
+                    for param in params
+                ]
+            else:
+                conditions = []
 
-        Returns:
-            partial: A partial function to initialize the PairwiseRegressor with the given configuration.
-        """
-        if pre_prefix != "":
-            prefix = f"{pre_prefix}:{PairwiseRegressor.PREFIX}"
-        else:
-            prefix = PairwiseRegressor.PREFIX
+            cs.add(params + conditions)
 
-        model_class = cs_transform[f"{prefix}:model_class"][
-            configuration[f"{prefix}:model_class"]
-        ]
+            for model in model_class:
+                model.get_configuration_space(
+                    cs=cs,
+                    pre_prefix=f"{prefix}:model_class",
+                    parent_param=model_class_param,
+                    parent_value=str(model.__name__),
+                    **kwargs,
+                )
 
-        model = model_class.get_from_configuration(
-            configuration, pre_prefix=f"{prefix}:model_class"
-        )
+            return cs, cs_transform
 
-        return PairwiseRegressor(
-            model_class=model,
-            hierarchical_generator=None,
+        @staticmethod
+        def get_from_configuration(
+            configuration: Configuration,
+            cs_transform: Dict[str, Dict[str, type]],
+            pre_prefix: str = "",
             **kwargs,
-        )
+        ) -> partial:
+            """
+            Get the configuration space for the predictor.
+
+            Args:
+                configuration (Configuration): The configuration object.
+                cs_transform (Dict[str, Dict[str, type]]): The transformation dictionary for the configuration space.
+
+            Returns:
+                partial: A partial function to initialize the PairwiseRegressor with the given configuration.
+            """
+            if pre_prefix != "":
+                prefix = f"{pre_prefix}:{PairwiseRegressor.PREFIX}"
+            else:
+                prefix = PairwiseRegressor.PREFIX
+
+            model_class = cs_transform[f"{prefix}:model_class"][
+                configuration[f"{prefix}:model_class"]
+            ]
+
+            model = model_class.get_from_configuration(
+                configuration, pre_prefix=f"{prefix}:model_class"
+            )
+
+            return PairwiseRegressor(
+                model_class=model,
+                hierarchical_generator=None,
+                **kwargs,
+            )

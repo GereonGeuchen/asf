@@ -1,5 +1,16 @@
-from ConfigSpace import Categorical, ConfigurationSpace, Float, Integer, EqualsCondition
-from ConfigSpace.hyperparameters import Hyperparameter
+try:
+    from ConfigSpace import (
+        Categorical,
+        ConfigurationSpace,
+        Float,
+        Integer,
+        EqualsCondition,
+    )
+    from ConfigSpace.hyperparameters import Hyperparameter
+
+    CONFIGSPACE_AVAILABLE = True
+except ImportError:
+    CONFIGSPACE_AVAILABLE = False
 
 from sklearn.svm import SVC, SVR
 from functools import partial
@@ -33,123 +44,128 @@ class SVMClassifierWrapper(SklearnWrapper):
         """
         super().__init__(SVC, init_params)
 
-    def get_configuration_space(
-        cs: Optional[ConfigurationSpace] = None,
-        pre_prefix: str = "",
-        parent_param: Optional[Hyperparameter] = None,
-        parent_value: Optional[str] = None,
-    ) -> ConfigurationSpace:
-        """
-        Define the configuration space for the SVM classifier.
+    if CONFIGSPACE_AVAILABLE:
 
-        Returns
-        -------
-        ConfigurationSpace
-            The configuration space containing hyperparameters for the SVM classifier.
-        """
-        cs = ConfigurationSpace(name="SVM")
+        @staticmethod
+        def get_configuration_space(
+            cs: Optional[ConfigurationSpace] = None,
+            pre_prefix: str = "",
+            parent_param: Optional[Hyperparameter] = None,
+            parent_value: Optional[str] = None,
+        ) -> ConfigurationSpace:
+            """
+            Define the configuration space for the SVM classifier.
 
-        if pre_prefix != "":
-            prefix = f"{pre_prefix}:{SVMClassifierWrapper.PREFIX}"
-        else:
-            prefix = SVMClassifierWrapper.PREFIX
+            Returns
+            -------
+            ConfigurationSpace
+                The configuration space containing hyperparameters for the SVM classifier.
+            """
+            cs = ConfigurationSpace(name="SVM")
 
-        kernel = Categorical(
-            f"{prefix}:kernel",
-            items=["linear", "rbf", "poly", "sigmoid"],
-            default="rbf",
-        )
-        degree = Integer(f"{prefix}:degree", (1, 128), log=True, default=1)
-        coef0 = Float(
-            f"{prefix}:coef0",
-            (-0.5, 0.5),
-            log=False,
-            default=0.49070634552851977,
-        )
-        tol = Float(
-            f"{prefix}:tol",
-            (1e-4, 1e-2),
-            log=True,
-            default=0.0002154969698207585,
-        )
-        gamma = Categorical(
-            f"{prefix}:gamma",
-            items=["scale", "auto"],
-            default="scale",
-        )
-        C = Float(
-            f"{prefix}:C",
-            (1.0, 20),
-            log=True,
-            default=3.2333262862494365,
-        )
-        epsilon = Float(
-            f"{prefix}:epsilon",
-            (0.01, 0.99),
-            log=True,
-            default=0.14834562300010581,
-        )
-        shrinking = Categorical(
-            f"{prefix}:shrinking",
-            items=[True, False],
-            default=True,
-        )
+            if pre_prefix != "":
+                prefix = f"{pre_prefix}:{SVMClassifierWrapper.PREFIX}"
+            else:
+                prefix = SVMClassifierWrapper.PREFIX
 
-        params = [kernel, degree, coef0, tol, gamma, C, epsilon, shrinking]
+            kernel = Categorical(
+                f"{prefix}:kernel",
+                items=["linear", "rbf", "poly", "sigmoid"],
+                default="rbf",
+            )
+            degree = Integer(f"{prefix}:degree", (1, 128), log=True, default=1)
+            coef0 = Float(
+                f"{prefix}:coef0",
+                (-0.5, 0.5),
+                log=False,
+                default=0.49070634552851977,
+            )
+            tol = Float(
+                f"{prefix}:tol",
+                (1e-4, 1e-2),
+                log=True,
+                default=0.0002154969698207585,
+            )
+            gamma = Categorical(
+                f"{prefix}:gamma",
+                items=["scale", "auto"],
+                default="scale",
+            )
+            C = Float(
+                f"{prefix}:C",
+                (1.0, 20),
+                log=True,
+                default=3.2333262862494365,
+            )
+            epsilon = Float(
+                f"{prefix}:epsilon",
+                (0.01, 0.99),
+                log=True,
+                default=0.14834562300010581,
+            )
+            shrinking = Categorical(
+                f"{prefix}:shrinking",
+                items=[True, False],
+                default=True,
+            )
 
-        if parent_param is not None:
-            conditions = [
-                EqualsCondition(
-                    child=param,
-                    parent=parent_param,
-                    value=parent_value,
-                )
-                for param in params
-            ]
-        else:
-            conditions = []
+            params = [kernel, degree, coef0, tol, gamma, C, epsilon, shrinking]
 
-        cs.add([kernel, degree, coef0, tol, gamma, C, epsilon, shrinking] + conditions)
+            if parent_param is not None:
+                conditions = [
+                    EqualsCondition(
+                        child=param,
+                        parent=parent_param,
+                        value=parent_value,
+                    )
+                    for param in params
+                ]
+            else:
+                conditions = []
 
-        return cs
+            cs.add(
+                [kernel, degree, coef0, tol, gamma, C, epsilon, shrinking] + conditions
+            )
 
-    @staticmethod
-    def get_from_configuration(
-        configuration: Dict[str, Any], pre_prefix: str = "", **kwargs
-    ) -> partial:
-        """
-        Create an SVMClassifierWrapper instance from a configuration.
+            return cs
 
-        Parameters
-        ----------
-        configuration : dict
-            Dictionary containing the configuration parameters.
-        additional_params : dict, optional
-            Additional parameters to include in the model initialization.
+        @staticmethod
+        def get_from_configuration(
+            configuration: Dict[str, Any], pre_prefix: str = "", **kwargs
+        ) -> partial:
+            """
+            Create an SVMClassifierWrapper instance from a configuration.
 
-        Returns
-        -------
-        partial
-            A partial function to create an SVMClassifierWrapper instance.
-        """
-        if pre_prefix != "":
-            prefix = f"{pre_prefix}:{SVMClassifierWrapper.PREFIX}"
-        else:
-            prefix = SVMClassifierWrapper.PREFIX
+            Parameters
+            ----------
+            configuration : dict
+                Dictionary containing the configuration parameters.
+            additional_params : dict, optional
+                Additional parameters to include in the model initialization.
 
-        svm_params = {
-            "kernel": configuration[f"{prefix}:kernel"],
-            "degree": configuration[f"{prefix}:degree"],
-            "coef0": configuration[f"{prefix}:coef0"],
-            "tol": configuration[f"{prefix}:tol"],
-            "gamma": configuration[f"{prefix}:gamma"],
-            "C": configuration[f"{prefix}:C"],
-            "epsilon": configuration[f"{prefix}:epsilon"],
-            "shrinking": configuration[f"{prefix}:shrinking"],
-            **kwargs,
-        }
+            Returns
+            -------
+            partial
+                A partial function to create an SVMClassifierWrapper instance.
+            """
+            if pre_prefix != "":
+                prefix = f"{pre_prefix}:{SVMClassifierWrapper.PREFIX}"
+            else:
+                prefix = SVMClassifierWrapper.PREFIX
 
-        return partial(SVMClassifierWrapper, init_params=svm_params)
+            svm_params = {
+                "kernel": configuration[f"{prefix}:kernel"],
+                "degree": configuration[f"{prefix}:degree"],
+                "coef0": configuration[f"{prefix}:coef0"],
+                "tol": configuration[f"{prefix}:tol"],
+                "gamma": configuration[f"{prefix}:gamma"],
+                "C": configuration[f"{prefix}:C"],
+                "epsilon": configuration[f"{prefix}:epsilon"],
+                "shrinking": configuration[f"{prefix}:shrinking"],
+                **kwargs,
+            }
+
+            return partial(SVMClassifierWrapper, init_params=svm_params)
 
 
 class SVMRegressorWrapper(SklearnWrapper):
@@ -177,122 +193,124 @@ class SVMRegressorWrapper(SklearnWrapper):
         """
         super().__init__(SVR, init_params)
 
-    @staticmethod
-    def get_configuration_space(
-        cs: Optional[ConfigurationSpace] = None,
-        pre_prefix: str = "",
-        parent_param: Optional[Hyperparameter] = None,
-        parent_value: Optional[str] = None,
-    ) -> ConfigurationSpace:
-        """
-        Define the configuration space for the SVM regressor.
+    if CONFIGSPACE_AVAILABLE:
 
-        Parameters
-        ----------
-        cs : ConfigurationSpace, optional
-            The configuration space to add the parameters to. If None, a new
-            ConfigurationSpace will be created.
+        @staticmethod
+        def get_configuration_space(
+            cs: Optional[ConfigurationSpace] = None,
+            pre_prefix: str = "",
+            parent_param: Optional[Hyperparameter] = None,
+            parent_value: Optional[str] = None,
+        ) -> ConfigurationSpace:
+            """
+            Define the configuration space for the SVM regressor.
 
-        Returns
-        -------
-        ConfigurationSpace
-            The configuration space containing hyperparameters for the SVM regressor.
-        """
+            Parameters
+            ----------
+            cs : ConfigurationSpace, optional
+                The configuration space to add the parameters to. If None, a new
+                ConfigurationSpace will be created.
 
-        if pre_prefix != "":
-            prefix = f"{pre_prefix}:{SVMRegressorWrapper.PREFIX}"
-        else:
-            prefix = SVMRegressorWrapper.PREFIX
+            Returns
+            -------
+            ConfigurationSpace
+                The configuration space containing hyperparameters for the SVM regressor.
+            """
 
-        if cs is None:
-            cs = ConfigurationSpace(name="SVM Regressor")
+            if pre_prefix != "":
+                prefix = f"{pre_prefix}:{SVMRegressorWrapper.PREFIX}"
+            else:
+                prefix = SVMRegressorWrapper.PREFIX
 
-        kernel = Categorical(
-            f"{prefix}:kernel",
-            items=["linear", "rbf", "poly", "sigmoid"],
-            default="rbf",
-        )
-        degree = Integer(f"{prefix}:degree", (1, 128), log=True, default=1)
-        coef0 = Float(
-            f"{prefix}:coef0",
-            (-0.5, 0.5),
-            log=False,
-            default=0.0,
-        )
-        tol = Float(
-            f"{prefix}:tol",
-            (1e-4, 1e-2),
-            log=True,
-            default=0.001,
-        )
-        gamma = Categorical(
-            f"{prefix}:gamma",
-            items=["scale", "auto"],
-            default="scale",
-        )
-        C = Float(f"{prefix}:C", (1.0, 20), log=True, default=1.0)
-        epsilon = Float(
-            f"{prefix}:epsilon",
-            (0.01, 0.99),
-            log=True,
-            default=0.1,
-        )
-        shrinking = Categorical(
-            f"{prefix}:shrinking",
-            items=[True, False],
-            default=True,
-        )
-        params = [kernel, degree, coef0, tol, gamma, C, epsilon, shrinking]
-        if parent_param is not None:
-            conditions = [
-                EqualsCondition(
-                    child=param,
-                    parent=parent_param,
-                    value=parent_value,
-                )
-                for param in params
-            ]
-        else:
-            conditions = []
+            if cs is None:
+                cs = ConfigurationSpace(name="SVM Regressor")
 
-        cs.add(params + conditions)
+            kernel = Categorical(
+                f"{prefix}:kernel",
+                items=["linear", "rbf", "poly", "sigmoid"],
+                default="rbf",
+            )
+            degree = Integer(f"{prefix}:degree", (1, 128), log=True, default=1)
+            coef0 = Float(
+                f"{prefix}:coef0",
+                (-0.5, 0.5),
+                log=False,
+                default=0.0,
+            )
+            tol = Float(
+                f"{prefix}:tol",
+                (1e-4, 1e-2),
+                log=True,
+                default=0.001,
+            )
+            gamma = Categorical(
+                f"{prefix}:gamma",
+                items=["scale", "auto"],
+                default="scale",
+            )
+            C = Float(f"{prefix}:C", (1.0, 20), log=True, default=1.0)
+            epsilon = Float(
+                f"{prefix}:epsilon",
+                (0.01, 0.99),
+                log=True,
+                default=0.1,
+            )
+            shrinking = Categorical(
+                f"{prefix}:shrinking",
+                items=[True, False],
+                default=True,
+            )
+            params = [kernel, degree, coef0, tol, gamma, C, epsilon, shrinking]
+            if parent_param is not None:
+                conditions = [
+                    EqualsCondition(
+                        child=param,
+                        parent=parent_param,
+                        value=parent_value,
+                    )
+                    for param in params
+                ]
+            else:
+                conditions = []
 
-        return cs
+            cs.add(params + conditions)
 
-    @staticmethod
-    def get_from_configuration(
-        configuration: Dict[str, Any], pre_prefix: str = "", **kwargs
-    ) -> partial:
-        """
-        Create an SVMRegressorWrapper instance from a configuration.
+            return cs
 
-        Parameters
-        ----------
-        configuration : dict
-            Dictionary containing the configuration parameters.
-        additional_params : dict, optional
-            Additional parameters to include in the model initialization.
+        @staticmethod
+        def get_from_configuration(
+            configuration: Dict[str, Any], pre_prefix: str = "", **kwargs
+        ) -> partial:
+            """
+            Create an SVMRegressorWrapper instance from a configuration.
 
-        Returns
-        -------
-        partial
-            A partial function to create an SVMRegressorWrapper instance.
-        """
-        if pre_prefix != "":
-            prefix = f"{pre_prefix}:{SVMRegressorWrapper.PREFIX}"
-        else:
-            prefix = SVMRegressorWrapper.PREFIX
+            Parameters
+            ----------
+            configuration : dict
+                Dictionary containing the configuration parameters.
+            additional_params : dict, optional
+                Additional parameters to include in the model initialization.
 
-        svr_params = {
-            "kernel": configuration[f"{prefix}:kernel"],
-            "degree": configuration[f"{prefix}:degree"],
-            "coef0": configuration[f"{prefix}:coef0"],
-            "tol": configuration[f"{prefix}:tol"],
-            "gamma": configuration[f"{prefix}:gamma"],
-            "C": configuration[f"{prefix}:C"],
-            "epsilon": configuration[f"{prefix}:epsilon"],
-            "shrinking": configuration[f"{prefix}:shrinking"],
-            **kwargs,
-        }
+            Returns
+            -------
+            partial
+                A partial function to create an SVMRegressorWrapper instance.
+            """
+            if pre_prefix != "":
+                prefix = f"{pre_prefix}:{SVMRegressorWrapper.PREFIX}"
+            else:
+                prefix = SVMRegressorWrapper.PREFIX
 
-        return partial(SVMRegressorWrapper, init_params=svr_params)
+            svr_params = {
+                "kernel": configuration[f"{prefix}:kernel"],
+                "degree": configuration[f"{prefix}:degree"],
+                "coef0": configuration[f"{prefix}:coef0"],
+                "tol": configuration[f"{prefix}:tol"],
+                "gamma": configuration[f"{prefix}:gamma"],
+                "C": configuration[f"{prefix}:C"],
+                "epsilon": configuration[f"{prefix}:epsilon"],
+                "shrinking": configuration[f"{prefix}:shrinking"],
+                **kwargs,
+            }
+
+            return partial(SVMRegressorWrapper, init_params=svr_params)

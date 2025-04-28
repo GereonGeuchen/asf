@@ -1,6 +1,12 @@
 from typing import Any, Optional
-from ConfigSpace import ConfigurationSpace
-from ConfigSpace.hyperparameters import Hyperparameter
+
+try:
+    from ConfigSpace import ConfigurationSpace
+    from ConfigSpace.hyperparameters import Hyperparameter
+
+    CONFIGSPACE_AVAILABLE = True
+except ImportError:
+    CONFIGSPACE_AVAILABLE = False
 from typing import Dict
 from abc import ABC, abstractmethod
 
@@ -89,6 +95,9 @@ class AbstractPredictor(ABC):
             Path to the file from which the model will be loaded.
         """
         pass
+
+
+if CONFIGSPACE_AVAILABLE:
 
     @staticmethod
     def get_configuration_space(

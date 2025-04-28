@@ -1,7 +1,18 @@
 import numpy as np
 import pandas as pd
-from ConfigSpace import ConfigurationSpace, Categorical, Configuration, EqualsCondition
-from ConfigSpace.hyperparameters import Hyperparameter
+
+try:
+    from ConfigSpace import (
+        ConfigurationSpace,
+        Categorical,
+        Configuration,
+        EqualsCondition,
+    )
+    from ConfigSpace.hyperparameters import Hyperparameter
+
+    CONFIGSPACE_AVAILABLE = True
+except ImportError:
+    CONFIGSPACE_AVAILABLE = False
 
 from asf.predictors import (
     AbstractPredictor,
@@ -120,119 +131,121 @@ class PairwiseClassifier(AbstractModelBasedSelector, AbstractFeatureGenerator):
 
         return predictions_sum
 
-    @staticmethod
-    def get_configuration_space(
-        cs: Optional[ConfigurationSpace] = None,
-        cs_transform: Optional[Dict[str, dict]] = None,
-        model_class: List[type[AbstractPredictor]] = [
-            RandomForestClassifierWrapper,
-            XGBoostClassifierWrapper,
-        ],
-        pre_prefix: str = "",
-        parent_param: Optional[Hyperparameter] = None,
-        parent_value: Optional[str] = None,
-        **kwargs,
-    ) -> Tuple[ConfigurationSpace, Dict[str, dict]]:
-        """
-        Get the configuration space for the predictor.
+    if CONFIGSPACE_AVAILABLE:
 
-        Args:
-            cs (Optional[ConfigurationSpace]): The configuration space to use. If None, a new one will be created.
-            cs_transform (Optional[Dict[str, dict]]): A dictionary for transforming configuration space parameters.
-            model_class (List[type[AbstractPredictor]]): The list of model classes to use. Defaults to [RandomForestClassifierWrapper, XGBoostClassifierWrapper].
-            hierarchical_generator (Optional[List[AbstractFeatureGenerator]]): List of hierarchical feature generators.
-            **kwargs: Additional keyword arguments to pass to the model class.
+        @staticmethod
+        def get_configuration_space(
+            cs: Optional[ConfigurationSpace] = None,
+            cs_transform: Optional[Dict[str, dict]] = None,
+            model_class: List[type[AbstractPredictor]] = [
+                RandomForestClassifierWrapper,
+                XGBoostClassifierWrapper,
+            ],
+            pre_prefix: str = "",
+            parent_param: Optional[Hyperparameter] = None,
+            parent_value: Optional[str] = None,
+            **kwargs,
+        ) -> Tuple[ConfigurationSpace, Dict[str, dict]]:
+            """
+            Get the configuration space for the predictor.
 
-        Returns:
-            Tuple[ConfigurationSpace, Dict[str, dict]]: The configuration space and its transformation dictionary.
-        """
-        if cs is None:
-            cs = ConfigurationSpace()
+            Args:
+                cs (Optional[ConfigurationSpace]): The configuration space to use. If None, a new one will be created.
+                cs_transform (Optional[Dict[str, dict]]): A dictionary for transforming configuration space parameters.
+                model_class (List[type[AbstractPredictor]]): The list of model classes to use. Defaults to [RandomForestClassifierWrapper, XGBoostClassifierWrapper].
+                hierarchical_generator (Optional[List[AbstractFeatureGenerator]]): List of hierarchical feature generators.
+                **kwargs: Additional keyword arguments to pass to the model class.
 
-        if cs_transform is None:
-            cs_transform = dict()
+            Returns:
+                Tuple[ConfigurationSpace, Dict[str, dict]]: The configuration space and its transformation dictionary.
+            """
+            if cs is None:
+                cs = ConfigurationSpace()
 
-        if pre_prefix != "":
-            prefix = f"{pre_prefix}:{PairwiseClassifier.PREFIX}"
-        else:
-            prefix = PairwiseClassifier.PREFIX
+            if cs_transform is None:
+                cs_transform = dict()
 
-        model_class_param = Categorical(
-            name=f"{prefix}:model_class",
-            items=[str(c.__name__) for c in model_class],
-        )
+            if pre_prefix != "":
+                prefix = f"{pre_prefix}:{PairwiseClassifier.PREFIX}"
+            else:
+                prefix = PairwiseClassifier.PREFIX
 
-        cs_transform[f"{prefix}:model_class"] = {
-            str(c.__name__): c for c in model_class
-        }
-
-        use_weights_param = Categorical(
-            name=f"{prefix}:use_weights",
-            items=[True, False],
-        )
-
-        params = [model_class_param, use_weights_param]
-
-        if parent_param is not None:
-            conditions = [
-                EqualsCondition(
-                    child=param,
-                    parent=parent_param,
-                    value=parent_value,
-                )
-                for param in params
-            ]
-        else:
-            conditions = []
-
-        cs.add(params + conditions)
-
-        for model in model_class:
-            model.get_configuration_space(
-                cs=cs,
-                pre_prefix=f"{prefix}:model_class",
-                parent_param=model_class_param,
-                parent_value=str(model.__name__),
-                **kwargs,
+            model_class_param = Categorical(
+                name=f"{prefix}:model_class",
+                items=[str(c.__name__) for c in model_class],
             )
 
-        return cs, cs_transform
+            cs_transform[f"{prefix}:model_class"] = {
+                str(c.__name__): c for c in model_class
+            }
 
-    @staticmethod
-    def get_from_configuration(
-        configuration: Configuration,
-        cs_transform: Dict[str, dict],
-        pre_prefix: str = "",
-        **kwargs,
-    ) -> partial:
-        """
-        Get the predictor from a given configuration.
+            use_weights_param = Categorical(
+                name=f"{prefix}:use_weights",
+                items=[True, False],
+            )
 
-        Args:
-            configuration (Configuration): The configuration object.
-            cs_transform (Dict[str, dict]): The transformation dictionary for the configuration space.
+            params = [model_class_param, use_weights_param]
 
-        Returns:
-            partial: A partial function to initialize the PairwiseClassifier with the given configuration.
-        """
+            if parent_param is not None:
+                conditions = [
+                    EqualsCondition(
+                        child=param,
+                        parent=parent_param,
+                        value=parent_value,
+                    )
+                    for param in params
+                ]
+            else:
+                conditions = []
 
-        if pre_prefix != "":
-            prefix = f"{pre_prefix}:{PairwiseClassifier.PREFIX}"
-        else:
-            prefix = PairwiseClassifier.PREFIX
+            cs.add(params + conditions)
 
-        model_class = cs_transform[f"{prefix}:model_class"][
-            configuration[f"{prefix}:model_class"]
-        ]
-        use_weights = configuration[f"{prefix}:use_weights"]
+            for model in model_class:
+                model.get_configuration_space(
+                    cs=cs,
+                    pre_prefix=f"{prefix}:model_class",
+                    parent_param=model_class_param,
+                    parent_value=str(model.__name__),
+                    **kwargs,
+                )
 
-        model = model_class.get_from_configuration(
-            configuration, pre_prefix=f"{prefix}:model_class"
-        )
+            return cs, cs_transform
 
-        return PairwiseClassifier(
-            model_class=model,
-            use_weights=use_weights,
-            hierarchical_generator=None,
+        @staticmethod
+        def get_from_configuration(
+            configuration: Configuration,
+            cs_transform: Dict[str, dict],
+            pre_prefix: str = "",
             **kwargs,
-        )
+        ) -> partial:
+            """
+            Get the predictor from a given configuration.
+
+            Args:
+                configuration (Configuration): The configuration object.
+                cs_transform (Dict[str, dict]): The transformation dictionary for the configuration space.
+
+            Returns:
+                partial: A partial function to initialize the PairwiseClassifier with the given configuration.
+            """
+
+            if pre_prefix != "":
+                prefix = f"{pre_prefix}:{PairwiseClassifier.PREFIX}"
+            else:
+                prefix = PairwiseClassifier.PREFIX
+
+            model_class = cs_transform[f"{prefix}:model_class"][
+                configuration[f"{prefix}:model_class"]
+            ]
+            use_weights = configuration[f"{prefix}:use_weights"]
+
+            model = model_class.get_from_configuration(
+                configuration, pre_prefix=f"{prefix}:model_class"
+            )
+
+            return PairwiseClassifier(
+                model_class=model,
+                use_weights=use_weights,
+                hierarchical_generator=None,
+                **kwargs,
+            )

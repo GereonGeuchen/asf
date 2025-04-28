@@ -27,14 +27,14 @@ classifiers = [
 dependencies = [
   'scikit-learn',
   'pandas',
-  "ConfigSpace",
-  "smac"
+  'numpy',
 ]
 
 [project.optional-dependencies]
 aslib = [ 'pyyaml' ]
 nn = [ 'torch' ]
 xgb = [ 'xgboost' ]
+tune = [ 'smac' ]
 
 [build-system]
 requires = ["setuptools", "wheel"]

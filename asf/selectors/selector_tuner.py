@@ -14,9 +14,16 @@ Dependencies:
 
 import numpy as np
 import pandas as pd
-from ConfigSpace import Categorical, ConfigurationSpace
+
+try:
+    from ConfigSpace import Categorical, ConfigurationSpace
+    from smac import HyperparameterOptimizationFacade, Scenario
+
+    CONFIGSPACE_AVAILABLE = True
+except ImportError:
+    CONFIGSPACE_AVAILABLE = False
 from sklearn.model_selection import KFold
-from smac import HyperparameterOptimizationFacade, Scenario
+
 
 from asf.metrics.baselines import running_time_selector_performance
 from sklearn.base import TransformerMixin
@@ -77,6 +84,9 @@ def tune_selector(
     Returns:
         SelectorPipeline: A pipeline with the best-tuned selector and preprocessing steps.
     """
+    assert CONFIGSPACE_AVAILABLE, (
+        "SMAC is not installed. Please install it to use this function via pip install asf-lib[tune]."
+    )
     if type(selector_class) is not list:
         selector_class = [selector_class]
 
