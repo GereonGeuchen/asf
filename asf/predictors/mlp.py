@@ -11,6 +11,8 @@ from sklearn.neural_network import MLPClassifier, MLPRegressor
 
 from asf.predictors.sklearn_wrapper import SklearnWrapper
 
+from typing import Optional, Dict, Any
+
 from functools import partial
 
 
