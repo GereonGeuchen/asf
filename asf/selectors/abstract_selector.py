@@ -2,6 +2,7 @@ import pandas as pd
 from asf.selectors.feature_generator import (
     AbstractFeatureGenerator,
 )
+import numpy as np
 from ConfigSpace import ConfigurationSpace, Categorical, Configuration
 
 
@@ -73,6 +74,26 @@ class AbstractSelector:
         **kwargs : dict
             Additional keyword arguments for fitting.
         """
+        if isinstance(features, np.ndarray) and isinstance(performance, np.ndarray):
+            features = pd.DataFrame(
+                features,
+                index=range(len(features)),
+                columns=[f"f_{i}" for i in range(features.shape[1])],
+            )
+            performance = pd.DataFrame(
+                performance,
+                index=range(len(performance)),
+                columns=[f"algo_{i}" for i in range(performance.shape[1])],
+            )
+        elif isinstance(features, pd.DataFrame) and isinstance(
+            performance, pd.DataFrame
+        ):
+            pass
+        else:
+            raise ValueError(
+                "features and performance must be either numpy arrays or pandas DataFrames"
+            )
+
         if self.hierarchical_generator is not None:
             self.hierarchical_generator.fit(features, performance, algorithm_features)
             features = pd.concat(

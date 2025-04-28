@@ -19,7 +19,7 @@ from sklearn.model_selection import KFold
 from smac import HyperparameterOptimizationFacade, Scenario
 
 from asf.metrics.baselines import running_time_selector_performance
-from asf.preprocessing.abstrtract_preprocessor import AbstractPreprocessor
+from sklearn.base import TransformerMixin
 from asf.selectors.abstract_selector import AbstractSelector
 from asf.selectors.pairwise_classifier import PairwiseClassifier
 from asf.selectors.pairwise_regressor import PairwiseRegressor
@@ -33,7 +33,7 @@ def tune_selector(
     selector_class: list[AbstractSelector] = [PairwiseClassifier, PairwiseRegressor],
     selector_space_kwargs: dict = {},
     selector_kwargs: dict = {},
-    preprocessing_class: AbstractPreprocessor = None,
+    preprocessing_class: TransformerMixin = None,
     pre_solving: object = None,
     feature_selector: object = None,
     algorithm_pre_selector: object = None,
