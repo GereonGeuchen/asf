@@ -15,6 +15,7 @@ from asf.predictors.abstract_predictor import AbstractPredictor
 from asf.predictors.utils.datasets import RankingDataset
 from asf.predictors.utils.losses import bpr_loss
 from asf.predictors.utils.mlp import get_mlp
+import logging
 
 
 class RankingMLP(AbstractPredictor):
@@ -117,7 +118,6 @@ class RankingMLP(AbstractPredictor):
         Returns:
             RankingMLP: The fitted model.
         """
-        print(self.model)
         dataloader = self._get_dataloader(features, performance, algorithm_features)
 
         optimizer = self.optimizer(self.model.parameters())
@@ -143,7 +143,8 @@ class RankingMLP(AbstractPredictor):
 
                 loss.backward()
                 optimizer.step()
-            print(f"Epoch {epoch}, Loss: {total_loss / len(dataloader)}")
+
+            logging.debug(f"Epoch {epoch}, Loss: {total_loss / len(dataloader)}")
 
         return self
 

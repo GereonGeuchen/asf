@@ -67,7 +67,8 @@ def read_scenario(
     features = pd.DataFrame(
         features["data"], columns=[a[0] for a in features["attributes"]]
     )
-    features = features.set_index("instance_id")
+    features = features.groupby("instance_id").mean()
+    features = features.drop(columns=["repetition"])
 
     # Optionally load running time features
     if add_running_time_features:

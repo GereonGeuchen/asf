@@ -33,7 +33,6 @@ class RankingDataset(torch.utils.data.Dataset):
         all = all.sort_index()
         self.all = all
 
-        print(self.all)
         self.features_cols = features.columns.to_list()
         self.algorithm_features_cols = algorithm_features.columns.to_list()
 

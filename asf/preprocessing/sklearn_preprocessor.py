@@ -32,23 +32,26 @@ def get_default_preprocessor(
     if numerical_features is None:
         numerical_features = make_column_selector(dtype_include="number")
 
-    return ColumnTransformer(
-        [
-            (
-                "cat",
-                make_pipeline(
-                    SimpleImputer(strategy="most_frequent"),
-                    OneHotEncoder(sparse_output=False, handle_unknown="ignore"),
+    def get_preprocessor():
+        return ColumnTransformer(
+            [
+                (
+                    "cat",
+                    make_pipeline(
+                        SimpleImputer(strategy="most_frequent"),
+                        OneHotEncoder(sparse_output=False, handle_unknown="ignore"),
+                    ),
+                    categorical_features,
                 ),
-                categorical_features,
-            ),
-            (
-                "cont",
-                make_pipeline(SimpleImputer(strategy="median"), StandardScaler()),
-                numerical_features,
-            ),
-        ]
-    )
+                (
+                    "cont",
+                    make_pipeline(SimpleImputer(strategy="median"), StandardScaler()),
+                    numerical_features,
+                ),
+            ]
+        )
+
+    return SklearnPreprocessor(get_preprocessor)
 
 
 class SklearnPreprocessor(AbstractPreprocessor):
@@ -61,7 +64,7 @@ class SklearnPreprocessor(AbstractPreprocessor):
     """
 
     def __init__(
-        self, preprocessor: Callable, preprocessor_kwargs: Optional[dict] = None
+        self, preprocessor: Callable, preprocessor_kwargs: Optional[dict] = {}
     ):
         """
         Initializes the SklearnPreprocessor.
@@ -73,7 +76,7 @@ class SklearnPreprocessor(AbstractPreprocessor):
         self.preprocessor_class = preprocessor
         self.preprocessor_kwargs = preprocessor_kwargs
 
-    def fit(self, data: pd.DataFrame) -> None:
+    def fit(self, X: pd.DataFrame) -> None:
         """
         Fits the preprocessor to the data.
 
@@ -81,9 +84,9 @@ class SklearnPreprocessor(AbstractPreprocessor):
             data (pd.DataFrame): The input data to fit the preprocessor.
         """
         self.preprocessor = self.preprocessor_class(**self.preprocessor_kwargs)
-        self.preprocessor.fit(data.values)
+        self.preprocessor.fit(X)
 
-    def transform(self, data: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Transforms the data using the fitted preprocessor.
 
@@ -94,9 +97,9 @@ class SklearnPreprocessor(AbstractPreprocessor):
             pd.DataFrame: The transformed data as a DataFrame.
         """
         return pd.DataFrame(
-            self.preprocessor.transform(data.values),
-            columns=data.columns,
-            index=data.index,
+            self.preprocessor.transform(X),
+            columns=X.columns,
+            index=X.index,
         )
 
 

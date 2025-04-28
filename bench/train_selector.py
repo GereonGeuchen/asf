@@ -3,9 +3,12 @@ from asf.selectors.abstract_selector import AbstractSelector
 from asf.selectors import (
     JointRanking,
 )
-from asf.preprocessing import Imputer, MinMaxScaler
+from asf.preprocessing.sklearn_preprocessor import get_default_preprocessor
 from functools import partial
 from asf.metrics.baselines import running_time_closed_gap
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
 
 
 def train_selector(scenario_name: str, selector_class: AbstractSelector) -> None:
@@ -20,14 +23,18 @@ def train_selector(scenario_name: str, selector_class: AbstractSelector) -> None
     None
     """
     # Load the scenario
-    metadata, features, performance, cv = aslib_reader.read_scenario(scenario_name)
+    features, performance, cv, feature_groups, maximize, budget = (
+        aslib_reader.read_scenario(scenario_name)
+    )
 
-    performance[performance >= metadata.budget] = metadata.budget * 10
+    performance[performance >= budget] = budget * 10
     solvers_performance = performance.sum(axis=0).sort_values(ascending=True)
     best_solvers = solvers_performance.index[:5]
-    metadata.algorithms = best_solvers
+    algorithms = best_solvers
+    performance = performance[algorithms]
+
     # Initialize the selector
-    selector = selector_class(metadata=metadata)
+    selector = selector_class(budget=budget, maximize=maximize)
 
     total_score = 0
 
@@ -41,16 +48,10 @@ def train_selector(scenario_name: str, selector_class: AbstractSelector) -> None
             performance[cv["fold"] == i + 1],
         )
 
-        imputer = Imputer()
-        scaler = MinMaxScaler()
-
-        imputer.fit(X_train)
-        X_train = imputer.transform(X_train)
-        X_test = imputer.transform(X_test)
-
-        scaler.fit(X_train)
-        X_train = scaler.transform(X_train)
-        X_test = scaler.transform(X_test)
+        preprocessor = get_default_preprocessor()
+        preprocessor.fit(X_train)
+        X_train = preprocessor.transform(X_train)
+        X_test = preprocessor.transform(X_test)
 
         # Train the selector
         selector.fit(X_train, y_train)
@@ -59,11 +60,11 @@ def train_selector(scenario_name: str, selector_class: AbstractSelector) -> None
         all_schedules.update(schedules)
         # Evaluate the selector
 
-        score = running_time_closed_gap(schedules, y_test, metadata, par)
+        score = running_time_closed_gap(schedules, y_test, budget, par)
         total_score += score
         print(f"Fold score: {score}")
 
-    return running_time_closed_gap(all_schedules, performance, metadata, par)
+    return running_time_closed_gap(all_schedules, performance, budget, par)
 
 
 if __name__ == "__main__":

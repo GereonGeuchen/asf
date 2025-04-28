@@ -103,6 +103,5 @@ class JointRanking(AbstractSelector, AbstractFeatureGenerator):
             data = data[self.algorithm_features.columns.to_list() + self.features]
             prediction = self.model.predict(data)
             predictions[:, i] = prediction.flatten()
-            print(predictions)
 
         return pd.DataFrame(predictions, columns=self.algorithms)
