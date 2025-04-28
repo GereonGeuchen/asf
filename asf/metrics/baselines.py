@@ -2,9 +2,7 @@ import pandas as pd
 from typing import Dict, List, Tuple, Optional, Union
 
 
-def single_best_solver(
-    schedules: pd.DataFrame, performance: pd.DataFrame, maximize: bool
-) -> float:
+def single_best_solver(performance: pd.DataFrame, maximize: bool) -> float:
     """
     Selects the single best solver across all instances based on the aggregated performance.
 
@@ -23,9 +21,7 @@ def single_best_solver(
         return perf_sum.min()
 
 
-def virtual_best_solver(
-    schedules: pd.DataFrame, performance: pd.DataFrame, maximize: bool
-) -> float:
+def virtual_best_solver(performance: pd.DataFrame, maximize: bool) -> float:
     """
     Selects the virtual best solver for each instance by choosing the best performance per instance.
 
@@ -120,8 +116,8 @@ def running_time_closed_gap(
         float: The closed gap value, representing the improvement of the selector over the single best solver
         relative to the virtual best solver.
     """
-    sbs_val = single_best_solver(schedules, performance, False)
-    vbs_val = virtual_best_solver(schedules, performance, False)
+    sbs_val = single_best_solver(performance, False)
+    vbs_val = virtual_best_solver(performance, False)
     s_val = sum(
         list(
             running_time_selector_performance(
