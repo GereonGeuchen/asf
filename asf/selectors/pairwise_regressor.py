@@ -1,6 +1,12 @@
 import pandas as pd
 from asf.selectors.abstract_model_based_selector import AbstractModelBasedSelector
-from ConfigSpace.hyperparameters import Hyperparameter
+
+try:
+    from ConfigSpace.hyperparameters import Hyperparameter
+
+    CONFIGSPACE_AVAILABLE = True
+except ImportError:
+    CONFIGSPACE_AVAILABLE = False
 
 from asf.selectors.feature_generator import (
     AbstractFeatureGenerator,
