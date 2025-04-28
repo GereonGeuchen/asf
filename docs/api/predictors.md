@@ -1,3 +1,3 @@
-# Selectors
+# Predictors
 
 ::: asf.predictors

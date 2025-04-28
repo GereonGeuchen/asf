@@ -1,5 +1,6 @@
 from typing import Optional, Callable, Any
 from asf.selectors.abstract_selector import AbstractSelector
+from sklearn.base import TransformerMixin
 
 
 class SelectorPipeline:
@@ -22,7 +23,7 @@ class SelectorPipeline:
         self,
         selector: AbstractSelector,
         preprocessor: Optional[Callable] = None,
-        pre_solving: Optional[Callable] = None,
+        pre_solving: TransformerMixin = None,
         feature_selector: Optional[Callable] = None,
         algorithm_pre_selector: Optional[Callable] = None,
         budget: Optional[Any] = None,
@@ -60,26 +61,17 @@ class SelectorPipeline:
             y (Any): The target labels.
         """
         if self.preprocessor:
-            self.preprocessor = self.preprocessor()
             X = self.preprocessor.fit_transform(X)
 
         if self.algorithm_pre_selector:
-            self.algorithm_pre_selector = self.algorithm_pre_selector()
             X, y = self.algorithm_pre_selector.fit_transform(X, y)
 
         if self.feature_selector:
-            self.feature_selector = self.feature_selector()
             X, y = self.feature_selector.fit_transform(X, y)
 
         if self.pre_solving:
-            self.pre_solving = self.pre_solving()
             self.pre_solving.fit(X, y)
 
-        self.selector = self.selector(
-            budget=self.budget,
-            maximize=self.maximize,
-            feature_groups=self.feature_groups,
-        )
         self.selector.fit(X, y)
 
     def predict(self, X: Any) -> Any:
@@ -93,7 +85,7 @@ class SelectorPipeline:
             Any: The predictions made by the selector.
         """
         if self.preprocessor:
-            (X,) = self.preprocessor.transform(X)
+            X = self.preprocessor.transform(X)
 
         if self.pre_solving:
             X = self.pre_solving.transform(X)

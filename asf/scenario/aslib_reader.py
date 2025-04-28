@@ -11,7 +11,7 @@ except ImportError:
     ASLIB_AVAILABLE = False
 
 
-def read_scenario(
+def read_aslib_scenario(
     path: str, add_running_time_features: bool = True
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, list[str], bool, float]:
     """Read an ASlib scenario from a file.

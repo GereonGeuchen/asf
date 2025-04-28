@@ -1,3 +1,10 @@
+---
+hide:
+  - navigation
+  - toc
+---
+
+
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -12,56 +19,25 @@
 
 # Algorithm Selection Framework (ASF)
 
-ASF is a powerful library for algorithm selection and performance prediction. It allows users to easily create and use algorithm selectors with minimal code.
+ASF is a lightweight yet powerful Python library for algorithm selection and empirical performance prediction. 
+It implements various algorithm selection methods, along with algorithm pre-selection, pre-solving schedules and more features to easily create algorithm selection pipeline.
+ASF is a modular framework that allows easy extensions to tailor made an algorithm selector for every use-case.
+While ASF includes several built-in machine learning models through scikit-learn and XGBoost, it supports every model that complies with the scikit-learn API.
+ASF also implements empirical performance prediction, allowing to use different performance scalings.
 
-## Features
+ASF is written in Python 3 and is intended to use with Python 3.10+. It requires only scikit-learn, NumPy as Pandas as basic requirements. More advanced features (such as hyperparameter optimisation) requires additional dependencies. 
 
-- Easy-to-use API for creating algorithm selectors
-- Supports various selection models including pairwise classifiers, multi-class classifiers, and performance models
-- Integration with popular machine learning libraries like scikit-learn
 
-## Quick Start
+# Cite Us
 
-You can create an algorithm selector with just 2 lines of code. Here is an example using the `PairwiseClassifier`:
+If you use ASF, please cite the Zenodo DOI. We are currently working on publishing a paper on ASF, but by then a Zenodo citation will do it. 
 
-```python
-from asf.selectors import PairwiseClassifier
-from sklearn.ensemble import RandomForestClassifier
-
-# Create a PairwiseClassifier
-selector = PairwiseClassifier(model_class=RandomForestClassifier, metadata=your_metadata)
-
-# Fit the selector with feature and performance data
-selector.fit(dummy_features, dummy_performance)
-
-# Predict the best algorithm for new instances
-predictions = selector.predict(new_features)
+```bibtex
+@software{ASF,
+	author = {Hadar Shavit and Holger Hoos},
+	doi = {10.5281/zenodo.15288151},
+	title = {ASF: Algorithm Selection Framework},
+	url = {https://doi.org/10.5281/zenodo.15288151},
+	year = 2025,
+}
 ```
-
-## Future Features
-
-In the future, ASF will include more features such as:
-
-- Empirical performance prediction
-- Feature selection
-- Support for ASlib scenarios
-- And more!
-
-## Installation
-
-To install ASF, use pip:
-```python
-pip install asf-lib
-```
-
-## Documentation
-
-For detailed documentation and examples, please refer to the official documentation.
-
-## Contributing
-
-We welcome contributions! Please see our contributing guidelines for more details.
-
-## License
-
-ASF is licensed under the MIT License. See the LICENSE file for more details.
