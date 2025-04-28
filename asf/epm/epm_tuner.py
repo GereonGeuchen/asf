@@ -8,7 +8,7 @@ from smac import HyperparameterOptimizationFacade, Scenario
 from asf.utils.groupkfoldshuffle import GroupKFoldShuffle
 
 from asf.epm.epm import EPM
-from asf.normalization.normalizations import AbstractNormalization, LogNormalization
+from asf.preprocessing.performace_scaling import AbstractNormalization, LogNormalization
 from asf.predictors.abstract_predictor import AbstractPredictor
 
 

@@ -4,7 +4,7 @@ from typing import Type, Union, Optional
 import pandas as pd
 from sklearn.base import RegressorMixin
 
-from asf.normalization.normalizations import AbstractNormalization, LogNormalization
+from asf.preprocessing.performace_scaling import AbstractNormalization, LogNormalization
 from asf.predictors import SklearnWrapper
 from asf.preprocessing.sklearn_preprocessor import get_default_preprocessor
 from sklearn.base import TransformerMixin
