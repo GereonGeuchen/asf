@@ -50,7 +50,6 @@ class SelectorPipeline:
         self.algorithm_pre_selector = algorithm_pre_selector
         self.budget = budget
         self.maximize = maximize
-        self.feature_groups = feature_groups
 
     def fit(self, X: Any, y: Any) -> None:
         """
@@ -64,7 +63,7 @@ class SelectorPipeline:
             X = self.preprocessor.fit_transform(X)
 
         if self.algorithm_pre_selector:
-            X, y = self.algorithm_pre_selector.fit_transform(X, y)
+            y = self.algorithm_pre_selector.fit_transform(y)
 
         if self.feature_selector:
             X, y = self.feature_selector.fit_transform(X, y)

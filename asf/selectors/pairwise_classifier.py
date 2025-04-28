@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
-from ConfigSpace import ConfigurationSpace, Categorical, Configuration
+from ConfigSpace import ConfigurationSpace, Categorical, Configuration, EqualsCondition
+from ConfigSpace.hyperparameters import Hyperparameter
+
 from asf.predictors import (
     AbstractPredictor,
     RandomForestClassifierWrapper,
@@ -126,7 +128,9 @@ class PairwiseClassifier(AbstractModelBasedSelector, AbstractFeatureGenerator):
             RandomForestClassifierWrapper,
             XGBoostClassifierWrapper,
         ],
-        hierarchical_generator: Optional[List[AbstractFeatureGenerator]] = None,
+        pre_prefix: str = "",
+        parent_param: Optional[Hyperparameter] = None,
+        parent_value: Optional[str] = None,
         **kwargs,
     ) -> Tuple[ConfigurationSpace, Dict[str, dict]]:
         """
@@ -148,38 +152,58 @@ class PairwiseClassifier(AbstractModelBasedSelector, AbstractFeatureGenerator):
         if cs_transform is None:
             cs_transform = dict()
 
-        if f"{PairwiseClassifier.PREFIX}:model_class" not in cs:
-            cs.add(
-                Categorical(
-                    name=f"{PairwiseClassifier.PREFIX}:model_class",
-                    items=[str(c.__name__) for c in model_class],
-                )
-            )
-            cs_transform[f"{PairwiseClassifier.PREFIX}:model_class"] = {
-                str(c.__name__): c for c in model_class
-            }
+        if pre_prefix != "":
+            prefix = f"{pre_prefix}:{PairwiseClassifier.PREFIX}"
+        else:
+            prefix = PairwiseClassifier.PREFIX
 
-        if f"{PairwiseClassifier.PREFIX}:use_weights" not in cs:
-            cs.add(
-                Categorical(
-                    name=f"{PairwiseClassifier.PREFIX}:use_weights",
-                    items=[True, False],
-                )
-            )
-
-        PairwiseClassifier._add_hierarchical_generator_space(
-            cs=cs,
-            hierarchical_generator=hierarchical_generator,
+        model_class_param = Categorical(
+            name=f"{prefix}:model_class",
+            items=[str(c.__name__) for c in model_class],
         )
 
+        cs_transform[f"{prefix}:model_class"] = {
+            str(c.__name__): c for c in model_class
+        }
+
+        use_weights_param = Categorical(
+            name=f"{prefix}:use_weights",
+            items=[True, False],
+        )
+
+        params = [model_class_param, use_weights_param]
+
+        if parent_param is not None:
+            conditions = [
+                EqualsCondition(
+                    child=param,
+                    parent=parent_param,
+                    value=parent_value,
+                )
+                for param in params
+            ]
+        else:
+            conditions = []
+
+        cs.add(params + conditions)
+
         for model in model_class:
-            model.get_configuration_space(cs=cs, **kwargs)
+            model.get_configuration_space(
+                cs=cs,
+                pre_prefix=f"{prefix}:model_class",
+                parent_param=model_class_param,
+                parent_value=str(model.__name__),
+                **kwargs,
+            )
 
         return cs, cs_transform
 
     @staticmethod
     def get_from_configuration(
-        configuration: Configuration, cs_transform: Dict[str, dict]
+        configuration: Configuration,
+        cs_transform: Dict[str, dict],
+        pre_prefix: str = "",
+        **kwargs,
     ) -> partial:
         """
         Get the predictor from a given configuration.
@@ -191,15 +215,24 @@ class PairwiseClassifier(AbstractModelBasedSelector, AbstractFeatureGenerator):
         Returns:
             partial: A partial function to initialize the PairwiseClassifier with the given configuration.
         """
-        model_class = cs_transform[f"{PairwiseClassifier.PREFIX}:model_class"][
-            configuration[f"{PairwiseClassifier.PREFIX}:model_class"]
-        ]
-        use_weights = configuration[f"{PairwiseClassifier.PREFIX}:use_weights"]
 
-        model = model_class.get_from_configuration(configuration, cs_transform)
+        if pre_prefix != "":
+            prefix = f"{pre_prefix}:{PairwiseClassifier.PREFIX}"
+        else:
+            prefix = PairwiseClassifier.PREFIX
+
+        model_class = cs_transform[f"{prefix}:model_class"][
+            configuration[f"{prefix}:model_class"]
+        ]
+        use_weights = configuration[f"{prefix}:use_weights"]
+
+        model = model_class.get_from_configuration(
+            configuration, pre_prefix=f"{prefix}:model_class"
+        )
 
         return PairwiseClassifier(
             model_class=model,
             use_weights=use_weights,
             hierarchical_generator=None,
+            **kwargs,
         )

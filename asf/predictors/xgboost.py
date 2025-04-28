@@ -1,4 +1,5 @@
-from ConfigSpace import ConfigurationSpace, Constant, Float, Integer
+from ConfigSpace import ConfigurationSpace, Constant, Float, Integer, EqualsCondition
+from ConfigSpace.hyperparameters import Hyperparameter
 from typing import Optional, Dict, Any, Callable
 from functools import partial
 import numpy as np
@@ -86,6 +87,9 @@ class XGBoostClassifierWrapper(SklearnWrapper):
     @staticmethod
     def get_configuration_space(
         cs: Optional[ConfigurationSpace] = None,
+        pre_prefix: str = "",
+        parent_param: Optional[Hyperparameter] = None,
+        parent_value: Optional[str] = None,
     ) -> ConfigurationSpace:
         """
         Get the configuration space for the XGBoost classifier.
@@ -103,69 +107,87 @@ class XGBoostClassifierWrapper(SklearnWrapper):
         if cs is None:
             cs = ConfigurationSpace(name="XGBoost")
 
-        booster = Constant(f"{XGBoostClassifierWrapper.PREFIX}:booster", "gbtree")
+        if pre_prefix != "":
+            prefix = f"{pre_prefix}:{XGBoostClassifierWrapper.PREFIX}"
+        else:
+            prefix = XGBoostClassifierWrapper.PREFIX
+
+        booster = Constant(f"{prefix}:booster", "gbtree")
         max_depth = Integer(
-            f"{XGBoostClassifierWrapper.PREFIX}:max_depth",
+            f"{prefix}:max_depth",
             (1, 20),
             log=False,
             default=13,
         )
         min_child_weight = Integer(
-            f"{XGBoostClassifierWrapper.PREFIX}:min_child_weight",
+            f"{prefix}:min_child_weight",
             (1, 100),
             log=True,
             default=39,
         )
         colsample_bytree = Float(
-            f"{XGBoostClassifierWrapper.PREFIX}:colsample_bytree",
+            f"{prefix}:colsample_bytree",
             (0.0, 1.0),
             log=False,
             default=0.2545374925231651,
         )
         colsample_bylevel = Float(
-            f"{XGBoostClassifierWrapper.PREFIX}:colsample_bylevel",
+            f"{prefix}:colsample_bylevel",
             (0.0, 1.0),
             log=False,
             default=0.6909224923784677,
         )
         lambda_param = Float(
-            f"{XGBoostClassifierWrapper.PREFIX}:lambda",
+            f"{prefix}:lambda",
             (0.001, 1000),
             log=True,
             default=31.393252465064943,
         )
         alpha = Float(
-            f"{XGBoostClassifierWrapper.PREFIX}:alpha",
+            f"{prefix}:alpha",
             (0.001, 1000),
             log=True,
             default=0.24167936088332426,
         )
         learning_rate = Float(
-            f"{XGBoostClassifierWrapper.PREFIX}:learning_rate",
+            f"{prefix}:learning_rate",
             (0.001, 0.1),
             log=True,
             default=0.008237525103357958,
         )
 
-        cs.add(
-            [
-                booster,
-                max_depth,
-                min_child_weight,
-                colsample_bytree,
-                colsample_bylevel,
-                lambda_param,
-                alpha,
-                learning_rate,
+        params = [
+            booster,
+            max_depth,
+            min_child_weight,
+            colsample_bytree,
+            colsample_bylevel,
+            lambda_param,
+            alpha,
+            learning_rate,
+        ]
+
+        if parent_param is not None:
+            conditions = [
+                EqualsCondition(
+                    child=param,
+                    parent=parent_param,
+                    value=parent_value,
+                )
+                for param in params
             ]
-        )
+        else:
+            conditions = []
+
+        cs.add(params + conditions)
 
         return cs
 
     @staticmethod
     def get_from_configuration(
         configuration: Dict[str, Any],
-        additional_params: Optional[Dict[str, Any]] = None,
+        pre_prefix: str = "",
+        **kwargs: Any,
     ) -> Callable[..., "XGBoostClassifierWrapper"]:
         """
         Create an XGBoostClassifierWrapper from a configuration.
@@ -182,24 +204,21 @@ class XGBoostClassifierWrapper(SklearnWrapper):
         Callable[..., XGBoostClassifierWrapper]
             A callable that initializes the wrapper with the given configuration.
         """
+        if pre_prefix != "":
+            prefix = f"{pre_prefix}:{XGBoostClassifierWrapper.PREFIX}"
+        else:
+            prefix = XGBoostClassifierWrapper.PREFIX
+
         xgb_params = {
-            "booster": configuration[f"{XGBoostClassifierWrapper.PREFIX}:booster"],
-            "max_depth": configuration[f"{XGBoostClassifierWrapper.PREFIX}:max_depth"],
-            "min_child_weight": configuration[
-                f"{XGBoostClassifierWrapper.PREFIX}:min_child_weight"
-            ],
-            "colsample_bytree": configuration[
-                f"{XGBoostClassifierWrapper.PREFIX}:colsample_bytree"
-            ],
-            "colsample_bylevel": configuration[
-                f"{XGBoostClassifierWrapper.PREFIX}:colsample_bylevel"
-            ],
-            "lambda": configuration[f"{XGBoostClassifierWrapper.PREFIX}:lambda"],
-            "alpha": configuration[f"{XGBoostClassifierWrapper.PREFIX}:alpha"],
-            "learning_rate": configuration[
-                f"{XGBoostClassifierWrapper.PREFIX}:learning_rate"
-            ],
-            **(additional_params or {}),
+            "booster": configuration[f"{prefix}:booster"],
+            "max_depth": configuration[f"{prefix}:max_depth"],
+            "min_child_weight": configuration[f"{prefix}:min_child_weight"],
+            "colsample_bytree": configuration[f"{prefix}:colsample_bytree"],
+            "colsample_bylevel": configuration[f"{prefix}:colsample_bylevel"],
+            "lambda": configuration[f"{prefix}:lambda"],
+            "alpha": configuration[f"{prefix}:alpha"],
+            "learning_rate": configuration[f"{prefix}:learning_rate"],
+            **kwargs,
         }
 
         return partial(XGBoostClassifierWrapper, init_params=xgb_params)
@@ -226,6 +245,9 @@ class XGBoostRegressorWrapper(SklearnWrapper):
     @staticmethod
     def get_configuration_space(
         cs: Optional[ConfigurationSpace] = None,
+        pre_prefix: str = "",
+        parent_param: Optional[Hyperparameter] = None,
+        parent_value: Optional[str] = None,
     ) -> ConfigurationSpace:
         """
         Get the configuration space for the XGBoost regressor.
@@ -243,69 +265,86 @@ class XGBoostRegressorWrapper(SklearnWrapper):
         if cs is None:
             cs = ConfigurationSpace(name="XGBoostRegressor")
 
-        booster = Constant(f"{XGBoostRegressorWrapper.PREFIX}:booster", "gbtree")
+        if pre_prefix != "":
+            prefix = f"{pre_prefix}:{XGBoostRegressorWrapper.PREFIX}"
+        else:
+            prefix = XGBoostRegressorWrapper.PREFIX
+
+        booster = Constant(f"{prefix}:booster", "gbtree")
         max_depth = Integer(
-            f"{XGBoostRegressorWrapper.PREFIX}:max_depth",
+            f"{prefix}:max_depth",
             (1, 20),
             log=False,
             default=13,
         )
         min_child_weight = Integer(
-            f"{XGBoostRegressorWrapper.PREFIX}:min_child_weight",
+            f"{prefix}:min_child_weight",
             (1, 100),
             log=True,
             default=39,
         )
         colsample_bytree = Float(
-            f"{XGBoostRegressorWrapper.PREFIX}:colsample_bytree",
+            f"{prefix}:colsample_bytree",
             (0.0, 1.0),
             log=False,
             default=0.2545374925231651,
         )
         colsample_bylevel = Float(
-            f"{XGBoostRegressorWrapper.PREFIX}:colsample_bylevel",
+            f"{prefix}:colsample_bylevel",
             (0.0, 1.0),
             log=False,
             default=0.6909224923784677,
         )
         lambda_param = Float(
-            f"{XGBoostRegressorWrapper.PREFIX}:lambda",
+            f"{prefix}:lambda",
             (0.001, 1000),
             log=True,
             default=31.393252465064943,
         )
         alpha = Float(
-            f"{XGBoostRegressorWrapper.PREFIX}:alpha",
+            f"{prefix}:alpha",
             (0.001, 1000),
             log=True,
             default=0.24167936088332426,
         )
         learning_rate = Float(
-            f"{XGBoostRegressorWrapper.PREFIX}:learning_rate",
+            f"{prefix}:learning_rate",
             (0.001, 0.1),
             log=True,
             default=0.008237525103357958,
         )
 
-        cs.add(
-            [
-                booster,
-                max_depth,
-                min_child_weight,
-                colsample_bytree,
-                colsample_bylevel,
-                lambda_param,
-                alpha,
-                learning_rate,
+        params = [
+            booster,
+            max_depth,
+            min_child_weight,
+            colsample_bytree,
+            colsample_bylevel,
+            lambda_param,
+            alpha,
+            learning_rate,
+        ]
+        if parent_param is not None:
+            conditions = [
+                EqualsCondition(
+                    child=param,
+                    parent=parent_param,
+                    value=parent_value,
+                )
+                for param in params
             ]
-        )
+        else:
+            conditions = []
+
+        cs.add(params + conditions)
 
         return cs
 
     @staticmethod
     def get_from_configuration(
         configuration: Dict[str, Any],
-        additional_params: Optional[Dict[str, Any]] = None,
+        pre_prefix: str = "",
+        **kwargs,
     ) -> Callable[..., "XGBoostRegressorWrapper"]:
         """
         Create an XGBoostRegressorWrapper from a configuration.
@@ -322,24 +361,21 @@ class XGBoostRegressorWrapper(SklearnWrapper):
         Callable[..., XGBoostRegressorWrapper]
             A callable that initializes the wrapper with the given configuration.
         """
+        if pre_prefix != "":
+            prefix = f"{pre_prefix}:{XGBoostRegressorWrapper.PREFIX}"
+        else:
+            prefix = XGBoostRegressorWrapper.PREFIX
+
         xgb_params = {
-            "booster": configuration[f"{XGBoostRegressorWrapper.PREFIX}:booster"],
-            "max_depth": configuration[f"{XGBoostRegressorWrapper.PREFIX}:max_depth"],
-            "min_child_weight": configuration[
-                f"{XGBoostRegressorWrapper.PREFIX}:min_child_weight"
-            ],
-            "colsample_bytree": configuration[
-                f"{XGBoostRegressorWrapper.PREFIX}:colsample_bytree"
-            ],
-            "colsample_bylevel": configuration[
-                f"{XGBoostRegressorWrapper.PREFIX}:colsample_bylevel"
-            ],
-            "lambda": configuration[f"{XGBoostRegressorWrapper.PREFIX}:lambda"],
-            "alpha": configuration[f"{XGBoostRegressorWrapper.PREFIX}:alpha"],
-            "learning_rate": configuration[
-                f"{XGBoostRegressorWrapper.PREFIX}:learning_rate"
-            ],
-            **(additional_params or {}),
+            "booster": configuration[f"{prefix}:booster"],
+            "max_depth": configuration[f"{prefix}:max_depth"],
+            "min_child_weight": configuration[f"{prefix}:min_child_weight"],
+            "colsample_bytree": configuration[f"{prefix}:colsample_bytree"],
+            "colsample_bylevel": configuration[f"{prefix}:colsample_bylevel"],
+            "lambda": configuration[f"{prefix}:lambda"],
+            "alpha": configuration[f"{prefix}:alpha"],
+            "learning_rate": configuration[f"{prefix}:learning_rate"],
+            **kwargs,
         }
 
         return partial(XGBoostRegressorWrapper, init_params=xgb_params)
@@ -366,6 +402,9 @@ class XGBoostRankerWrapper(SklearnWrapper):
     @staticmethod
     def get_configuration_space(
         cs: Optional[ConfigurationSpace] = None,
+        pre_prefix: str = "",
+        parent_param: Optional[Hyperparameter] = None,
+        parent_value: Optional[str] = None,
     ) -> ConfigurationSpace:
         """
         Get the configuration space for the XGBoost ranker.
@@ -383,68 +422,85 @@ class XGBoostRankerWrapper(SklearnWrapper):
         if cs is None:
             cs = ConfigurationSpace(name="XGBoostRanker")
 
-        booster = Constant(f"{XGBoostRankerWrapper.PREFIX}:booster", "gbtree")
+        if pre_prefix != "":
+            prefix = f"{pre_prefix}:{XGBoostRankerWrapper.PREFIX}"
+        else:
+            prefix = XGBoostRankerWrapper.PREFIX
+
+        booster = Constant(f"{prefix}:booster", "gbtree")
         max_depth = Integer(
-            f"{XGBoostRankerWrapper.PREFIX}:max_depth",
+            f"{prefix}:max_depth",
             (1, 20),
             log=False,
             default=13,
         )
         min_child_weight = Integer(
-            f"{XGBoostRankerWrapper.PREFIX}:min_child_weight",
+            f"{prefix}:min_child_weight",
             (1, 100),
             log=True,
             default=39,
         )
         colsample_bytree = Float(
-            f"{XGBoostRankerWrapper.PREFIX}:colsample_bytree",
+            f"{prefix}:colsample_bytree",
             (0.0, 1.0),
             log=False,
             default=0.2545374925231651,
         )
         colsample_bylevel = Float(
-            f"{XGBoostRankerWrapper.PREFIX}:colsample_bylevel",
+            f"{prefix}:colsample_bylevel",
             (0.0, 1.0),
             log=False,
             default=0.6909224923784677,
         )
         lambda_param = Float(
-            f"{XGBoostRankerWrapper.PREFIX}:lambda",
+            f"{prefix}:lambda",
             (0.001, 1000),
             log=True,
             default=31.393252465064943,
         )
         alpha = Float(
-            f"{XGBoostRankerWrapper.PREFIX}:alpha",
+            f"{prefix}:alpha",
             (0.001, 1000),
             log=True,
             default=0.24167936088332426,
         )
         learning_rate = Float(
-            f"{XGBoostRankerWrapper.PREFIX}:learning_rate",
+            f"{prefix}:learning_rate",
             (0.001, 0.1),
             log=True,
             default=0.008237525103357958,
         )
+        params = [
+            booster,
+            max_depth,
+            min_child_weight,
+            colsample_bytree,
+            colsample_bylevel,
+            lambda_param,
+            alpha,
+            learning_rate,
+        ]
 
-        cs.add(
-            [
-                booster,
-                max_depth,
-                min_child_weight,
-                colsample_bytree,
-                colsample_bylevel,
-                lambda_param,
-                alpha,
-                learning_rate,
+        if parent_param is not None:
+            conditions = [
+                EqualsCondition(
+                    child=param,
+                    parent=parent_param,
+                    value=parent_value,
+                )
+                for param in params
             ]
-        )
+        else:
+            conditions = []
+
+        cs.add(params + conditions)
         return cs
 
     @staticmethod
     def get_from_configuration(
         configuration: Dict[str, Any],
-        additional_params: Optional[Dict[str, Any]] = None,
+        pre_prefix: str = "",
+        **kwargs,
     ) -> Callable[..., "XGBoostRankerWrapper"]:
         """
         Create an XGBoostRankerWrapper from a configuration.
@@ -453,32 +509,27 @@ class XGBoostRankerWrapper(SklearnWrapper):
         ----------
         configuration : dict
             The configuration dictionary.
-        additional_params : dict, optional
-            Additional parameters to include in the configuration.
 
         Returns
         -------
         Callable[..., XGBoostRankerWrapper]
             A callable that initializes the wrapper with the given configuration.
         """
+        if pre_prefix != "":
+            prefix = f"{pre_prefix}:{XGBoostRankerWrapper.PREFIX}"
+        else:
+            prefix = XGBoostRankerWrapper.PREFIX
+
         xgb_params = {
-            "booster": configuration[f"{XGBoostRankerWrapper.PREFIX}:booster"],
-            "max_depth": configuration[f"{XGBoostRankerWrapper.PREFIX}:max_depth"],
-            "min_child_weight": configuration[
-                f"{XGBoostRankerWrapper.PREFIX}:min_child_weight"
-            ],
-            "colsample_bytree": configuration[
-                f"{XGBoostRankerWrapper.PREFIX}:colsample_bytree"
-            ],
-            "colsample_bylevel": configuration[
-                f"{XGBoostRankerWrapper.PREFIX}:colsample_bylevel"
-            ],
-            "lambda": configuration[f"{XGBoostRankerWrapper.PREFIX}:lambda"],
-            "alpha": configuration[f"{XGBoostRankerWrapper.PREFIX}:alpha"],
-            "learning_rate": configuration[
-                f"{XGBoostRankerWrapper.PREFIX}:learning_rate"
-            ],
-            **(additional_params or {}),
+            "booster": configuration[f"{prefix}:booster"],
+            "max_depth": configuration[f"{prefix}:max_depth"],
+            "min_child_weight": configuration[f"{prefix}:min_child_weight"],
+            "colsample_bytree": configuration[f"{prefix}:colsample_bytree"],
+            "colsample_bylevel": configuration[f"{prefix}:colsample_bylevel"],
+            "lambda": configuration[f"{prefix}:lambda"],
+            "alpha": configuration[f"{prefix}:alpha"],
+            "learning_rate": configuration[f"{prefix}:learning_rate"],
+            **kwargs,
         }
 
         return partial(XGBoostRankerWrapper, init_params=xgb_params)

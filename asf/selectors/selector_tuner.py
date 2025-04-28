@@ -21,8 +21,6 @@ from smac import HyperparameterOptimizationFacade, Scenario
 from asf.metrics.baselines import running_time_selector_performance
 from sklearn.base import TransformerMixin
 from asf.selectors.abstract_selector import AbstractSelector
-from asf.selectors.pairwise_classifier import PairwiseClassifier
-from asf.selectors.pairwise_regressor import PairwiseRegressor
 from asf.selectors.selector_pipeline import SelectorPipeline
 from asf.utils.groupkfoldshuffle import GroupKFoldShuffle
 
@@ -30,7 +28,7 @@ from asf.utils.groupkfoldshuffle import GroupKFoldShuffle
 def tune_selector(
     X: pd.DataFrame,
     y: pd.DataFrame,
-    selector_class: list[AbstractSelector] = [PairwiseClassifier, PairwiseRegressor],
+    selector_class: list[AbstractSelector] | AbstractSelector,
     selector_space_kwargs: dict = {},
     selector_kwargs: dict = {},
     preprocessing_class: TransformerMixin = None,
@@ -46,7 +44,7 @@ def tune_selector(
     smac_scenario_kwargs: dict = {},
     runcount_limit: int = 100,
     timeout: float = np.inf,
-    seed: int = None,
+    seed: int = 0,
     cv: int = 10,
     groups: np.ndarray = None,
 ) -> SelectorPipeline:
@@ -85,18 +83,21 @@ def tune_selector(
     cs = ConfigurationSpace()
     cs_transform = {}
 
-    cs.add(
-        Categorical(
-            name="selector",
-            items=[str(c.__name__) for c in selector_class],
-        )
+    selector_param = Categorical(
+        name="selector",
+        items=[str(c.__name__) for c in selector_class],
     )
+    cs.add(selector_param)
 
     cs_transform["selector"] = {str(c.__name__): c for c in selector_class}
 
     for selector in selector_class:
         cs, cs_transform = selector.get_configuration_space(
-            cs=cs, cs_transform=cs_transform, **selector_space_kwargs
+            cs=cs,
+            cs_transform=cs_transform,
+            parent_param=selector_param,
+            parent_value=str(selector.__name__),
+            **selector_space_kwargs,
         )
 
     scenario = Scenario(
@@ -135,7 +136,7 @@ def tune_selector(
             selector.fit(X_train, y_train)
 
             y_pred = selector.predict(X_test)
-            score = smac_metric(y_test, y_pred)
+            score = smac_metric(y_pred, y_test)
             scores.append(score)
 
         return np.mean(scores)

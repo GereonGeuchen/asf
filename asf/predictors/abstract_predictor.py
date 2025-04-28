@@ -1,4 +1,7 @@
 from typing import Any, Optional
+from ConfigSpace import ConfigurationSpace
+from ConfigSpace.hyperparameters import Hyperparameter
+from typing import Dict
 from abc import ABC, abstractmethod
 
 
@@ -88,7 +91,12 @@ class AbstractPredictor(ABC):
         pass
 
     @staticmethod
-    def get_configuration_space(cs: Optional[Any] = None) -> Any:
+    def get_configuration_space(
+        cs: Optional[ConfigurationSpace] = None,
+        pre_prefix: str = "",
+        parent_param: Optional[Hyperparameter] = None,
+        parent_value: Optional[str] = None,
+    ) -> Any:
         """
         Get the configuration space for the predictor.
 
@@ -112,7 +120,9 @@ class AbstractPredictor(ABC):
         )
 
     @staticmethod
-    def get_from_configuration(configuration: Any) -> "AbstractPredictor":
+    def get_from_configuration(
+        configuration: Dict[str, Any], pre_prefix: str = "", **kwargs
+    ) -> "AbstractPredictor":
         """
         Get a predictor instance from a configuration.
 

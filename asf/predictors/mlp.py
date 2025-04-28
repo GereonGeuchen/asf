@@ -1,12 +1,6 @@
-try:
-    from typing import override, Optional, Dict, Any
-except ImportError:
+from ConfigSpace import ConfigurationSpace, Float, Integer, EqualsCondition
+from ConfigSpace.hyperparameters import Hyperparameter
 
-    def override(func):
-        return func
-
-
-from ConfigSpace import ConfigurationSpace, Float, Integer
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 
 from asf.predictors.sklearn_wrapper import SklearnWrapper
@@ -35,7 +29,6 @@ class MLPClassifierWrapper(SklearnWrapper):
         """
         super().__init__(MLPClassifier, init_params or {})
 
-    @override
     def fit(
         self, X: Any, Y: Any, sample_weight: Optional[Any] = None, **kwargs: Any
     ) -> None:
@@ -61,6 +54,9 @@ class MLPClassifierWrapper(SklearnWrapper):
     @staticmethod
     def get_configuration_space(
         cs: Optional[ConfigurationSpace] = None,
+        pre_prefix: str = "",
+        parent_param: Optional[Hyperparameter] = None,
+        parent_value: Optional[str] = None,
     ) -> ConfigurationSpace:
         """
         Get the configuration space for the MLP Classifier.
@@ -75,46 +71,59 @@ class MLPClassifierWrapper(SklearnWrapper):
         ConfigurationSpace
             The configuration space with the MLP Classifier parameters.
         """
+        if pre_prefix != "":
+            prefix = f"{pre_prefix}:{MLPClassifierWrapper.PREFIX}"
+        else:
+            prefix = MLPClassifierWrapper.PREFIX
+
         if cs is None:
             cs = ConfigurationSpace(name="MLP Classifier")
 
-        depth = Integer(
-            f"{MLPClassifierWrapper.PREFIX}:depth", (1, 3), default=3, log=False
-        )
+        depth = Integer(f"{prefix}:depth", (1, 3), default=3, log=False)
 
-        width = Integer(
-            f"{MLPClassifierWrapper.PREFIX}:width", (16, 1024), default=64, log=True
-        )
+        width = Integer(f"{prefix}:width", (16, 1024), default=64, log=True)
 
         batch_size = Integer(
-            f"{MLPClassifierWrapper.PREFIX}:batch_size",
+            f"{prefix}:batch_size",
             (256, 1024),
             default=32,
             log=True,
         )  # MODIFIED from HPOBENCH
 
         alpha = Float(
-            f"{MLPClassifierWrapper.PREFIX}:alpha",
+            f"{prefix}:alpha",
             (10**-8, 1),
             default=10**-3,
             log=True,
         )
 
         learning_rate_init = Float(
-            f"{MLPClassifierWrapper.PREFIX}:learning_rate_init",
+            f"{prefix}:learning_rate_init",
             (10**-5, 1),
             default=10**-3,
             log=True,
         )
 
-        cs.add([depth, width, batch_size, alpha, learning_rate_init])
+        params = [depth, width, batch_size, alpha, learning_rate_init]
+        if parent_param is not None:
+            conditions = [
+                EqualsCondition(
+                    child=param,
+                    parent=parent_param,
+                    value=parent_value,
+                )
+                for param in params
+            ]
+        else:
+            conditions = []
+
+        cs.add(params + conditions)
 
         return cs
 
     @staticmethod
     def get_from_configuration(
-        configuration: ConfigurationSpace,
-        additional_params: Optional[Dict[str, Any]] = None,
+        configuration: ConfigurationSpace, pre_prefix: str = "", **kwargs
     ) -> partial:
         """
         Create an MLPClassifierWrapper instance from a configuration.
@@ -131,24 +140,26 @@ class MLPClassifierWrapper(SklearnWrapper):
         partial
             A partial function to create an MLPClassifierWrapper instance.
         """
-        additional_params = additional_params or {}
-        hidden_layers = [
-            configuration[f"{MLPClassifierWrapper.PREFIX}:width"]
-        ] * configuration[f"{MLPClassifierWrapper.PREFIX}:depth"]
+        if pre_prefix != "":
+            prefix = f"{pre_prefix}:{MLPClassifierWrapper.PREFIX}"
+        else:
+            prefix = MLPClassifierWrapper.PREFIX
 
-        if "activation" not in additional_params:
-            additional_params["activation"] = "relu"
-        if "solver" not in additional_params:
-            additional_params["solver"] = "adam"
+        hidden_layers = [configuration[f"{prefix}:width"]] * configuration[
+            f"{prefix}:depth"
+        ]
+
+        if "activation" not in kwargs:
+            kwargs["activation"] = "relu"
+        if "solver" not in kwargs:
+            kwargs["solver"] = "adam"
 
         mlp_params = {
             "hidden_layer_sizes": hidden_layers,
-            "batch_size": configuration[f"{MLPClassifierWrapper.PREFIX}:batch_size"],
-            "alpha": configuration[f"{MLPClassifierWrapper.PREFIX}:alpha"],
-            "learning_rate_init": configuration[
-                f"{MLPClassifierWrapper.PREFIX}:learning_rate_init"
-            ],
-            **additional_params,
+            "batch_size": configuration[f"{prefix}:batch_size"],
+            "alpha": configuration[f"{prefix}:alpha"],
+            "learning_rate_init": configuration[f"{prefix}:learning_rate_init"],
+            **kwargs,
         }
 
         return partial(MLPClassifierWrapper, init_params=mlp_params)
@@ -173,7 +184,6 @@ class MLPRegressorWrapper(SklearnWrapper):
         """
         super().__init__(MLPRegressor, init_params or {})
 
-    @override
     def fit(
         self, X: Any, Y: Any, sample_weight: Optional[Any] = None, **kwargs: Any
     ) -> None:
@@ -199,6 +209,9 @@ class MLPRegressorWrapper(SklearnWrapper):
     @staticmethod
     def get_configuration_space(
         cs: Optional[ConfigurationSpace] = None,
+        pre_prefix: str = "",
+        parent_param: Optional[Hyperparameter] = None,
+        parent_value: Optional[str] = None,
     ) -> ConfigurationSpace:
         """
         Get the configuration space for the MLP Regressor.
@@ -213,46 +226,59 @@ class MLPRegressorWrapper(SklearnWrapper):
         ConfigurationSpace
             The configuration space with the MLP Regressor parameters.
         """
+        if pre_prefix != "":
+            prefix = f"{pre_prefix}:{MLPRegressorWrapper.PREFIX}"
+        else:
+            prefix = MLPRegressorWrapper.PREFIX
+
         if cs is None:
             cs = ConfigurationSpace(name="MLP Regressor")
 
-        depth = Integer(
-            f"{MLPRegressorWrapper.PREFIX}:depth", (1, 3), default=3, log=False
-        )
+        depth = Integer(f"{prefix}:depth", (1, 3), default=3, log=False)
 
-        width = Integer(
-            f"{MLPRegressorWrapper.PREFIX}:width", (16, 1024), default=64, log=True
-        )
+        width = Integer(f"{prefix}:width", (16, 1024), default=64, log=True)
 
         batch_size = Integer(
-            f"{MLPRegressorWrapper.PREFIX}:batch_size",
+            f"{prefix}:batch_size",
             (256, 1024),
             default=256,
             log=True,
         )
 
         alpha = Float(
-            f"{MLPRegressorWrapper.PREFIX}:alpha",
+            f"{prefix}:alpha",
             (10**-8, 1),
             default=10**-3,
             log=True,
         )
 
         learning_rate_init = Float(
-            f"{MLPRegressorWrapper.PREFIX}:learning_rate_init",
+            f"{prefix}:learning_rate_init",
             (10**-5, 1),
             default=10**-3,
             log=True,
         )
 
-        cs.add([depth, width, batch_size, alpha, learning_rate_init])
+        params = [depth, width, batch_size, alpha, learning_rate_init]
+        if parent_param is not None:
+            conditions = [
+                EqualsCondition(
+                    child=param,
+                    parent=parent_param,
+                    value=parent_value,
+                )
+                for param in params
+            ]
+        else:
+            conditions = []
+
+        cs.add(params + conditions)
 
         return cs
 
     @staticmethod
     def get_from_configuration(
-        configuration: ConfigurationSpace,
-        additional_params: Optional[Dict[str, Any]] = None,
+        configuration: ConfigurationSpace, pre_prefix: str = "", **kwargs
     ) -> partial:
         """
         Create an MLPRegressorWrapper instance from a configuration.
@@ -269,24 +295,26 @@ class MLPRegressorWrapper(SklearnWrapper):
         partial
             A partial function to create an MLPRegressorWrapper instance.
         """
-        additional_params = additional_params or {}
-        hidden_layers = [
-            configuration[f"{MLPRegressorWrapper.PREFIX}:width"]
-        ] * configuration[f"{MLPRegressorWrapper.PREFIX}:depth"]
+        if pre_prefix != "":
+            prefix = f"{pre_prefix}:{MLPRegressorWrapper.PREFIX}"
+        else:
+            prefix = MLPRegressorWrapper.PREFIX
 
-        if "activation" not in additional_params:
-            additional_params["activation"] = "relu"
-        if "solver" not in additional_params:
-            additional_params["solver"] = "adam"
+        hidden_layers = [configuration[f"{prefix}:width"]] * configuration[
+            f"{prefix}:depth"
+        ]
+
+        if "activation" not in kwargs:
+            kwargs["activation"] = "relu"
+        if "solver" not in kwargs:
+            kwargs["solver"] = "adam"
 
         mlp_params = {
             "hidden_layer_sizes": hidden_layers,
-            "batch_size": configuration[f"{MLPRegressorWrapper.PREFIX}:batch_size"],
-            "alpha": configuration[f"{MLPRegressorWrapper.PREFIX}:alpha"],
-            "learning_rate_init": configuration[
-                f"{MLPRegressorWrapper.PREFIX}:learning_rate_init"
-            ],
-            **additional_params,
+            "batch_size": configuration[f"{prefix}:batch_size"],
+            "alpha": configuration[f"{prefix}:alpha"],
+            "learning_rate_init": configuration[f"{prefix}:learning_rate_init"],
+            **kwargs,
         }
 
         return partial(MLPRegressorWrapper, init_params=mlp_params)

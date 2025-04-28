@@ -2,7 +2,7 @@ import pandas as pd
 from typing import Dict, List, Tuple, Optional, Union
 
 
-def single_best_solver(performance: pd.DataFrame, maximize: bool) -> float:
+def single_best_solver(performance: pd.DataFrame, maximize: bool = False) -> float:
     """
     Selects the single best solver across all instances based on the aggregated performance.
 
@@ -21,7 +21,7 @@ def single_best_solver(performance: pd.DataFrame, maximize: bool) -> float:
         return perf_sum.min()
 
 
-def virtual_best_solver(performance: pd.DataFrame, maximize: bool) -> float:
+def virtual_best_solver(performance: pd.DataFrame, maximize: bool = False) -> float:
     """
     Selects the virtual best solver for each instance by choosing the best performance per instance.
 
@@ -42,7 +42,7 @@ def virtual_best_solver(performance: pd.DataFrame, maximize: bool) -> float:
 def running_time_selector_performance(
     schedules: Dict[str, List[Tuple[str, float]]],
     performance: pd.DataFrame,
-    budget: float,
+    budget: float = 5000,
     par: float = 10,
     feature_time: Optional[pd.DataFrame] = None,
 ) -> Dict[str, Union[float, int]]:
@@ -92,6 +92,8 @@ def running_time_selector_performance(
             )
         else:
             total_time[instance] = budget * par
+
+    total_time = sum(list(total_time.values()))
     return total_time
 
 
@@ -118,12 +120,8 @@ def running_time_closed_gap(
     """
     sbs_val = single_best_solver(performance, False)
     vbs_val = virtual_best_solver(performance, False)
-    s_val = sum(
-        list(
-            running_time_selector_performance(
-                schedules, performance, budget, par, feature_time
-            ).values()
-        )
+    s_val = running_time_selector_performance(
+        schedules, performance, budget, par, feature_time
     )
 
     return (sbs_val - s_val) / (sbs_val - vbs_val)

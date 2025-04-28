@@ -1,7 +1,9 @@
 from asf.selectors import PairwiseClassifier
 from asf.selectors import SelectorPipeline
 from sklearn.ensemble import RandomForestClassifier
+from asf.pre_selector import MarginalContributionBasedPreSelector
 from asf.preprocessing import get_default_preprocessor
+from asf.metrics import virtual_best_solver
 import pandas as pd
 import numpy as np
 
@@ -69,6 +71,9 @@ if __name__ == "__main__":
     selector = SelectorPipeline(
         selector=PairwiseClassifier(model_class=RandomForestClassifier),
         preprocessor=get_default_preprocessor(),
+        algorithm_pre_selector=MarginalContributionBasedPreSelector(
+            metric=virtual_best_solver, n_algorithms=2
+        ),
     )
 
     # Fit the selector to the data
