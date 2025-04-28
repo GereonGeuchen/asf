@@ -22,10 +22,10 @@ from asf.predictors import (
     SVMRegressorWrapper,
     LinearClassifierWrapper,
     LinearRegressorWrapper,
-    # EPMRandomForest,
+    EPMRandomForest,
     MLPClassifierWrapper,
     MLPRegressorWrapper,
-    # RegressionMLP,
+    RegressionMLP,
 )
 import shutil
 
@@ -149,9 +149,9 @@ def test_multi_class_classifier(dummy_performance, dummy_features, model_class):
         XGBoostRegressorWrapper,
         SVMRegressorWrapper,
         LinearRegressorWrapper,
-        # EPMRandomForest,
+        EPMRandomForest,
         MLPRegressorWrapper,
-        # RegressionMLP,
+        RegressionMLP,
     ],
 )
 def test_pairwise_regressor(dummy_performance, dummy_features, model_class):
@@ -168,9 +168,9 @@ def test_pairwise_regressor(dummy_performance, dummy_features, model_class):
         XGBoostRegressorWrapper,
         SVMRegressorWrapper,
         LinearRegressorWrapper,
-        # EPMRandomForest,
+        EPMRandomForest,
         MLPRegressorWrapper,
-        # RegressionMLP,
+        RegressionMLP,
     ],
 )
 def test_performance_model(dummy_performance, dummy_features, model_class):

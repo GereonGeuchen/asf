@@ -17,7 +17,6 @@ class RegressionMLP(AbstractPredictor):
     def __init__(
         self,
         model: torch.nn.Module | None = None,
-        input_size: int | None = None,
         loss: torch.nn.modules.loss._Loss | None = torch.nn.MSELoss(),
         optimizer: type[torch.optim.Optimizer] | None = torch.optim.Adam,
         batch_size: int = 128,
@@ -45,27 +44,17 @@ class RegressionMLP(AbstractPredictor):
         super().__init__(**kwargs)
 
         assert TORCH_AVAILABLE, "PyTorch is not available. Please install it."
-        assert model is not None or input_size is not None, (
-            "Either model or input_size must be provided."
-        )
 
         torch.manual_seed(seed)
 
-        if model is None:
-            self.model = get_mlp(input_size=input_size, output_size=1)
-        else:
-            self.model = model
-
-        self.model.to(device)
+        self.model = model
         self.device = device
 
         self.loss = loss
         self.batch_size = batch_size
         self.optimizer = optimizer
         self.epochs = epochs
-
-        if compile:
-            self.model = torch.compile(self.model)
+        self.compile = compile
 
     def _get_dataloader(
         self, features: pd.DataFrame, performance: pd.DataFrame
@@ -85,7 +74,9 @@ class RegressionMLP(AbstractPredictor):
             dataset, batch_size=self.batch_size, shuffle=True
         )
 
-    def fit(self, features: pd.DataFrame, performance: pd.DataFrame) -> "RegressionMLP":
+    def fit(
+        self, features: pd.DataFrame, performance: pd.DataFrame, sample_weight=None
+    ) -> "RegressionMLP":
         """
         Fits the model to the given feature and performance data.
 
@@ -96,6 +87,16 @@ class RegressionMLP(AbstractPredictor):
         Returns:
             RegressionMLP: The fitted model instance.
         """
+        assert sample_weight is None, "Sample weights are not supported."
+
+        if self.model is None:
+            self.model = get_mlp(input_size=features.shape[1], output_size=1)
+
+        self.model.to(self.device)
+
+        if self.compile:
+            self.model = torch.compile(self.model)
+
         features = pd.DataFrame(
             SimpleImputer().fit_transform(features.values),
             index=features.index,
@@ -109,6 +110,7 @@ class RegressionMLP(AbstractPredictor):
             total_loss = 0
             for i, (X, y) in enumerate(dataloader):
                 X, y = X.to(self.device), y.to(self.device)
+                X = X.float()
                 y = y.unsqueeze(-1)
                 optimizer.zero_grad()
                 y_pred = self.model(X)
@@ -131,10 +133,10 @@ class RegressionMLP(AbstractPredictor):
         """
         self.model.eval()
 
-        features = torch.from_numpy(features.values).to(self.device)
-        predictions = self.model(features).detach().numpy()
+        features = torch.from_numpy(features.values).to(self.device).float()
+        predictions = self.model(features).detach().numpy().squeeze(1)
 
-        return pd.DataFrame(predictions, index=features.cpu().numpy().index)
+        return predictions
 
     def save(self, file_path: str) -> None:
         """

@@ -63,7 +63,7 @@ class EPMRandomForest(ForestRegressor, AbstractPredictor):
         n_estimators: int = 100,
         *,
         log: bool = False,
-        cross_trees_variance: bool = False,
+        return_var: bool = False,
         criterion: str = "squared_error",
         splitter: str = "random",
         max_depth: int = None,
@@ -119,6 +119,7 @@ class EPMRandomForest(ForestRegressor, AbstractPredictor):
         self.monotonic_cst = monotonic_cst
         self.splitter = splitter
         self.log = log
+        self.return_var = return_var
 
     def fit(
         self, X: np.ndarray, y: np.ndarray, sample_weight: np.ndarray = None
@@ -177,7 +178,10 @@ class EPMRandomForest(ForestRegressor, AbstractPredictor):
         means = preds.mean(axis=1)
         vars = preds.var(axis=1)
 
-        return means.reshape(-1, 1), vars.reshape(-1, 1)
+        if self.return_var:
+            return means, vars
+        else:
+            return means
 
     def save(self, file_path: str) -> None:
         """
