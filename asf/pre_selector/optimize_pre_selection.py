@@ -14,8 +14,15 @@ except ImportError:
 
 class OptimizePreSelection(AbstractPreSelector):
     """
-    MarginalContributionBasedPreSelector is a pre-selector that selects algorithms based on their marginal contribution
-    to the performance of the selected algorithms.
+    OptimizePreSelection is a pre-selector that selects algorithms based on their
+    marginal contribution to the overall performance. It uses optimization techniques
+    to identify the best subset of algorithms.
+
+    Attributes:
+        metric (Callable): A function to evaluate the performance of the selected algorithms.
+        n_algorithms (int): The number of algorithms to select.
+        maximize (bool): Whether to maximize or minimize the performance metric.
+        fmin_function (Union[str, Callable]): Optimization function or method name (e.g., "SLSQP").
     """
 
     def __init__(
@@ -27,10 +34,18 @@ class OptimizePreSelection(AbstractPreSelector):
         **kwargs,
     ):
         """
-        Initializes the MarginalContributionBasedPreSelector with the given configuration.
+        Initializes the OptimizePreSelection with the given configuration.
 
         Args:
-            config (dict): Configuration for the pre-selector.
+            metric (Callable): A function to evaluate the performance of the selected algorithms.
+            n_algorithms (int): The number of algorithms to select.
+            maximize (bool, optional): Whether to maximize the performance metric. Defaults to False.
+            fmin_function (Union[str, Callable], optional): Optimization function or method name.
+                Defaults to "SLSQP".
+            **kwargs: Additional arguments passed to the parent class.
+
+        Raises:
+            ImportError: If Scipy is not available and a string is provided for `fmin_function`.
         """
         super().__init__(**kwargs)
         self.metric = metric
@@ -42,7 +57,6 @@ class OptimizePreSelection(AbstractPreSelector):
                 raise ImportError(
                     "Scipy is not available. Please install scipy to use this feature."
                 )
-
             else:
                 self.fmin_function = partial(
                     scipy.optimize.minimize, method=fmin_function
@@ -51,6 +65,21 @@ class OptimizePreSelection(AbstractPreSelector):
     def fit_transform(
         self, performance: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
+        """
+        Selects the best subset of algorithms based on the performance data.
+
+        Args:
+            performance (Union[pd.DataFrame, np.ndarray]): A DataFrame or NumPy array
+                containing the performance data of algorithms. Rows represent instances,
+                and columns represent algorithms.
+
+        Returns:
+            Union[pd.DataFrame, np.ndarray]: A DataFrame or NumPy array containing the
+                performance data of the selected algorithms.
+
+        Raises:
+            ValueError: If the number of selected algorithms does not match `n_algorithms`.
+        """
         if isinstance(performance, np.ndarray):
             performance_frame = pd.DataFrame(
                 performance,
@@ -62,6 +91,16 @@ class OptimizePreSelection(AbstractPreSelector):
             numpy = False
 
         def objective_function(x):
+            """
+            Objective function for optimization. Calculates the performance metric
+            for the selected subset of algorithms.
+
+            Args:
+                x (np.ndarray): Binary array indicating selected algorithms.
+
+            Returns:
+                float: The performance metric value (negative if minimizing).
+            """
             selected_algorithms = performance_frame.columns[x.astype(bool)]
             performance_without_algorithm = performance_frame.drop(
                 columns=selected_algorithms

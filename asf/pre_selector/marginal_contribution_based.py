@@ -6,8 +6,23 @@ from typing import Union, Callable
 
 class MarginalContributionBasedPreSelector(AbstractPreSelector):
     """
-    MarginalContributionBasedPreSelector is a pre-selector that selects algorithms based on their marginal contribution
-    to the performance of the selected algorithms.
+
+    Attributes:
+        metric (Callable): A callable function to compute the performance metric.
+        n_algorithms (int): The number of algorithms to select.
+        maximize (bool): A flag indicating whether to maximize or minimize the metric.
+        **kwargs: Additional arguments passed to the parent class.
+
+    Methods:
+        fit_transform(performance: Union[pd.DataFrame, np.ndarray]) -> Union[pd.DataFrame, np.ndarray]:
+            Selects a subset of algorithms based on their marginal contribution to the performance metric.
+
+                performance (Union[pd.DataFrame, np.ndarray]): A DataFrame or NumPy array containing the performance
+                    metrics of the algorithms.
+
+            Returns:
+                Union[pd.DataFrame, np.ndarray]: A DataFrame or NumPy array containing the performance metrics of the
+                    selected algorithms.
     """
 
     def __init__(self, metric: Callable, n_algorithms: int, maximize=False, **kwargs):
@@ -25,6 +40,29 @@ class MarginalContributionBasedPreSelector(AbstractPreSelector):
     def fit_transform(
         self, performance: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
+        """
+        Selects a subset of algorithms based on their marginal contributions to the
+        overall performance and returns the performance data for the selected algorithms.
+
+        Parameters:
+        ----------
+        performance : Union[pd.DataFrame, np.ndarray]
+            A DataFrame or NumPy array containing the performance metrics of algorithms.
+            Each column represents an algorithm, and each row represents a performance metric.
+
+        Returns:
+        -------
+        Union[pd.DataFrame, np.ndarray]
+            A DataFrame or NumPy array containing the performance metrics of the selected
+            algorithms. The format matches the input type (DataFrame or NumPy array).
+
+        Notes:
+        -----
+        - The selection is based on the marginal contribution of each algorithm to the
+          overall performance, calculated using the provided `self.metric` function.
+        - The `self.maximize` attribute determines whether the metric is maximized or minimized.
+        - The number of algorithms to select is determined by `self.n_algorithms`.
+        """
         if isinstance(performance, np.ndarray):
             performance_frame = pd.DataFrame(
                 performance,
