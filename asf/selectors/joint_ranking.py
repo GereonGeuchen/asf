@@ -51,8 +51,6 @@ class JointRanking(AbstractSelector, AbstractFeatureGenerator):
                 columns=[f"algo_{i}" for i in range(len(self.algorithms))],
             )
 
-        print(features)
-        print(performance)
         if self.model is None:
             self.model = RankingMLP(
                 input_size=len(self.features) + len(self.algorithms)
@@ -77,9 +75,9 @@ class JointRanking(AbstractSelector, AbstractFeatureGenerator):
             instance_name: [
                 (
                     self.algorithms[
-                        np.argmax(predictions[i])
+                        np.argmax(predictions.loc[i])
                         if self.maximize
-                        else np.argmin(predictions[i])
+                        else np.argmin(predictions.loc[i])
                     ],
                     self.budget,
                 )
