@@ -32,7 +32,6 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-aspeed = [ 'clingo' ]
 aslib = [ 'pyyaml' ]
 nn = [ 'torch' ]
 xgb = [ 'xgboost' ]
