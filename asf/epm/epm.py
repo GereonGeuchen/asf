@@ -2,6 +2,7 @@ from functools import partial
 from typing import Type, Union, Optional
 
 import pandas as pd
+import numpy as np
 from sklearn.base import RegressorMixin
 
 from asf.preprocessing.performace_scaling import AbstractNormalization, LogNormalization
@@ -87,13 +88,19 @@ class EPM:
         Returns:
             EPM: The fitted EPM model.
         """
+        if isinstance(X, np.ndarray) and isinstance(y, np.ndarray):
+            X = pd.DataFrame(
+                X,
+                index=range(len(X)),
+                columns=[f"f_{i}" for i in range(X.shape[1])],
+            )
+            y = pd.Series(
+                y,
+                index=range(len(y)),
+            )
+
         if self.features_preprocessing is not None:
             X = self.features_preprocessing.fit_transform(X)
-
-        if isinstance(X, pd.DataFrame):
-            X = X.values
-        if isinstance(y, pd.Series):
-            y = y.values
 
         self.normalization = self.normalization_class()
         self.normalization.fit(y)
@@ -103,7 +110,7 @@ class EPM:
             self.predictor = self.predictor_class()
         else:
             self.predictor = self.predictor_class.get_from_configuration(
-                self.predictor_config, self.predictor_kwargs
+                self.predictor_config, **self.predictor_kwargs
             )()
 
         self.predictor.fit(X, y, sample_weight=sample_weight)

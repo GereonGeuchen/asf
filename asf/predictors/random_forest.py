@@ -60,7 +60,7 @@ class RandomForestClassifierWrapper(SklearnWrapper):
                 The configuration space with the Random Forest Classifier parameters.
             """
             if pre_prefix != "":
-                prefix = f"{pre_prefix}:{RandomForestClassifierWrapper.PREFIX}"
+                prefix = f"{pre_prefix}:{RandomForestClassifierWrapper.PREFIX}:"
             else:
                 prefix = RandomForestClassifierWrapper.PREFIX
 
@@ -68,31 +68,31 @@ class RandomForestClassifierWrapper(SklearnWrapper):
                 cs = ConfigurationSpace(name="RandomForest")
 
             n_estimators = Integer(
-                f"{prefix}:n_estimators",
+                f"{prefix}n_estimators",
                 (16, 128),
                 log=True,
                 default=116,
             )
             min_samples_split = Integer(
-                f"{prefix}:min_samples_split",
+                f"{prefix}min_samples_split",
                 (2, 20),
                 log=False,
                 default=2,
             )
             min_samples_leaf = Integer(
-                f"{prefix}:min_samples_leaf",
+                f"{prefix}min_samples_leaf",
                 (1, 20),
                 log=False,
                 default=2,
             )
             max_features = Float(
-                f"{prefix}:max_features",
+                f"{prefix}max_features",
                 (0.1, 1.0),
                 log=False,
                 default=0.17055852159745608,
             )
             bootstrap = Categorical(
-                f"{prefix}:bootstrap",
+                f"{prefix}bootstrap",
                 items=[True, False],
                 default=False,
             )
@@ -140,16 +140,16 @@ class RandomForestClassifierWrapper(SklearnWrapper):
                 A partial function to create a RandomForestClassifierWrapper instance.
             """
             if pre_prefix != "":
-                prefix = f"{pre_prefix}:{RandomForestClassifierWrapper.PREFIX}"
+                prefix = f"{pre_prefix}:{RandomForestClassifierWrapper.PREFIX}:"
             else:
                 prefix = RandomForestClassifierWrapper.PREFIX
 
             rf_params = {
-                "n_estimators": configuration[f"{prefix}:n_estimators"],
-                "min_samples_split": configuration[f"{prefix}:min_samples_split"],
-                "min_samples_leaf": configuration[f"{prefix}:min_samples_leaf"],
-                "max_features": configuration[f"{prefix}:max_features"],
-                "bootstrap": configuration[f"{prefix}:bootstrap"],
+                "n_estimators": configuration[f"{prefix}n_estimators"],
+                "min_samples_split": configuration[f"{prefix}min_samples_split"],
+                "min_samples_leaf": configuration[f"{prefix}min_samples_leaf"],
+                "max_features": configuration[f"{prefix}max_features"],
+                "bootstrap": configuration[f"{prefix}bootstrap"],
                 **kwargs,
             }
 
@@ -198,7 +198,7 @@ class RandomForestRegressorWrapper(SklearnWrapper):
                 The configuration space with the Random Forest Regressor parameters.
             """
             if pre_prefix != "":
-                prefix = f"{pre_prefix}:{RandomForestRegressorWrapper.PREFIX}"
+                prefix = f"{pre_prefix}:{RandomForestRegressorWrapper.PREFIX}:"
             else:
                 prefix = RandomForestRegressorWrapper.PREFIX
 
@@ -206,31 +206,31 @@ class RandomForestRegressorWrapper(SklearnWrapper):
                 cs = ConfigurationSpace(name="RandomForestRegressor")
 
             n_estimators = Integer(
-                f"{prefix}:n_estimators",
+                f"{prefix}n_estimators",
                 (16, 128),
                 log=True,
                 default=116,
             )
             min_samples_split = Integer(
-                f"{prefix}:min_samples_split",
+                f"{prefix}min_samples_split",
                 (2, 20),
                 log=False,
                 default=2,
             )
             min_samples_leaf = Integer(
-                f"{prefix}:min_samples_leaf",
+                f"{prefix}min_samples_leaf",
                 (1, 20),
                 log=False,
                 default=2,
             )
             max_features = Float(
-                f"{prefix}:max_features",
+                f"{prefix}max_features",
                 (0.1, 1.0),
                 log=False,
                 default=0.17055852159745608,
             )
             bootstrap = Categorical(
-                f"{prefix}:bootstrap",
+                f"{prefix}bootstrap",
                 items=[True, False],
                 default=False,
             )
@@ -277,16 +277,16 @@ class RandomForestRegressorWrapper(SklearnWrapper):
                 A partial function to create a RandomForestRegressorWrapper instance.
             """
             if pre_prefix != "":
-                prefix = f"{pre_prefix}:{RandomForestRegressorWrapper.PREFIX}"
+                prefix = f"{pre_prefix}:{RandomForestRegressorWrapper.PREFIX}:"
             else:
                 prefix = RandomForestRegressorWrapper.PREFIX
 
             rf_params = {
-                "n_estimators": configuration[f"{prefix}:n_estimators"],
-                "min_samples_split": configuration[f"{prefix}:min_samples_split"],
-                "min_samples_leaf": configuration[f"{prefix}:min_samples_leaf"],
-                "max_features": configuration[f"{prefix}:max_features"],
-                "bootstrap": configuration[f"{prefix}:bootstrap"],
+                "n_estimators": configuration[f"{prefix}n_estimators"],
+                "min_samples_split": configuration[f"{prefix}min_samples_split"],
+                "min_samples_leaf": configuration[f"{prefix}min_samples_leaf"],
+                "max_features": configuration[f"{prefix}max_features"],
+                "bootstrap": configuration[f"{prefix}bootstrap"],
                 **kwargs,
             }
 

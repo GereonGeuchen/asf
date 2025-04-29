@@ -1,5 +1,6 @@
 from typing import Type, Union, Optional
 
+import pandas as pd
 import numpy as np
 from sklearn.base import TransformerMixin
 from sklearn.metrics import mean_squared_error  # Fixed incorrect import
@@ -27,9 +28,9 @@ def tune_epm(
     output_dir: str = "./smac_output",
     seed: int = 0,
     smac_metric: callable = mean_squared_error,  # Fixed incorrect import
-    smac_scenario_kwargs: Optional[dict] = None,
-    smac_kwargs: Optional[dict] = None,
-    predictor_kwargs: Optional[dict] = None,
+    smac_scenario_kwargs: Optional[dict] = {},
+    smac_kwargs: Optional[dict] = {},
+    predictor_kwargs: Optional[dict] = {},
 ) -> EPM:
     """
     Tune the Empirical Performance Model (EPM) using SMAC (Sequential Model-based Algorithm Configuration).
@@ -76,6 +77,17 @@ def tune_epm(
     EPM
         The tuned Empirical Performance Model instance.
     """
+    if isinstance(X, np.ndarray) and isinstance(y, np.ndarray):
+        X = pd.DataFrame(
+            X,
+            index=range(len(X)),
+            columns=[f"f_{i}" for i in range(X.shape[1])],
+        )
+        y = pd.Series(
+            y,
+            index=range(len(y)),
+        )
+
     scenario = Scenario(
         configspace=model_class.get_configuration_space(),
         n_trials=runcount_limit,
