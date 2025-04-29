@@ -61,7 +61,8 @@ class SVMClassifierWrapper(SklearnWrapper):
             ConfigurationSpace
                 The configuration space containing hyperparameters for the SVM classifier.
             """
-            cs = ConfigurationSpace(name="SVM")
+            if cs is None:
+                cs = ConfigurationSpace(name="SVM")
 
             if pre_prefix != "":
                 prefix = f"{pre_prefix}:{SVMClassifierWrapper.PREFIX}"
@@ -97,19 +98,13 @@ class SVMClassifierWrapper(SklearnWrapper):
                 log=True,
                 default=3.2333262862494365,
             )
-            epsilon = Float(
-                f"{prefix}:epsilon",
-                (0.01, 0.99),
-                log=True,
-                default=0.14834562300010581,
-            )
             shrinking = Categorical(
                 f"{prefix}:shrinking",
                 items=[True, False],
                 default=True,
             )
 
-            params = [kernel, degree, coef0, tol, gamma, C, epsilon, shrinking]
+            params = [kernel, degree, coef0, tol, gamma, C, shrinking]
 
             if parent_param is not None:
                 conditions = [
@@ -123,9 +118,7 @@ class SVMClassifierWrapper(SklearnWrapper):
             else:
                 conditions = []
 
-            cs.add(
-                [kernel, degree, coef0, tol, gamma, C, epsilon, shrinking] + conditions
-            )
+            cs.add(params + conditions)
 
             return cs
 
@@ -160,7 +153,6 @@ class SVMClassifierWrapper(SklearnWrapper):
                 "tol": configuration[f"{prefix}:tol"],
                 "gamma": configuration[f"{prefix}:gamma"],
                 "C": configuration[f"{prefix}:C"],
-                "epsilon": configuration[f"{prefix}:epsilon"],
                 "shrinking": configuration[f"{prefix}:shrinking"],
                 **kwargs,
             }
@@ -249,18 +241,12 @@ class SVMRegressorWrapper(SklearnWrapper):
                 default="scale",
             )
             C = Float(f"{prefix}:C", (1.0, 20), log=True, default=1.0)
-            epsilon = Float(
-                f"{prefix}:epsilon",
-                (0.01, 0.99),
-                log=True,
-                default=0.1,
-            )
             shrinking = Categorical(
                 f"{prefix}:shrinking",
                 items=[True, False],
                 default=True,
             )
-            params = [kernel, degree, coef0, tol, gamma, C, epsilon, shrinking]
+            params = [kernel, degree, coef0, tol, gamma, C, shrinking]
             if parent_param is not None:
                 conditions = [
                     EqualsCondition(
@@ -308,7 +294,6 @@ class SVMRegressorWrapper(SklearnWrapper):
                 "tol": configuration[f"{prefix}:tol"],
                 "gamma": configuration[f"{prefix}:gamma"],
                 "C": configuration[f"{prefix}:C"],
-                "epsilon": configuration[f"{prefix}:epsilon"],
                 "shrinking": configuration[f"{prefix}:shrinking"],
                 **kwargs,
             }

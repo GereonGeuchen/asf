@@ -35,8 +35,9 @@ from asf.utils.groupkfoldshuffle import GroupKFoldShuffle
 def tune_selector(
     X: pd.DataFrame,
     y: pd.DataFrame,
-    selector_class: list[AbstractSelector] | AbstractSelector,
-    selector_space_kwargs: dict = {},
+    selector_class: list[AbstractSelector]
+    | AbstractSelector
+    | list[tuple[AbstractSelector, dict]],
     selector_kwargs: dict = {},
     preprocessing_class: TransformerMixin = None,
     pre_solving: object = None,
@@ -93,15 +94,27 @@ def tune_selector(
     cs = ConfigurationSpace()
     cs_transform = {}
 
-    selector_param = Categorical(
-        name="selector",
-        items=[str(c.__name__) for c in selector_class],
-    )
+    if type(selector_class[0]) is tuple:
+        selector_param = Categorical(
+            name="selector",
+            items=[str(c[0].__name__) for c in selector_class],
+        )
+        cs_transform["selector"] = {str(c[0].__name__): c[0] for c in selector_class}
+    else:
+        selector_param = Categorical(
+            name="selector",
+            items=[str(c.__name__) for c in selector_class],
+        )
+        cs_transform["selector"] = {str(c.__name__): c for c in selector_class}
     cs.add(selector_param)
 
-    cs_transform["selector"] = {str(c.__name__): c for c in selector_class}
-
     for selector in selector_class:
+        if type(selector) is tuple:
+            selector_space_kwargs = selector[1]
+            selector = selector[0]
+        else:
+            selector_space_kwargs = {}
+
         cs, cs_transform = selector.get_configuration_space(
             cs=cs,
             cs_transform=cs_transform,
