@@ -44,3 +44,7 @@ build-backend = "setuptools.build_meta"
 where = ["."]
 include = ["asf*"]
 
+[project.urls]
+documentation = "https://hadarshavit.github.io/asf/latest/"
+repository = "https://github.com/hadarshavit/asf"
+
