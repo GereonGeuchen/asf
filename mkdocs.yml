@@ -31,10 +31,10 @@ nav:
   - Installation: installation.md
   - Quick Start: quick_start.md
   - Advanced Features: 
-    # - Algorithm Selection Pipeline: features/algorithm_selection_pipeline.md
-    # - Hyperparameter Tuning: features/hyperparameter_tuning.md
+    - Algorithm Selection Pipeline: features/algorithm_selection_pipeline.md
+    - Hyperparameter Tuning: features/hyperparameter_tuning.md
     # - Algorithm Features: features/algorithm_features.md
-    # - Performance Prediction: features/performance_prediction.md
+    - Performance Prediction: features/performance_prediction.md
     - CLI: features/cli.md
   - API Reference:
       - Performance Prediction: api/epm.md

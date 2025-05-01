@@ -1,5 +1,5 @@
 from asf.epm import EPM
-from asf.predictors import RandomForestRegressorWrapper
+from sklearn.ensemble import RandomForestRegressor
 import numpy as np
 
 
@@ -62,7 +62,7 @@ if __name__ == "__main__":
     features, performance = get_data()
 
     # Initialize the selector
-    epm = EPM(predictor_class=RandomForestRegressorWrapper, features_preprocessing=None)
+    epm = EPM(predictor_class=RandomForestRegressor)
 
     # Fit the selector to the data
     epm.fit(features, performance)

@@ -32,7 +32,6 @@ pip install asf-lib
 Additional options include:
 
 - XGBoost model suppot `pip install asf-lib[xgb]`
-- ASpeed pre-solving `pip install asf-lib[aspeed]`
 - PyTorch-based models `pip install asf-lib[nn]`
 - ASlib scenarios reading `pip install asf-lib[aslib]`
 

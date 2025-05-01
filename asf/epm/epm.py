@@ -62,6 +62,7 @@ class EPM:
         self.transform_back = transform_back
         self.predictor_config = predictor_config
         self.predictor_kwargs = predictor_kwargs or {}
+        self.numpy = False
 
         if features_preprocessing == "default":
             self.features_preprocessing = get_default_preprocessor(
@@ -98,6 +99,7 @@ class EPM:
                 y,
                 index=range(len(y)),
             )
+            self.numpy = True
 
         if self.features_preprocessing is not None:
             X = self.features_preprocessing.fit_transform(X)
@@ -126,6 +128,14 @@ class EPM:
         Returns:
             list: Predicted values.
         """
+        if self.numpy:
+            if isinstance(X, np.ndarray):
+                X = pd.DataFrame(
+                    X,
+                    index=range(len(X)),
+                    columns=[f"f_{i}" for i in range(X.shape[1])],
+                )
+
         if self.features_preprocessing is not None:
             X = self.features_preprocessing.transform(X)
 
