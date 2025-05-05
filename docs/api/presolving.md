@@ -1,3 +1,0 @@
-# Presolving
-
-::: asf.presolving
