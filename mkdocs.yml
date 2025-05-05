@@ -41,7 +41,7 @@ nav:
       - Metrics: api/metrics.md
       - Predictors: api/predictors.md
       - Preprocessing: api/preprocessing.md
-      - Presolving: api/presolving.md
+      # - Presolving: api/presolving.md
       - Scenarios: api/scenario.md
       - Selectors: api/selectors.md
       - Utils: api/utils.md
