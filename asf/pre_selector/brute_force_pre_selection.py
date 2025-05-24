@@ -50,7 +50,7 @@ class BruteForcePreSelector(AbstractPreSelector):
             Union[pd.DataFrame, np.ndarray]: The performance data of the selected subset of algorithms,
                 in the same format as the input (DataFrame or ndarray).
         """
-        
+
         if isinstance(performance, np.ndarray):
             performance_frame = pd.DataFrame(
                 performance,
@@ -61,16 +61,18 @@ class BruteForcePreSelector(AbstractPreSelector):
             performance_frame = performance
             numpy = False
 
-        
         # Generate all possible combinations of algorithms
-        
-        all_combinations = list(combinations(performance_frame.columns, self.n_algorithms))
+
+        all_combinations = list(
+            combinations(performance_frame.columns, self.n_algorithms)
+        )
         best_combination = None
-        best_performance = float('-inf') if self.maximize else float('inf')
+        best_performance = float("-inf") if self.maximize else float("inf")
         for combination in all_combinations:
             selected_performance = self.metric(performance_frame[list(combination)])
-            if (self.maximize and selected_performance > best_performance) or \
-               (not self.maximize and selected_performance < best_performance):
+            if (self.maximize and selected_performance > best_performance) or (
+                not self.maximize and selected_performance < best_performance
+            ):
                 best_performance = selected_performance
                 best_combination = combination
         selected_performance = performance_frame[list(best_combination)]
