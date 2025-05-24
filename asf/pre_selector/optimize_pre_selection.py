@@ -101,7 +101,7 @@ class OptimizePreSelection(AbstractPreSelector):
             Returns:
                 float: The performance metric value (negative if minimizing).
             """
-            selected_algorithms = performance_frame.columns[x.astype(bool)]
+            selected_algorithms = performance_frame.columns[x >= 0.5]
             performance_without_algorithm = performance_frame.drop(
                 columns=selected_algorithms
             )
@@ -128,7 +128,7 @@ class OptimizePreSelection(AbstractPreSelector):
             bounds=bounds,
             constraints=constraints,
         )
-        selected_algorithms = performance_frame.columns[result.x.astype(bool)]
+        selected_algorithms = performance_frame.columns[result.x >= 0.5]
         selected_performance = performance_frame[selected_algorithms]
         if numpy:
             selected_performance = selected_performance.values
