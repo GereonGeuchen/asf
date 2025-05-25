@@ -1,7 +1,6 @@
 from asf.pre_selector.abstract_pre_selector import AbstractPreSelector
 import pandas as pd
 import numpy as np
-from itertools import combinations
 from typing import Union, Callable
 
 
