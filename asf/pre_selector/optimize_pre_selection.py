@@ -2,7 +2,6 @@ from asf.pre_selector.abstract_pre_selector import AbstractPreSelector
 import pandas as pd
 import numpy as np
 from typing import Union, Callable
-from functools import partial
 
 try:
     import scipy.optimize
