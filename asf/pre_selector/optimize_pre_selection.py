@@ -30,7 +30,7 @@ class OptimizePreSelection(AbstractPreSelector):
         metric: Callable,
         n_algorithms: int,
         maximize=False,
-        fmin_function: Union[str, Callable] = "SLSQP",
+        fmin_function: Callable = None,
         **kwargs,
     ):
         """
@@ -51,16 +51,18 @@ class OptimizePreSelection(AbstractPreSelector):
         self.metric = metric
         self.n_algorithms = n_algorithms
         self.maximize = maximize
-
-        if isinstance(fmin_function, str):
-            if not SCIPY_AVAILABLE:
+        if fmin_function is None:
+            if SCIPY_AVAILABLE:
+                fmin_function = scipy.optimize.minimize
+            else:
                 raise ImportError(
                     "Scipy is not available. Please install scipy to use this feature."
                 )
-            else:
-                self.fmin_function = partial(
-                    scipy.optimize.minimize, method=fmin_function
-                )
+            self.fmin_function = scipy.optimize.differential_evolution
+        else:
+            self.fmin_function = fmin_function
+       
+                
 
     def fit_transform(
         self, performance: Union[pd.DataFrame, np.ndarray]
@@ -90,7 +92,7 @@ class OptimizePreSelection(AbstractPreSelector):
             performance_frame = performance
             numpy = False
 
-        def objective_function(x):
+        def objective_function(x: np.ndarray) -> float:
             """
             Objective function for optimization. Calculates the performance metric
             for the selected subset of algorithms.
@@ -101,30 +103,30 @@ class OptimizePreSelection(AbstractPreSelector):
             Returns:
                 float: The performance metric value (negative if minimizing).
             """
-            selected_algorithms = performance_frame.columns[x >= 0.5]
-            performance_with_algorithm = performance_frame[selected_algorithms]
-            performance_with_algorithm = self.metric(performance_with_algorithm)
-            print(performance_with_algorithm)
+            selected_algorithms = performance_frame.columns[x.argsort()[-self.n_algorithms:]]
+            performance_with_algorithm = performance_frame[
+                selected_algorithms
+            ]
+            performance_with_algorithm = self.metric(
+                performance_with_algorithm
+            )
+
             return (
                 performance_with_algorithm
-                if self.maximize
+                if not self.maximize
                 else -performance_with_algorithm
             )
 
         initial_guess = np.zeros(performance_frame.shape[1])
         initial_guess[: self.n_algorithms] = 1
         bounds = [(0, 1) for _ in range(performance_frame.shape[1])]
-        constraints = {
-            "type": "eq",
-            "fun": lambda x: np.sum(x) - self.n_algorithms,
-        }
+
         result = self.fmin_function(
             objective_function,
-            initial_guess,
             bounds=bounds,
-            constraints=constraints,
         )
-        selected_algorithms = performance_frame.columns[result.x >= 0.5]
+
+        selected_algorithms = performance_frame.columns[result.x.argsort()[-self.n_algorithms:]]
         selected_performance = performance_frame[selected_algorithms]
         if numpy:
             selected_performance = selected_performance.values
