@@ -60,7 +60,7 @@ class KneeOfCurvePreSelector(AbstractPreSelector):
 
         for i in range(performance_frame.shape[1]):
             base_pre_selector = self.base_pre_selector(
-                n_algorithms=self.n_algorithms,
+                n_algorithms=i,
                 metric=self.metric,
                 maximize=self.maximize,
             )
