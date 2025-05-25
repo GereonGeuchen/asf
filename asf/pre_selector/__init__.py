@@ -10,5 +10,5 @@ __all__ = [
     "MarginalContributionBasedPreSelector",
     "OptimizePreSelection",
     "SBSPreSelector",
-    "BruteForcePreSelector"
+    "BruteForcePreSelector",
 ]

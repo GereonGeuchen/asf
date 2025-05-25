@@ -102,12 +102,8 @@ class OptimizePreSelection(AbstractPreSelector):
                 float: The performance metric value (negative if minimizing).
             """
             selected_algorithms = performance_frame.columns[x >= 0.5]
-            performance_with_algorithm = performance_frame[
-                selected_algorithms
-            ]
-            performance_with_algorithm = self.metric(
-                performance_with_algorithm
-            )
+            performance_with_algorithm = performance_frame[selected_algorithms]
+            performance_with_algorithm = self.metric(performance_with_algorithm)
             print(performance_with_algorithm)
             return (
                 performance_with_algorithm
