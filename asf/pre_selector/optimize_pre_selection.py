@@ -102,17 +102,17 @@ class OptimizePreSelection(AbstractPreSelector):
                 float: The performance metric value (negative if minimizing).
             """
             selected_algorithms = performance_frame.columns[x >= 0.5]
-            performance_without_algorithm = performance_frame.drop(
-                columns=selected_algorithms
+            performance_with_algorithm = performance_frame[
+                selected_algorithms
+            ]
+            performance_with_algorithm = self.metric(
+                performance_with_algorithm
             )
-            total_performance_without_algorithm = self.metric(
-                performance_without_algorithm
-            )
-
+            print(performance_with_algorithm)
             return (
-                total_performance_without_algorithm
+                performance_with_algorithm
                 if self.maximize
-                else -total_performance_without_algorithm
+                else -performance_with_algorithm
             )
 
         initial_guess = np.zeros(performance_frame.shape[1])
