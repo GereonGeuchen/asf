@@ -34,7 +34,7 @@ class BeamSearchPreSelector(AbstractPreSelector):
             numpy = False
 
         best_combinations = [
-            (col, self.metric(performance_frame[col]))
+            ((col,), self.metric(performance_frame[[col]]))
             for col in performance_frame.columns
         ]
         best_combinations.sort(
@@ -50,7 +50,7 @@ class BeamSearchPreSelector(AbstractPreSelector):
         for _ in range(self.n_algorithms - 1):
             new_combinations = []
 
-            for combination in best_combinations:
+            for combination, comb_perf in best_combinations:
                 for col in performance_frame.columns:
                     if col not in combination:
                         new_combination = combination + (col,)

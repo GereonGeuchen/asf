@@ -12,5 +12,5 @@ __all__ = [
     "OptimizePreSelection",
     "SBSPreSelector",
     "BruteForcePreSelector",
-    "BeamSearchPreSelector"
+    "BeamSearchPreSelector",
 ]
