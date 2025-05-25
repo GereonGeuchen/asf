@@ -61,8 +61,6 @@ class OptimizePreSelection(AbstractPreSelector):
             self.fmin_function = scipy.optimize.differential_evolution
         else:
             self.fmin_function = fmin_function
-       
-                
 
     def fit_transform(
         self, performance: Union[pd.DataFrame, np.ndarray]
@@ -103,13 +101,11 @@ class OptimizePreSelection(AbstractPreSelector):
             Returns:
                 float: The performance metric value (negative if minimizing).
             """
-            selected_algorithms = performance_frame.columns[x.argsort()[-self.n_algorithms:]]
-            performance_with_algorithm = performance_frame[
-                selected_algorithms
+            selected_algorithms = performance_frame.columns[
+                x.argsort()[-self.n_algorithms :]
             ]
-            performance_with_algorithm = self.metric(
-                performance_with_algorithm
-            )
+            performance_with_algorithm = performance_frame[selected_algorithms]
+            performance_with_algorithm = self.metric(performance_with_algorithm)
 
             return (
                 performance_with_algorithm
@@ -126,7 +122,9 @@ class OptimizePreSelection(AbstractPreSelector):
             bounds=bounds,
         )
 
-        selected_algorithms = performance_frame.columns[result.x.argsort()[-self.n_algorithms:]]
+        selected_algorithms = performance_frame.columns[
+            result.x.argsort()[-self.n_algorithms :]
+        ]
         selected_performance = performance_frame[selected_algorithms]
         if numpy:
             selected_performance = selected_performance.values
