@@ -4,6 +4,7 @@ from asf.pre_selector.marginal_contribution_based import (
 from asf.pre_selector.optimize_pre_selection import OptimizePreSelection
 from asf.pre_selector.sbs_pre_selection import SBSPreSelector
 from asf.pre_selector.brute_force_pre_selection import BruteForcePreSelector
+from asf.pre_selector.beam_search_pre_selection import BeamSearchPreSelector
 
 
 __all__ = [
@@ -11,4 +12,5 @@ __all__ = [
     "OptimizePreSelection",
     "SBSPreSelector",
     "BruteForcePreSelector",
+    "BeamSearchPreSelector"
 ]
