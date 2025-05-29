@@ -147,7 +147,14 @@ def tune_selector(
             selector = SelectorPipeline(
                 selector=cs_transform["selector"][
                     config["selector"]
-                ].get_from_configuration(config, cs_transform, **selector_kwargs),
+                ].get_from_configuration(
+                    config,
+                    cs_transform,
+                    budget=budget,
+                    maximize=maximize,
+                    feature_groups=feature_groups,
+                    **selector_kwargs,
+                ),
                 preprocessor=preprocessing_class,
                 pre_solving=pre_solving,
                 feature_selector=feature_selector,
@@ -171,7 +178,14 @@ def tune_selector(
     return SelectorPipeline(
         selector=cs_transform["selector"][
             best_config["selector"]
-        ].get_from_configuration(best_config, cs_transform, **selector_kwargs),
+        ].get_from_configuration(
+            best_config,
+            cs_transform,
+            budget=budget,
+            maximize=maximize,
+            feature_groups=feature_groups,
+            **selector_kwargs,
+        ),
         preprocessor=preprocessing_class,
         pre_solving=pre_solving,
         feature_selector=feature_selector,

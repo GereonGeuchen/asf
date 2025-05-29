@@ -93,4 +93,12 @@ def read_aslib_scenario(
     performance = performance.sort_index()
     cv = cv.sort_index()
 
-    return features, performance, cv, feature_groups, maximize, budget
+    return (
+        features,
+        performance,
+        features_running_time,
+        cv,
+        feature_groups,
+        maximize,
+        budget,
+    )

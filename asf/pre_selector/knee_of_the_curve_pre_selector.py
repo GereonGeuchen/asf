@@ -11,6 +11,7 @@ class KneeOfCurvePreSelector(AbstractPreSelector):
         base_pre_selector: Type[AbstractPreSelector],
         maximize=False,
         S=1.0,
+        workers=1,
         **kwargs,
     ):
         """
@@ -24,6 +25,7 @@ class KneeOfCurvePreSelector(AbstractPreSelector):
         self.base_pre_selector = base_pre_selector
         self.maximize = maximize
         self.S = S
+        self.workers = workers
 
     def fit_transform(
         self, performance: Union[pd.DataFrame, np.ndarray]
@@ -58,16 +60,38 @@ class KneeOfCurvePreSelector(AbstractPreSelector):
         y = []
         dfs = []
 
-        for i in range(performance_frame.shape[1]):
+        def process(i):
             base_pre_selector = self.base_pre_selector(
-                n_algorithms=i,
+                n_algorithms=i + 1,
                 metric=self.metric,
                 maximize=self.maximize,
             )
             pre_selected_df = base_pre_selector.fit_transform(performance_frame)
-            x.append(i)
-            y.append(self.metric(pre_selected_df))
-            dfs.append(pre_selected_df)
+            return i, self.metric(pre_selected_df), pre_selected_df
+
+        if self.workers > 1:
+            from joblib import Parallel, delayed
+
+            results = Parallel(n_jobs=self.workers)(
+                delayed(process)(i) for i in range(performance_frame.shape[1])
+            )
+            # Sort results by i to maintain order
+            results.sort(key=lambda tup: tup[0])
+            for i, metric_val, pre_selected_df in results:
+                x.append(i)
+                y.append(metric_val)
+                dfs.append(pre_selected_df)
+        else:
+            for i in range(performance_frame.shape[1]):
+                base_pre_selector = self.base_pre_selector(
+                    n_algorithms=i + 1,
+                    metric=self.metric,
+                    maximize=self.maximize,
+                )
+                pre_selected_df = base_pre_selector.fit_transform(performance_frame)
+                x.append(i)
+                y.append(self.metric(pre_selected_df))
+                dfs.append(pre_selected_df)
 
         x = np.array(x)
         y = np.array(y)

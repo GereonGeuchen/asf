@@ -72,7 +72,7 @@ def running_time_selector_performance(
             remaining_budget = (
                 budget
                 - sum(allocated_times.values())
-                - feature_time.loc[instance].item()
+                - feature_time.loc[instance].sum().item()
             )
             remaining_time_to_solve = performance.loc[instance, algorithm] - (
                 algo_budget + allocated_times[algorithm]
@@ -88,7 +88,7 @@ def running_time_selector_performance(
                 break
         if solved:
             total_time[instance] = (
-                sum(allocated_times.values()) + feature_time.loc[instance].item()
+                sum(allocated_times.values()) + feature_time.loc[instance].sum().item()
             )
         else:
             total_time[instance] = budget * par
