@@ -136,6 +136,5 @@ class KneeOfCurvePreSelector(AbstractPreSelector):
 
         if numpy:
             selected_performance = selected_performance.to_numpy()
-        else:
-            selected_performance = selected_performance.reset_index(drop=True)
+
         return selected_performance
