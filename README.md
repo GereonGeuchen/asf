@@ -104,6 +104,6 @@ If you use ASF, please cite the Zenodo DOI. We are currently working on publishi
 	doi = {10.5281/zenodo.15288151},
 	title = {ASF: Algorithm Selection Framework},
 	url = {https://doi.org/10.5281/zenodo.15288151},
-	year = 2025,
+	year = {in progress},
 }
 ```
