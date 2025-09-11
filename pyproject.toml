@@ -8,7 +8,7 @@ authors = [
 maintainers = [
   {name = "Hadar Shavit", email = "shavit@aim.rwth-aachen.de"},
 ]
-description = "Under construction! Algorithm selection framework"
+description = "Algorithm selection framework"
 readme = "README.md"
 license = {file = "LICENSE"}
 classifiers = [
