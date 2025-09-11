@@ -24,16 +24,16 @@ ASF is currently tested on Linux machines. Mac and Windows (official) support wi
 
 To install the base version run 
 ```bash
-pip install asf-lib
+pip install asf
 ```
 
 ### Additional options
 
 Additional options include:
 
-- XGBoost model suppot `pip install asf-lib[xgb]`
-- PyTorch-based models `pip install asf-lib[nn]`
-- ASlib scenarios reading `pip install asf-lib[aslib]`
+- XGBoost model suppot `pip install asf[xgb]`
+- PyTorch-based models `pip install asf[nn]`
+- ASlib scenarios reading `pip install asf[aslib]`
 
 ## Quick start
 
