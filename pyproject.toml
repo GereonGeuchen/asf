@@ -1,5 +1,5 @@
 [project]
-name = "asf-lib"
+name = "asf"
 version = "0.1.1"
 requires-python = ">= 3.10"
 authors = [
