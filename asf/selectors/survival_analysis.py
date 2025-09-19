@@ -1,7 +1,13 @@
 import pandas as pd
 from typing import Dict, List, Tuple, Optional
-from sksurv.ensemble import RandomSurvivalForest
-from sksurv.util import Surv
+
+try:
+    from sksurv.ensemble import RandomSurvivalForest
+    from sksurv.util import Surv
+
+    SKSURV_AVAIL = True
+except ImportError as e:
+    SKSURV_AVAIL = False
 
 from asf.selectors.abstract_model_based_selector import AbstractModelBasedSelector
 
