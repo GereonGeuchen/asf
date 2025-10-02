@@ -12,10 +12,9 @@ class _DummyModel:
 
 class SunnySelector(AbstractModelBasedSelector):
     """
-    SUNNY/SUNNY-AS2-inspired algorithm selector.
-    Finds k-nearest neighbors in feature space and recommends the best algorithm(s) based on their performance.
-    If use_v2 is True, k is tuned (for now, just set as a parameter).
-    No feature selection or greedy surrogate model is used.
+    SUNNY/SUNNY-AS2 algorithm selector.
+
+    This selector uses k-nearest neighbors (k-NN) in feature space to construct a schedule. When SUNNY-A2 is enabled, k is optimized.
     """
 
     def __init__(
@@ -26,6 +25,16 @@ class SunnySelector(AbstractModelBasedSelector):
         random_state: int = 42,
         **kwargs,
     ):
+        """
+        Initialize the SUNNY selector.
+
+        Args:
+            k (int): Number of neighbors for k-NN.
+            use_v2 (bool): Whether to tune k using cross-validation.
+            budget (float): Total time budget for the schedule.
+            random_state (int): Random seed.
+            **kwargs: Additional arguments for the parent class.
+        """
         super().__init__(model_class=_DummyModel, **kwargs)
         self.k = k
         self.use_v2 = use_v2
@@ -37,13 +46,23 @@ class SunnySelector(AbstractModelBasedSelector):
         self.nn_model = None
 
     def _fit(self, features: pd.DataFrame, performance: pd.DataFrame) -> None:
+        """
+        Fit the SUNNY selector on the training data.
+
+        Caps all performance values above the budget as unsolved (NaN).
+        If use_v2 is True, tunes k using internal cross-validation.
+
+        Args:
+            features (pd.DataFrame): Training features (instances x features).
+            performance (pd.DataFrame): Training performance matrix (instances x algorithms).
+        """
         self.features = features.copy()
         perf = performance.copy()
         perf[perf > self.budget] = np.nan
         self.performance = perf
         self.algorithms = list(perf.columns)
 
-        # Sunny_as2: tune k using cross-validation
+        # SUNNY-AS2: tune k using cross-validation if requested
         if self.use_v2:
             K_CANDIDATES = [3, 5, 7, 10, 20, 50]
             N_FOLDS = 5
@@ -117,8 +136,17 @@ class SunnySelector(AbstractModelBasedSelector):
         already_covered: Optional[set] = None,
     ) -> List[str]:
         """
-        Recursive greedy set cover: select up to 'cutoff' solvers to cover as many instances as possible.
+        Recursive greedy set cover to identify a portfolio of solvers.
         Tie-break by minimum total runtime on solved instances.
+
+        Args:
+            neighbor_perf (pd.DataFrame): Performance matrix for the k nearest neighbors.
+            cutoff (int): Maximum number of solvers to select.
+            already_selected (Optional[List[str]]): Solvers already selected (for recursion).
+            already_covered (Optional[set]): Instances already covered (for recursion).
+
+        Returns:
+            List[str]: List of selected solver names.
         """
         if already_selected is None:
             already_selected = []
@@ -169,7 +197,19 @@ class SunnySelector(AbstractModelBasedSelector):
     def _construct_sunny_schedule(
         self, neighbor_perf: pd.DataFrame
     ) -> List[Tuple[str, float]]:
-        ### 1. H_sel: Select portfolio using recursive greedy set cover (as in the original code)
+        """
+        Construct a SUNNY schedule for a given neighborhood.
+
+        Uses recursive greedy set cover to select a portfolio, allocates time slices
+        proportionally to solved counts, and (if needed) adds a backup solver.
+
+        Args:
+            neighbor_perf (pd.DataFrame): Performance matrix for the k nearest neighbors.
+
+        Returns:
+            List[Tuple[str, float]]: List of (algorithm, allocated_time) tuples, sorted by average runtime.
+        """
+        # 1. H_sel: Select portfolio using recursive greedy set cover
         cutoff = min(self.k, len(self.algorithms))
         best_pfolio = self._mine_solvers(neighbor_perf, cutoff)
 
@@ -189,7 +229,7 @@ class SunnySelector(AbstractModelBasedSelector):
             slots = {algo: 1 for algo in best_pfolio}
             total_slots = len(best_pfolio)
 
-        ### 2. H_all: Allocate time slices proportionally
+        # 2. H_all: Allocate time slices proportionally
         schedule = []
         for algo in best_pfolio:
             t = self.budget * (slots[algo] / total_slots)
@@ -198,13 +238,12 @@ class SunnySelector(AbstractModelBasedSelector):
         # If there are unsolved instances, allocate remaining time to backup solver
         time_used = sum(t for _, t in schedule)
         if n_unsolved > 0:
-            # Backup solver: the one with best mean time among all algorithms
             backup_time = self.budget - time_used
             if backup_time > 0:
                 backup_algo = solved_mask.sum(axis=0).idxmax()
                 schedule.append((backup_algo, backup_time))
 
-        ### 3.H_sch: Sort by average runtime (ascending) among neighbors
+        # 3. H_sch: Sort by average runtime (ascending) among neighbors
         avg_times = neighbor_perf[[algo for algo, _ in schedule]].mean(axis=0).to_dict()
         schedule.sort(key=lambda x: avg_times.get(x[0], float("inf")))
 
@@ -214,6 +253,15 @@ class SunnySelector(AbstractModelBasedSelector):
         self,
         features: Optional[pd.DataFrame] = None,
     ) -> Dict[str, List[Tuple[str, float]]]:
+        """
+        Predict a SUNNY schedule for each instance in the provided features.
+
+        Args:
+            features (pd.DataFrame): Feature matrix for the test instances.
+
+        Returns:
+            Dict[str, List[Tuple[str, float]]]: Mapping from instance name to schedule (list of (algorithm, time) tuples).
+        """
         if features is None:
             raise ValueError("Features must be provided for prediction.")
 
