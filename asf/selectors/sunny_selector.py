@@ -1,0 +1,230 @@
+import pandas as pd
+import numpy as np
+from typing import Dict, List, Tuple, Optional
+from asf.selectors.abstract_model_based_selector import AbstractModelBasedSelector
+from sklearn.neighbors import NearestNeighbors
+from sklearn.model_selection import KFold
+
+
+class _DummyModel:
+    pass
+
+
+class SunnySelector(AbstractModelBasedSelector):
+    """
+    SUNNY/SUNNY-AS2-inspired algorithm selector.
+    Finds k-nearest neighbors in feature space and recommends the best algorithm(s) based on their performance.
+    If use_v2 is True, k is tuned (for now, just set as a parameter).
+    No feature selection or greedy surrogate model is used.
+    """
+
+    def __init__(
+        self,
+        k: int = 10,
+        use_v2: bool = False,
+        budget: float = 200.0,
+        random_state: int = 42,
+        **kwargs,
+    ):
+        super().__init__(model_class=_DummyModel, **kwargs)
+        self.k = k
+        self.use_v2 = use_v2
+        self.random_state = random_state
+        self.budget = budget
+        self.features = None
+        self.performance = None
+        self.algorithms = []
+        self.nn_model = None
+
+    def _fit(self, features: pd.DataFrame, performance: pd.DataFrame) -> None:
+        self.features = features.copy()
+        perf = performance.copy()
+        perf[perf > self.budget] = np.nan
+        self.performance = perf
+        self.algorithms = list(perf.columns)
+
+        # Sunny_as2: tune k using cross-validation
+        if self.use_v2:
+            K_CANDIDATES = [3, 5, 7, 10, 20, 50]
+            N_FOLDS = 5
+            best_k = self.k
+            best_score = float("inf")
+            kf = KFold(n_splits=N_FOLDS, shuffle=True, random_state=self.random_state)
+            instance_indices = np.arange(len(self.features))
+
+            for candidate_k in K_CANDIDATES:
+                fold_scores = []
+                for train_idx, val_idx in kf.split(instance_indices):
+                    train_features = self.features.iloc[train_idx]
+                    train_perf = self.performance.iloc[train_idx]
+                    val_features = self.features.iloc[val_idx]
+                    val_perf = self.performance.iloc[val_idx]
+
+                    nn_model = NearestNeighbors(
+                        n_neighbors=min(candidate_k, len(train_features)),
+                        metric="euclidean",
+                    )
+                    nn_model.fit(train_features.values)
+
+                    # For each validation instance, get schedule and compute achieved runtime
+                    total_runtime = 0.0
+                    n_instances = 0
+                    for idx, instance in enumerate(val_features.index):
+                        x = val_features.loc[instance].values.reshape(1, -1)
+                        dists, neighbor_idxs = nn_model.kneighbors(
+                            x, n_neighbors=min(candidate_k, len(train_features))
+                        )
+                        neighbor_idxs = neighbor_idxs.flatten()
+                        neighbor_perf = train_perf.iloc[neighbor_idxs]
+                        schedule = self._construct_sunny_schedule(neighbor_perf)
+
+                        # Evaluate: take the first algorithm in the schedule that solves the instance, or assign budget if none solve it
+                        instance_perf = val_perf.loc[instance]
+                        solved = False
+                        for algo, _ in schedule:
+                            runtime = instance_perf[algo]
+                            if not np.isnan(runtime) and runtime <= self.budget:
+                                total_runtime += runtime
+                                solved = True
+                                break
+                        if not solved:
+                            total_runtime += self.budget  # Penalize unsolved
+                        n_instances += 1
+
+                    avg_runtime = (
+                        total_runtime / n_instances if n_instances > 0 else float("inf")
+                    )
+                    fold_scores.append(avg_runtime)
+
+                mean_score = np.mean(fold_scores)
+                if mean_score < best_score:
+                    best_score = mean_score
+                    best_k = candidate_k
+
+            self.k = best_k
+
+        # Fit final model with optimal k
+        self.nn_model = NearestNeighbors(
+            n_neighbors=min(self.k, len(self.features)), metric="euclidean"
+        )
+        self.nn_model.fit(self.features.values)
+
+    def _mine_solvers(
+        self,
+        neighbor_perf: pd.DataFrame,
+        cutoff: int,
+        already_selected: Optional[List[str]] = None,
+        already_covered: Optional[set] = None,
+    ) -> List[str]:
+        """
+        Recursive greedy set cover: select up to 'cutoff' solvers to cover as many instances as possible.
+        Tie-break by minimum total runtime on solved instances.
+        """
+        if already_selected is None:
+            already_selected = []
+        if already_covered is None:
+            already_covered = set()
+
+        remaining_instances = set(neighbor_perf.index) - already_covered
+        if len(already_selected) >= cutoff or not remaining_instances:
+            return already_selected
+
+        # For each solver, count how many new instances it can solve
+        best_solver = None
+        best_cover = set()
+        best_runtime = None
+        for algo in self.algorithms:
+            if algo in already_selected:
+                continue
+            # Instances this solver solves and are not yet covered
+            covers = (
+                set(neighbor_perf.index[neighbor_perf[algo].notna()])
+                & remaining_instances
+            )
+            if not best_solver or len(covers) > len(best_cover):
+                best_solver = algo
+                best_cover = covers
+                # For tie-breaking, sum runtime on these instances
+                best_runtime = (
+                    neighbor_perf.loc[list(covers), algo].sum() if covers else np.inf
+                )
+            elif len(covers) == len(best_cover):
+                runtime = (
+                    neighbor_perf.loc[list(covers), algo].sum() if covers else np.inf
+                )
+                if runtime < best_runtime:
+                    best_solver = algo
+                    best_cover = covers
+                    best_runtime = runtime
+
+        if not best_cover:
+            return already_selected
+
+        already_selected.append(best_solver)
+        already_covered |= best_cover
+        return self._mine_solvers(
+            neighbor_perf, cutoff, already_selected, already_covered
+        )
+
+    def _construct_sunny_schedule(
+        self, neighbor_perf: pd.DataFrame
+    ) -> List[Tuple[str, float]]:
+        ### 1. H_sel: Select portfolio using recursive greedy set cover (as in the original code)
+        cutoff = min(self.k, len(self.algorithms))
+        best_pfolio = self._mine_solvers(neighbor_perf, cutoff)
+
+        # Count solved/unsolved instances for each selected solver
+        solved_mask = neighbor_perf.notna()
+        slots = {algo: solved_mask[algo].sum() for algo in best_pfolio}
+
+        covered = set()
+        for algo in best_pfolio:
+            covered |= set(neighbor_perf.index[solved_mask[algo]])
+        n_unsolved = len(set(neighbor_perf.index) - covered)
+
+        # Total time slots = sum of solved counts + unsolved
+        total_slots = sum(slots.values()) + n_unsolved
+        if total_slots == 0:
+            # fallback: equal allocation
+            slots = {algo: 1 for algo in best_pfolio}
+            total_slots = len(best_pfolio)
+
+        ### 2. H_all: Allocate time slices proportionally
+        schedule = []
+        for algo in best_pfolio:
+            t = self.budget * (slots[algo] / total_slots)
+            schedule.append((algo, t))
+
+        # If there are unsolved instances, allocate remaining time to backup solver
+        time_used = sum(t for _, t in schedule)
+        if n_unsolved > 0:
+            # Backup solver: the one with best mean time among all algorithms
+            backup_time = self.budget - time_used
+            if backup_time > 0:
+                backup_algo = solved_mask.sum(axis=0).idxmax()
+                schedule.append((backup_algo, backup_time))
+
+        ### 3.H_sch: Sort by average runtime (ascending) among neighbors
+        avg_times = neighbor_perf[[algo for algo, _ in schedule]].mean(axis=0).to_dict()
+        schedule.sort(key=lambda x: avg_times.get(x[0], float("inf")))
+
+        return schedule
+
+    def _predict(
+        self,
+        features: Optional[pd.DataFrame] = None,
+    ) -> Dict[str, List[Tuple[str, float]]]:
+        if features is None:
+            raise ValueError("Features must be provided for prediction.")
+
+        predictions = {}
+        for idx, instance in enumerate(features.index):
+            x = features.loc[instance].values.reshape(1, -1)
+            dists, neighbor_idxs = self.nn_model.kneighbors(x, n_neighbors=self.k)
+            neighbor_idxs = neighbor_idxs.flatten()
+            neighbor_perf = self.performance.iloc[neighbor_idxs]
+
+            schedule = self._construct_sunny_schedule(neighbor_perf)
+            predictions[instance] = schedule
+
+        return predictions
