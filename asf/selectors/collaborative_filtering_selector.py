@@ -3,13 +3,6 @@ import numpy as np
 from typing import Dict, List, Tuple, Optional
 from asf.selectors.abstract_model_based_selector import AbstractModelBasedSelector
 from sklearn.linear_model import Ridge
-from sklearn.preprocessing import StandardScaler
-
-
-class _DummyModel:
-    """Dummy model class to satisfy AbstractModelBasedSelector requirements."""
-
-    pass
 
 
 class CollaborativeFilteringSelector(AbstractModelBasedSelector):
@@ -19,6 +12,7 @@ class CollaborativeFilteringSelector(AbstractModelBasedSelector):
 
     def __init__(
         self,
+        model_class=Ridge,
         n_components: int = 10,
         n_iter: int = 100,
         lr: float = 0.001,
@@ -37,7 +31,7 @@ class CollaborativeFilteringSelector(AbstractModelBasedSelector):
             random_state (int): Random seed for initialization.
             **kwargs: Additional arguments for the parent classes.
         """
-        super().__init__(model_class=_DummyModel, **kwargs)
+        super().__init__(model_class=model_class, **kwargs)
         self.n_components = n_components
         self.n_iter = n_iter
         self.lr = lr
@@ -46,10 +40,7 @@ class CollaborativeFilteringSelector(AbstractModelBasedSelector):
         self.U = None  # Instance latent factors
         self.V = None  # Algorithm latent factors
         self.performance_matrix = None
-        self.algorithms = []
-        self.feature_mapper = None
-        self.feature_names = []
-        self.scaler = None  # Add scaler attribute
+        self.model = None
 
         # Bias terms
         self.mu = None  # Global mean
@@ -102,12 +93,8 @@ class CollaborativeFilteringSelector(AbstractModelBasedSelector):
                 self.b_U[i] += self.lr * (err - self.reg * self.b_U[i])
                 self.b_V[j] += self.lr * (err - self.reg * self.b_V[j])
 
-        # Cold-start feature mapper training with standardized features
-        self.scaler = StandardScaler()
-        X_scaled = self.scaler.fit_transform(features.values)
-        self.feature_mapper = Ridge(alpha=1.0)
-        self.feature_mapper.fit(X_scaled, self.U)
-        self.feature_names = list(features.columns)
+        self.model = self.model_class()
+        self.model.fit(features.values, self.U)
 
     def _predict_cold_start(
         self, instance_features: pd.Series, instance_name: str
@@ -116,9 +103,8 @@ class CollaborativeFilteringSelector(AbstractModelBasedSelector):
         Predict the best algorithm for a single instance using only its features (cold-start).
         """
         # Align and scale features
-        X = instance_features[self.feature_names].values.reshape(1, -1)
-        X_scaled = self.scaler.transform(X)
-        U_new = self.feature_mapper.predict(X_scaled)
+        X = instance_features[self.features].values.reshape(1, -1)
+        U_new = self.model.predict(X)
         # Compute scores with global and algorithm bias
         scores = self.mu + self.b_V + np.dot(U_new, self.V.T).flatten()
         scores = np.asarray(scores).flatten()
