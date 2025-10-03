@@ -12,6 +12,7 @@ from asf.selectors.selector_pipeline import SelectorPipeline
 from asf.selectors.collaborative_filtering_selector import (
     CollaborativeFilteringSelector,
 )
+from asf.selectors.sunny_selector import SunnySelector
 from asf.selectors.selector_tuner import tune_selector
 
 __all__ = [
@@ -29,4 +30,5 @@ __all__ = [
     "tune_selector",
     "SelectorPipeline",
     "CollaborativeFilteringSelector",
+    "SunnySelector",
 ]

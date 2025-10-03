@@ -32,6 +32,7 @@ import shutil
 from asf.selectors.collaborative_filtering_selector import (
     CollaborativeFilteringSelector,
 )
+from asf.selectors.sunny_selector import SunnySelector
 
 
 @pytest.fixture
@@ -237,6 +238,20 @@ def test_collaborative_filtering_selector(dummy_performance, dummy_features):
     # Validate cold start predictions (features only)
     predictions = selector.predict(dummy_features, None)
     validate_predictions(predictions)
+
+
+def test_sunny_selector(dummy_performance, dummy_features):
+    # Use a reasonable budget for the test
+    budget = 500
+    selector = SunnySelector(k=3, use_v2=True, budget=budget)
+    selector.fit(dummy_features, dummy_performance)
+    predictions = selector.predict(dummy_features)
+    # Each prediction should be a non-empty list of (algo, time) tuples
+    assert len(predictions) == len(dummy_features)
+    for sched in predictions.values():
+        assert isinstance(sched, list)
+        assert all(isinstance(x, tuple) and len(x) == 2 for x in sched)
+        assert all(isinstance(x[0], str) and isinstance(x[1], float) for x in sched)
 
 
 def test_selector_tuner(dummy_performance, dummy_features):
