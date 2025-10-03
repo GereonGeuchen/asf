@@ -5,6 +5,8 @@ from asf.selectors import PairwiseClassifier, PairwiseRegressor, tune_selector
 from asf.predictors import SVMClassifierWrapper, SVMRegressorWrapper
 from asf.presolving.asap_v2 import ASAPv2
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
+import tempfile
+import shutil
 
 
 @pytest.fixture
@@ -28,6 +30,8 @@ def test_tune_selector_with_presolving_and_preprocessing(dummy_data):
     preprocessors = [StandardScaler(), MinMaxScaler()]
     presolvers = [ASAPv2()]
 
+    output_dir = tempfile.mkdtemp()
+
     selector = tune_selector(
         features,
         performance,
@@ -41,6 +45,7 @@ def test_tune_selector_with_presolving_and_preprocessing(dummy_data):
         pre_solving_class=presolvers,
         cv=2,
         seed=42,
+        output_dir=output_dir,
     )
 
     # Check pipeline config includes preprocessor and presolver
@@ -55,3 +60,5 @@ def test_tune_selector_with_presolving_and_preprocessing(dummy_data):
     selector.fit(features, performance)
     predictions = selector.predict(features)
     validate_predictions(predictions, len(features))
+
+    shutil.rmtree(output_dir)
