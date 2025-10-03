@@ -208,7 +208,7 @@ def test_joint_ranking(dummy_performance, dummy_features):
 
 
 def test_survival_analysis(dummy_performance, dummy_features):
-    selector = SurvivalAnalysisSelector(cutoff_time=450.0)
+    selector = SurvivalAnalysisSelector(budget=450.0)
     selector.fit(dummy_features, dummy_performance)
     predictions = selector.predict(dummy_features)
     validate_predictions(predictions)
