@@ -29,7 +29,9 @@ from asf.predictors import (
     RegressionMLP,
 )
 import shutil
-from asf.selectors.collaborative_filtering_selector import CollaborativeFilteringSelector
+from asf.selectors.collaborative_filtering_selector import (
+    CollaborativeFilteringSelector,
+)
 
 
 @pytest.fixture
@@ -219,7 +221,9 @@ def test_collaborative_filtering_selector(dummy_performance, dummy_features):
     nan_mask = np.random.rand(*perf.shape) < 0.2
     perf[nan_mask] = np.nan
 
-    selector = CollaborativeFilteringSelector(n_components=3, n_iter=100, lr=0.01, reg=0.1)
+    selector = CollaborativeFilteringSelector(
+        n_components=3, n_iter=100, lr=0.01, reg=0.1
+    )
     selector.fit(dummy_features, perf)
 
     # Validate predictions on training set
