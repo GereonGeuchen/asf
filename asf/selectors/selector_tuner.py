@@ -59,7 +59,6 @@ def tune_selector(
     seed: int = 0,
     cv: int = 10,
     groups: np.ndarray = None,
-    precision_data: pd.DataFrame = None,
 ) -> SelectorPipeline:
     """
     Tunes a selector model using SMAC for hyperparameter optimization.
@@ -210,9 +209,18 @@ def tune_selector(
             selector = SelectorPipeline(
                 selector=cs_transform["selector"][
                     config["selector"]
-                ].get_from_configuration(config, cs_transform, **selector_kwargs),
-                preprocessor=preprocessing_class,
-                pre_solving=pre_solving,
+                ].get_from_configuration(
+                    config,
+                    cs_transform,
+                    budget=(budget - presolver_budget)
+                    if presolver_budget is not None
+                    else budget,
+                    maximize=maximize,
+                    feature_groups=feature_groups,
+                    **selector_kwargs,
+                ),
+                preprocessor=preprocessors,
+                pre_solving=presolver,
                 feature_selector=feature_selector,
                 algorithm_pre_selector=algorithm_pre_selector,
                 budget=budget,
@@ -222,10 +230,7 @@ def tune_selector(
             selector.fit(X_train, y_train)
 
             y_pred = selector.predict(X_test)
-            if precision_data is not None:
-                score = smac_metric(y_pred, y_test, precision_data)
-            else:
-                score = smac_metric(y_pred, y_test)
+            score = smac_metric(y_pred, y_test)
             scores.append(score)
 
         return np.mean(scores)
@@ -257,9 +262,18 @@ def tune_selector(
     return SelectorPipeline(
         selector=cs_transform["selector"][
             best_config["selector"]
-        ].get_from_configuration(best_config, cs_transform, **selector_kwargs),
-        preprocessor=preprocessing_class,
-        pre_solving=pre_solving,
+        ].get_from_configuration(
+            best_config,
+            cs_transform,
+            budget=(budget - presolver_budget)
+            if presolver_budget is not None
+            else budget,
+            maximize=maximize,
+            feature_groups=feature_groups,
+            **selector_kwargs,
+        ),
+        preprocessor=preprocessors,
+        pre_solving=presolver,
         feature_selector=feature_selector,
         algorithm_pre_selector=algorithm_pre_selector,
         budget=budget,
