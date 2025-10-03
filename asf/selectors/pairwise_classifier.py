@@ -130,7 +130,7 @@ class PairwiseClassifier(AbstractModelBasedSelector, AbstractFeatureGenerator):
             for j, other_algorithm in enumerate(self.algorithms[i + 1 :]):
                 prediction = self.classifiers[cnt].predict(features)
                 predictions_sum.loc[prediction, algorithm] += 1
-                predictions_sum.loc[~prediction, other_algorithm] += 1
+                predictions_sum.loc[1 - prediction, other_algorithm] += 1
                 cnt += 1
 
         return predictions_sum
