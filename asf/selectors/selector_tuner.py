@@ -31,44 +31,6 @@ from asf.selectors.abstract_selector import AbstractSelector
 from asf.selectors.selector_pipeline import SelectorPipeline
 from asf.utils.groupkfoldshuffle import GroupKFoldShuffle
 
-## Added by me
-# This metric returns the sum of the distances to the optimum by each prediction.
-# If we use normalized data and the precisions are normalized, too, then precision_data can be passed that contains the 
-# non-normalized precision data such that we actually minimize these precisions, not the normalized ones
-def precision_regret(
-    schedules: dict[str, list[tuple[str, float]]],
-    performance: pd.DataFrame,
-    precision_data: pd.DataFrame = None,
-    **kwargs,
-) -> float:
-    """
-    Computes the sum of regrets for the given schedules based on the provided performance data.
-
-    Args:
-        schedules (dict): selector predictions: instance_id → [(algorithm, budget)]
-        performance (pd.DataFrame): ground-truth precision table
-
-    Returns:
-        float: sum of regrets for the given schedules
-    """
-    regrets = []
-    for instance, schedule in schedules.items():
-        if not schedule or instance not in performance.index:
-            continue
-        selected_algo, _ = schedule[0]
-        if selected_algo not in performance.columns:
-            continue
-        if precision_data is not None:
-            selector_precision = precision_data.loc[instance, selected_algo]
-        else:
-            selector_precision = performance.loc[instance, selected_algo]
-        regret = selector_precision
-        regrets.append(regret)
-    if len(regrets) == 0:
-        print("Warning: No valid schedules found for regret calculation.")
-        return float('inf') 
-    print(float(np.sum(regrets)))
-    return float(np.sum(regrets))
 
 def tune_selector(
     X: pd.DataFrame,
@@ -85,7 +47,7 @@ def tune_selector(
     maximize: bool = False,
     feature_groups: list = None,
     output_dir: str = "./smac_output",
-    smac_metric: callable = precision_regret, ## Changed by me from running_time_selector_performance
+    smac_metric: callable = running_time_selector_performance,
     smac_kwargs: dict = {},
     smac_scenario_kwargs: dict = {},
     runcount_limit: int = 100,
@@ -93,7 +55,7 @@ def tune_selector(
     seed: int = 0,
     cv: int = 10,
     groups: np.ndarray = None,
-    precision_data: pd.DataFrame = None
+    precision_data: pd.DataFrame = None,
 ) -> SelectorPipeline:
     """
     Tunes a selector model using SMAC for hyperparameter optimization.

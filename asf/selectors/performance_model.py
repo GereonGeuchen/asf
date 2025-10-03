@@ -2,9 +2,7 @@ import numpy as np
 import pandas as pd
 import inspect
 from typing import Type, List, Dict, Union
-# == By me ==
 from asf.predictors import RandomForestRegressorWrapper
-# ===========
 from asf.selectors.abstract_model_based_selector import AbstractModelBasedSelector
 from asf.selectors.feature_generator import AbstractFeatureGenerator
 
@@ -156,10 +154,10 @@ class PerformanceModel(AbstractModelBasedSelector, AbstractFeatureGenerator):
 
         return predictions
 
-    # === Added by me ===
-    # This is very specific to my use-case as I want to pass a random_state for reproducibility
     @classmethod
-    def get_configuration_space(cls, cs, cs_transform, parent_param, parent_value, **kwargs):
+    def get_configuration_space(
+        cls, cs, cs_transform, parent_param, parent_value, **kwargs
+    ):
         """
         Adds the configuration space for the PerformanceModel using RandomForestRegressorWrapper.
         """
@@ -167,12 +165,14 @@ class PerformanceModel(AbstractModelBasedSelector, AbstractFeatureGenerator):
             cs=cs,
             pre_prefix=cls.__name__,
             parent_param=parent_param,
-            parent_value=parent_value
+            parent_value=parent_value,
         )
 
         def constructor(config, cs_transform, **init_kwargs):
             # Make sure that the random forests get random state from the init_kwargs for reproducibility
-            model_init_args = {k: init_kwargs[k] for k in ["random_state"] if k in init_kwargs}
+            model_init_args = {
+                k: init_kwargs[k] for k in ["random_state"] if k in init_kwargs
+            }
 
             # Build model constructor with model-related kwargs
             model_constructor = RandomForestRegressorWrapper.get_from_configuration(
@@ -181,7 +181,9 @@ class PerformanceModel(AbstractModelBasedSelector, AbstractFeatureGenerator):
 
             # Only pass the kwargs intended for PerformanceModel init (not model-specific)
             model_related_keys = ["random_state"]
-            selector_kwargs = {k: v for k, v in init_kwargs.items() if k not in model_related_keys}
+            selector_kwargs = {
+                k: v for k, v in init_kwargs.items() if k not in model_related_keys
+            }
 
             return cls(model_class=model_constructor, **selector_kwargs)
 
