@@ -8,6 +8,7 @@ from asf.selectors import (
     PerformanceModel,
     SimpleRanking,
     JointRanking,
+    SurvivalAnalysisSelector,
 )
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from xgboost import XGBRanker
@@ -28,6 +29,10 @@ from asf.predictors import (
     RegressionMLP,
 )
 import shutil
+from asf.selectors.collaborative_filtering_selector import (
+    CollaborativeFilteringSelector,
+)
+from asf.selectors.sunny_selector import SunnySelector
 
 
 @pytest.fixture
@@ -201,6 +206,52 @@ def test_joint_ranking(dummy_performance, dummy_features):
     selector.fit(dummy_features, dummy_performance)
     predictions = selector.predict(dummy_features)
     validate_predictions(predictions)
+
+
+def test_survival_analysis(dummy_performance, dummy_features):
+    selector = SurvivalAnalysisSelector(budget=450.0)
+    selector.fit(dummy_features, dummy_performance)
+    predictions = selector.predict(dummy_features)
+    validate_predictions(predictions)
+
+
+def test_collaborative_filtering_selector(dummy_performance, dummy_features):
+    # Insert some NaNs into the performance matrix to simulate missing data
+    perf = dummy_performance.copy()
+    np.random.seed(42)
+    nan_mask = np.random.rand(*perf.shape) < 0.2
+    perf[nan_mask] = np.nan
+
+    selector = CollaborativeFilteringSelector(
+        n_components=3, n_iter=100, lr=0.01, reg=0.1
+    )
+    selector.fit(dummy_features, perf)
+
+    # Validate predictions on training set
+    predictions = selector.predict(None, None)
+    validate_predictions(predictions)
+
+    # Validate predictions with sparse performance matrix
+    predictions = selector.predict(None, perf)
+    validate_predictions(predictions)
+
+    # Validate cold start predictions (features only)
+    predictions = selector.predict(dummy_features, None)
+    validate_predictions(predictions)
+
+
+def test_sunny_selector(dummy_performance, dummy_features):
+    # Use a reasonable budget for the test
+    budget = 500
+    selector = SunnySelector(k=3, use_v2=True, budget=budget)
+    selector.fit(dummy_features, dummy_performance)
+    predictions = selector.predict(dummy_features)
+    # Each prediction should be a non-empty list of (algo, time) tuples
+    assert len(predictions) == len(dummy_features)
+    for sched in predictions.values():
+        assert isinstance(sched, list)
+        assert all(isinstance(x, tuple) and len(x) == 2 for x in sched)
+        assert all(isinstance(x[0], str) and isinstance(x[1], float) for x in sched)
 
 
 def test_selector_tuner(dummy_performance, dummy_features):

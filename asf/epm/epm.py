@@ -109,7 +109,7 @@ class EPM:
         y = self.normalization.transform(y)
 
         if self.predictor_config is None:
-            self.predictor = self.predictor_class()
+            self.predictor = self.predictor_class(**self.predictor_kwargs)
         else:
             self.predictor = self.predictor_class.get_from_configuration(
                 self.predictor_config, **self.predictor_kwargs
